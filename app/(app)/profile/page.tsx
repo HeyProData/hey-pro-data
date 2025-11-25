@@ -117,17 +117,7 @@ export default function Profile() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        // Handle image preview here
-                        console.log(reader.result);
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
+                  onChange={(e) => { }}
                   className="hidden"
                   id="cover-image-upload"
                 />
