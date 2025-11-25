@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X } from "lucide-react"
 import { toast } from "sonner"
 
@@ -92,21 +91,6 @@ export default function ProfileEditor({ initialProfile, trigger }: EditProfileIn
 
                 <div className="flex-1 overflow-y-auto px-6 sm:px-8 md:px-10">
                     <div className="space-y-6">
-                        {/* Availability */}
-                        <div className="space-y-2">
-                            <label className="text-base font-normal">Availability</label>
-                            <Select value={availability} onValueChange={setAvailability}>
-                                <SelectTrigger className=" w-full bg-[#34A353] text-[#FFFFFF] rounded-full">
-                                    <SelectValue placeholder="Select availability" defaultValue={availability} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="available">Available</SelectItem>
-                                    <SelectItem value="busy">Busy</SelectItem>
-                                    <SelectItem value="unavailable">Unavailable</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
                         {/* Name */}
                         <div className="space-y-2 flex flex-col">
                             <label className="text-base font-normal">Name</label>
