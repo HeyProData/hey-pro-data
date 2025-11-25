@@ -5,7 +5,7 @@ const toSlug = (value: string) =>
         .replace(/^-+|-+$/g, "");
 
 export type WhatsOnEvent = {
-    id: number;
+    id: string;
     isOnline?: boolean;
     title: string;
     slug: string;
@@ -66,7 +66,7 @@ const baseTags = [
     "Editing",
 ];
 
-const createEvent = (id: number, title: string, location: string, isPaid: boolean): WhatsOnEvent => ({
+const createEvent = (id: string, title: string, location: string, isPaid: boolean): WhatsOnEvent => ({
     id,
     title,
     slug: toSlug(title),
@@ -89,16 +89,16 @@ const createEvent = (id: number, title: string, location: string, isPaid: boolea
 });
 
 export const whatsOnEvents: WhatsOnEvent[] = [
-    createEvent(1, "Movie Makers' Meetup: Bi-Weekly Q&A", "UAE, Dubai", true),
-    createEvent(2, "Cinematography Lighting Lab", "UAE, Dubai", false),
-    createEvent(3, "Production Sound Masterclass", "UAE, Dubai", true),
-    createEvent(4, "Directors' Table Talk", "UAE, Dubai", true),
-    createEvent(5, "Script Breakdown Workshop", "UAE, Dubai", false),
-    createEvent(6, "Post Production Roundtable", "UAE, Dubai", true),
-    createEvent(7, "Film Financing 101", "UAE, Dubai", true),
-    createEvent(8, "On-Set Safety Briefing", "UAE, Dubai", false),
-    createEvent(9, "Casting & Audition Clinic", "UAE, Dubai", true),
+    createEvent("1", "Movie Makers' Meetup: Bi-Weekly Q&A", "UAE, Dubai", true),
+    createEvent("2", "Cinematography Lighting Lab", "UAE, Dubai", false),
+    createEvent("3", "Production Sound Masterclass", "UAE, Dubai", true),
+    createEvent("4", "Directors' Table Talk", "UAE, Dubai", true),
+    createEvent("5", "Script Breakdown Workshop", "UAE, Dubai", false),
+    createEvent("6", "Post Production Roundtable", "UAE, Dubai", true),
+    createEvent("7", "Film Financing 101", "UAE, Dubai", true),
+    createEvent("8", "On-Set Safety Briefing", "UAE, Dubai", false),
+    createEvent("9", "Casting & Audition Clinic", "UAE, Dubai", true),
 ];
 
 export const getWhatsOnEventBySlug = (slug: string) => whatsOnEvents.find((event) => event.slug === slug);
-export const getWhatsOnEventById = (id: string) => whatsOnEvents.find((event) => event.id === parseInt(id, 10));
+export const getWhatsOnEventById = (id: string) => whatsOnEvents.find((event) => event.id === id);
