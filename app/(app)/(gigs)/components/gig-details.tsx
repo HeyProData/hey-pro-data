@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { addDays, endOfMonth, endOfWeek, format, getDate, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
-import { ArrowLeft, Calendar, FileText, Link2, MapPin, Paperclip } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Link2, MapPin, Paperclip, UserPlus } from "lucide-react";
 
 import { type GigsDataType } from "@/data/gigs";
+import ApplyGigs from "./applygigs";
+import { Button } from "@/components/ui/button";
 
 const WEEKDAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -73,12 +75,11 @@ export default function GigDetails(gig: GigsDataType[0]) {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button type="button" className="inline-flex items-center gap-2 rounded-[14px] bg-[#2AA9A7] px-6 py-3 text-sm font-medium text-white shadow-md">
+          <Button type="button" className="inline-flex h-[44px] items-center gap-2 rounded-[14px] bg-[#2AA9A7] px-6 py-3 text-sm font-medium text-white shadow-md">
+            <UserPlus className="h-4 w-4" />
             Recommend
-          </button>
-          <button type="button" className="inline-flex items-center gap-2 rounded-[14px] bg-[#FA6E80] px-6 py-3 text-sm font-medium text-white shadow-md">
-            Apply
-          </button>
+          </Button>
+          <ApplyGigs gig={gig} />
         </div>
       </div>
 
