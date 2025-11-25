@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import LinksDialog from "./Links";
 import ProfileEditor from "./ProfileEdit";
 import { ProfileDataTypes } from "@/types";
+import AvalableDilog from "./Avalable";
 export default function ShortProfile({ Profile }: { Profile: ProfileDataTypes }) {
 
     const [profileImageHovered, setProfileImageHovered] = useState(false)
@@ -44,7 +45,8 @@ export default function ShortProfile({ Profile }: { Profile: ProfileDataTypes })
                                 <h1 className="text-3xl sm:text-4xl font-bold">{Profile.persionalDetails.name}</h1>
                                 <div className="flex flex-row justify-center items-center gap-0   px-2 py-1">
                                     <span className="h-2 w-2 rounded-full bg-[#34A353]" />
-                                    <Badge className=" text-green-700 text-xl  bg-transparent">{Profile.persionalDetails.availability}</Badge>
+                                    <Badge className=" text-green-700 text-xl  bg-transparent"><AvalableDilog initialProfile={Profile.persionalDetails} /></Badge>
+
                                     <div className="flex flex-row justify-center items-center gap-3 text-[#31A7AC]">
                                         <span className="">View in Calendar </span> { } <Calendar className="h-5 w-5" color="#31A7AC" />
                                     </div>
