@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogFooter,
     DialogHeader,
@@ -52,11 +53,10 @@ export default function AvalableDilog({ initialProfile, triggerClassName }: Edit
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Update availability</DialogTitle>
+                <DialogHeader className="mt-20">
+                    <DialogTitle>Availability</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-2">
-                    <label className="text-base font-normal">Availability</label>
+                <div className="space-y-2 h-40 -mt-30">
                     <Select value={draftAvailability} onValueChange={setDraftAvailability}>
                         <SelectTrigger className="w-full rounded-full border-none bg-[#34A353] text-white">
                             <SelectValue placeholder="Select availability" />
@@ -68,12 +68,14 @@ export default function AvalableDilog({ initialProfile, triggerClassName }: Edit
                         </SelectContent>
                     </Select>
                 </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={handleCancel}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave}>
-                        Save
+                <DialogFooter className=" flex flex-row justify-start items-start -mt-60">
+                    <DialogClose asChild>
+                        <Button type="button" className="h-[44px] w-[128px] rounded-[15px] border-[#31A7AC]" variant="outline">
+                            <span className="text-[#31A7AC]">Cancel</span>
+                        </Button>
+                    </DialogClose>
+                    <Button type="button" className="h-[44px] rounded[15px] bg-[#31A7AC]" onClick={handleSave}>
+                        Save roles
                     </Button>
                 </DialogFooter>
             </DialogContent>
