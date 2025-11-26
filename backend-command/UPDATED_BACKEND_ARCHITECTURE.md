@@ -5,7 +5,7 @@
 This document provides a comprehensive overview of the **UPDATED** backend architecture including all profile-related enhancements.
 
 **Last Updated:** January 2025  
-**Version:** 2.5 (Updated with What's On Events Feature)
+**Version:** 2.6 (Updated with Design Projects Feature - PENDING IMPLEMENTATION)
 
 ---
 
@@ -121,7 +121,7 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────┐      │
 │  │  DATABASE (PostgreSQL)                                    │      │
-│  │  - 34 Tables with Relationships ⭐ UPDATED v2.5           │      │
+│  │  - 39 Tables with Relationships ⭐ UPDATED v2.6           │      │
 │  │  - Row Level Security (RLS) Policies                      │      │
 │  │  - Indexes for Performance                                │      │
 │  │  - Triggers for Auto-updates                              │      │
@@ -133,6 +133,7 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
 │  │  - portfolios/ (Private, 10MB)                            │      │
 │  │  - profile-photos/ (Public, 2MB)                          │      │
 │  │  - collab-covers/ (Public, 5MB) ⭐ NEW v2.2               │      │
+│  │  - project-assets/ (Mixed, 20MB) ⭐ NEW v2.6              │      │
 │  └─────────────────────────────────────────────────────────┘      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -141,7 +142,7 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
 
 ## 🗄️ Database Schema Summary
 
-### Core Tables (34 Total) ⭐ UPDATED v2.5
+### Core Tables (39 Total) ⭐ UPDATED v2.6
 
 #### PROFILE TABLES (10 Tables)
 
@@ -786,6 +787,138 @@ Tracks which event dates an attendee selected for their RSVP.
 
 ---
 
+#### DESIGN PROJECTS TABLES (5 Tables) ⭐ NEW v2.6 - PENDING IMPLEMENTATION
+
+##### 35. `design_projects` ⭐ NEW
+Main table for design projects - user-created creative work containers.
+
+**Key Fields:**
+- `id` (UUID, PK) - Unique project identifier
+- `user_id` (UUID, FK → auth.users) - Project creator/owner
+- `title` (TEXT, NOT NULL) - Project name (3-200 chars)
+- `slug` (TEXT, UNIQUE, NOT NULL) - URL-friendly identifier
+- `description` (TEXT, NOT NULL) - Project details (10-10000 chars)
+- `project_type` (TEXT) - commercial, film, tv, social, digital, etc.
+- `status` (TEXT) - draft, active, in_progress, on_hold, completed, archived, cancelled
+- `start_date` (DATE) - Project start date
+- `end_date` (DATE) - Project end date
+- `estimated_duration` (INTEGER) - Duration in days
+- `budget_amount` (INTEGER) - Budget value
+- `budget_currency` (TEXT, default AED) - Currency code
+- `location` (TEXT) - Venue/city/country
+- `is_remote` (BOOLEAN) - Remote work flag
+- `thumbnail_url` (TEXT) - Card image URL
+- `hero_image_url` (TEXT) - Detail page banner URL
+- `privacy` (TEXT) - public, private, team_only
+- `created_at`, `updated_at` (TIMESTAMPTZ)
+
+**Constraints:**
+- CHECK: Title length 3-200 characters
+- CHECK: Description length 10-10000 characters
+- CHECK: End date >= Start date (if both set)
+- CHECK: project_type IN (commercial, film, tv, social, digital, documentary, music_video, animation, photography, branding, web_design, app_design, other)
+- CHECK: status IN (draft, active, in_progress, on_hold, completed, archived, cancelled)
+- CHECK: privacy IN (public, private, team_only)
+- UNIQUE: slug
+
+**Indexes:**
+- `idx_design_projects_user_id` on `user_id` - Owner filter
+- `idx_design_projects_status` on `status` - Status filter
+- `idx_design_projects_privacy` on `privacy` - Privacy filter
+- `idx_design_projects_project_type` on `project_type` - Type filter
+- `idx_design_projects_created_at` on `created_at DESC` - Sort by creation
+- `idx_design_projects_updated_at` on `updated_at DESC` - Sort by update
+- `idx_design_projects_slug` on `slug` - Slug lookup
+- `idx_design_projects_browse` on `(privacy, status, created_at DESC)` - Browse query
+- Full-text search index on `(title, description)` - Keyword search
+
+##### 36. `project_tags` ⭐ NEW
+Tags for categorizing and searching design projects.
+
+**Key Fields:**
+- `id` (UUID, PK)
+- `project_id` (UUID, FK → design_projects)
+- `tag_name` (TEXT, NOT NULL) - Tag label (1-50 chars)
+- `created_at` (TIMESTAMPTZ)
+
+**Constraints:**
+- UNIQUE(project_id, tag_name) - No duplicate tags per project
+- ON DELETE CASCADE: Removed when project deleted
+
+**Indexes:**
+- `idx_project_tags_project_id` on `project_id` - Join with projects
+- `idx_project_tags_tag_name` on `tag_name` - Tag filtering
+- `idx_project_tags_tag_name_lower` on `LOWER(tag_name)` - Case-insensitive search
+
+##### 37. `project_team` ⭐ NEW
+Team members assigned to design projects with roles and permissions.
+
+**Key Fields:**
+- `id` (UUID, PK)
+- `project_id` (UUID, FK → design_projects)
+- `user_id` (UUID, FK → auth.users)
+- `role` (TEXT) - Professional role (Director, Designer, Editor, etc.)
+- `department` (TEXT) - Department/area (Creative, Technical, Marketing, etc.)
+- `permission` (TEXT, NOT NULL) - view, contribute, admin
+- `added_by` (UUID, FK → auth.users) - Who added them
+- `added_at` (TIMESTAMPTZ)
+
+**Constraints:**
+- UNIQUE(project_id, user_id) - One membership per user per project
+- CHECK: permission IN (view, contribute, admin)
+- ON DELETE CASCADE: Removed when project or user deleted
+
+**Indexes:**
+- `idx_project_team_project_id` on `project_id` - Join with projects
+- `idx_project_team_user_id` on `user_id` - User's projects lookup
+- `idx_project_team_permission` on `permission` - Permission filter
+- `idx_project_team_composite` on `(project_id, permission, added_at DESC)` - Team listing
+
+##### 38. `project_files` ⭐ NEW
+File attachments for design projects (stored in Supabase Storage).
+
+**Key Fields:**
+- `id` (UUID, PK)
+- `project_id` (UUID, FK → design_projects)
+- `uploaded_by` (UUID, FK → auth.users)
+- `file_name` (TEXT, NOT NULL) - Display name (1-255 chars)
+- `file_url` (TEXT, NOT NULL) - Supabase Storage URL
+- `file_type` (TEXT) - document, image, video, audio, archive, other
+- `file_size` (INTEGER) - Size in bytes (max 20MB)
+- `description` (TEXT) - Optional description (max 500 chars)
+- `created_at` (TIMESTAMPTZ)
+
+**Constraints:**
+- CHECK: file_size <= 20971520 (20MB)
+- CHECK: file_type IN (document, image, video, audio, archive, other)
+- ON DELETE CASCADE: Removed when project deleted
+
+**Indexes:**
+- `idx_project_files_project_id` on `project_id` - Join with projects
+- `idx_project_files_uploaded_by` on `uploaded_by` - User's uploads
+- `idx_project_files_file_type` on `file_type` - Type filter
+- `idx_project_files_composite` on `(project_id, file_type, created_at DESC)` - File listing
+
+##### 39. `project_links` ⭐ NEW
+External links and references for design projects.
+
+**Key Fields:**
+- `id` (UUID, PK)
+- `project_id` (UUID, FK → design_projects)
+- `label` (TEXT, NOT NULL) - Display name (1-100 chars)
+- `url` (TEXT, NOT NULL) - Full URL (1-2000 chars)
+- `sort_order` (INTEGER) - Display order
+- `created_at` (TIMESTAMPTZ)
+
+**Constraints:**
+- ON DELETE CASCADE: Removed when project deleted
+
+**Indexes:**
+- `idx_project_links_project_id` on `project_id` - Join with projects
+- `idx_project_links_sort_order` on `(project_id, sort_order)` - Ordered display
+
+---
+
 
 ## 📦 Storage Buckets
 
@@ -837,6 +970,19 @@ Tracks which event dates an attendee selected for their RSVP.
 - **Path Structure:** `{user_id}/{event_id}/{filename}`
 - **Access:** Public read, Authenticated write (own folder only)
 - **Used For:** `whatson_events.thumbnail_url`, `whatson_events.hero_image_url`
+
+### 7. `project-assets/` (Mixed) ⭐ NEW v2.6 - PENDING IMPLEMENTATION
+- **Purpose:** Project thumbnails, hero images, files, and gallery media
+- **Max Size:** 20 MB
+- **Allowed Types:** 
+  - Images: JPEG, PNG, WebP, GIF
+  - Videos: MP4, MOV, AVI
+  - Documents: PDF, DOC, DOCX, TXT
+  - Archives: ZIP
+  - Audio: MP3, WAV
+- **Path Structure:** `{user_id}/{project_id}/{filename}`
+- **Access:** Mixed (public read for public projects, private for private projects, team for team-only projects)
+- **Used For:** `design_projects.thumbnail_url`, `design_projects.hero_image_url`, `project_files.file_url`
 
 ---
 
@@ -991,7 +1137,8 @@ WITH CHECK (
 │   ├── portfolio/route.js                       # POST portfolio
 │   ├── profile-photo/route.js                   # POST photo
 │   ├── collab-cover/route.js                    # POST collab cover ⭐ NEW v2.2
-│   └── slate-media/route.js                     # POST slate media ⭐ NEW v2.4
+│   ├── slate-media/route.js                     # POST slate media ⭐ NEW v2.4
+│   └── project-asset/route.js                   # POST project assets ⭐ NEW v2.6
 ├── gigs/
 │   ├── route.js                                 # GET/POST gigs
 │   └── [id]/
@@ -1031,17 +1178,31 @@ WITH CHECK (
 │   │   └── save/route.js                    # POST save, DELETE unsave
 │   └── comment/
 │       └── [commentId]/route.js             # PATCH edit, DELETE delete
-└── whatson/ ⭐ NEW (v2.5)
+├── whatson/ ⭐ NEW (v2.5)
+│   ├── route.js                             # POST create, GET list all
+│   ├── my/route.js                          # GET user's events
+│   ├── rsvps/
+│   │   └── my/route.js                      # GET user's RSVPs
+│   └── [id]/
+│       ├── route.js                         # GET details, PATCH update, DELETE
+│       └── rsvp/
+│           ├── route.js                     # POST create, DELETE cancel
+│           ├── list/route.js                # GET event RSVPs (creator only)
+│           └── export/route.js              # GET export RSVP data (creator only)
+└── projects/ ⭐ NEW (v2.6) - PENDING IMPLEMENTATION
     ├── route.js                             # POST create, GET list all
-    ├── my/route.js                          # GET user's events
-    ├── rsvps/
-    │   └── my/route.js                      # GET user's RSVPs
+    ├── my/route.js                          # GET user's projects
     └── [id]/
         ├── route.js                         # GET details, PATCH update, DELETE
-        └── rsvp/
-            ├── route.js                     # POST create, DELETE cancel
-            ├── list/route.js                # GET event RSVPs (creator only)
-            └── export/route.js              # GET export RSVP data (creator only)
+        ├── team/
+        │   ├── route.js                     # GET list, POST add
+        │   └── [userId]/route.js            # PATCH update, DELETE remove
+        ├── files/
+        │   ├── route.js                     # GET list files
+        │   └── [fileId]/route.js            # DELETE file
+        └── links/
+            ├── route.js                     # GET list, POST add
+            └── [linkId]/route.js            # DELETE link
 ```
 
 ### Request/Response Format
