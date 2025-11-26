@@ -67,34 +67,37 @@ export default function WhatsOnHeader() {
     return (
         <>
             <div className="">
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">{"What's On"}</span>
-                    <Link href="/whats-on/manage-whats-on" className="ml-2 text-white bg-[#31A7AC] border rounded-[10px] px-4 py-2 ">Manage What’s on</Link>
+                    <Link href="/whats-on/manage-whats-on" className="inline-flex items-center justify-center rounded-[10px] border bg-[#31A7AC] px-4 py-2 text-white transition hover:bg-[#279497]">Manage What’s on</Link>
                 </div>
 
-                <div className="flex flex-row justify-center items-center space-x-4 mt-4 mb-6 w-full">
-                    <div
-                        className={`flex items-center justify-center space-x-2 h-[48px] border rounded-full px-4 py-2 cursor-pointer transition-all ${isFilterOpen ? 'w-[300px] bg-[#FA6E80]' : 'w-[150px] bg-[#f7f7f700] border-[#FA6E80] '}`}
+                <div className="mt-4 mb-6 flex w-full flex-row gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <button
+                        className={`flex flex-row w-40 sm:w-[273px] h-12 items-center justify-center gap-1 rounded-full border px-2 text-sm font-medium transition ${isFilterOpen ? "bg-[#FA6E80] text-white border-[#FA6E80]" : "bg-transparent text-[#FA6E80] border-[#FA6E80]"}`}
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                     >
-                        <button className={`text-sm font-medium ${isFilterOpen ? 'text-white' : 'text-[#FA6E80]'}`}>Filter (<span>{"3"}</span>)</button>
-                        <Filter className={`h-5 w-5 ${isFilterOpen ? 'text-white' : 'text-[#FA6E80]'}`} />
-                    </div>
-                    <div className="flex flex-row border rounded-full px-4 py-2 justify-center items-center h-[48px] w-[960px]">
+                        <span>
+                            Filter (<span>3</span>)
+                        </span>
+                        <Filter className="h-5 w-5" />
+                    </button>
+                    <div className="flex h-12 flex-row w-full items-center justify-between rounded-full border px-2 py-2">
                         <input
+                            type="text"
                             placeholder="Search by name, role, or department..."
-                            className="w-full border-none outline-none focus:ring-0 text-sm"
-                            onChange={(e) => console.log(e.target.value)} // Add onChange handler
+                            className="border-none w-[calc(100%-3rem)] text-sm outline-none focus:ring-0"
+                            onChange={(e) => console.log(e.target.value)}
                         />
-                        <span className="flex items-center justify-center border rounded-full h-[34px] w-[34px] bg-[#FA6E80]">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FA6E80]">
                             <Search className="h-5 w-5 text-white" />
                         </span>
                     </div>
 
                 </div>
-                <div className="flex flex-row w-full">
-                    {isFilterOpen && (
-                        <div className="h-screen max-w-[280px] w-full overflow-y-auto p-4 space-y-2">
+                <div className="flex w-full flex-col gap-5 lg:flex-row">
+                    <div className={`${isFilterOpen ? 'flex' : 'hidden lg:flex'} w-full flex-col gap-4 rounded-[16px] border border-gray-100 bg-white/70 p-4 lg:max-w-[320px] lg:overflow-y-auto lg:[max-height:calc(100vh-200px)]`}>
+                        {isFilterOpen && (
                             <form onSubmit={handleFilterSubmit} className="space-y-5 rounded-[10px] border bg-white p-4 text-[#017A7C] shadow-sm">
                                 <div className="flex gap-3">
                                     {["free", "paid"].map((price) => (
@@ -221,9 +224,18 @@ export default function WhatsOnHeader() {
                                     </button>
                                 </div>
                             </form>
+                        )}
+                        <div className="space-y-2">
+                            {!isFilterOpen && (
+                                <p className="rounded-md border border-dashed border-[#FA6E80]/40 bg-white/70 p-3 text-sm text-[#017A7C] lg:hidden">
+                                    Open filters to fine-tune events on smaller screens.
+                                </p>
+                            )}
                         </div>
-                    )}
-                    <div className=" h-screen w-full overflow-hidden"><WhatsOnMainContent /></div>
+                    </div>
+                    <div className="w-full flex-1 overflow-hidden rounded-[16px] border border-gray-100 bg-white/80 p-2 sm:p-4">
+                        <WhatsOnMainContent />
+                    </div>
                 </div>
 
             </div>

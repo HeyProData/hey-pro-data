@@ -78,7 +78,7 @@ const createEvent = (id: string, title: string, location: string, isPaid: boolea
     host: {
         name: "Cinema Studio",
         organization: "Cinema Studio",
-        avatar: "/assets/whatson/host-avatar.svg",
+        avatar: "/whats-on.png",
     },
     schedule: baseSchedule,
     description: baseDescription,
