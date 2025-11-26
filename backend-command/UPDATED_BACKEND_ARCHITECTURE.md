@@ -5,7 +5,7 @@
 This document provides a comprehensive overview of the **UPDATED** backend architecture including all profile-related enhancements.
 
 **Last Updated:** January 2025  
-**Version:** 2.0 (Updated with Profile Schema)
+**Version:** 2.1 (Updated with Explore/Search Feature)
 
 ---
 
@@ -37,6 +37,7 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
 │  │  /home       │  │  Navbar      │  │  useAuth     │            │
 │  │  /gigs       │  │  Cards       │  │  useGigs     │            │
 │  │  /profile    │  │  Modals      │  │  useProfile  │            │
+│  │  /explore ⭐ │  │  Filters     │  │  useSearch   │            │
 │  └──────────────┘  └──────────────┘  └──────────────┘            │
 │                                                                     │
 │                    ▼ API Calls with JWT                            │
@@ -63,7 +64,7 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    API ROUTES (31+ Endpoints)                       │
+│                    API ROUTES (34+ Endpoints)                       │
 │                                                                     │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
 │  │ Gigs (5)     │  │ Profile (4+) │  │ Skills (3)   │            │
@@ -74,6 +75,13 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │
 │  │ Uploads (3)  │  │ Contacts (3) │  │ Referrals(2) │            │
 │  └──────────────┘  └──────────────┘  └──────────────┘            │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────┐            │
+│  │ Explore/Search (3) ⭐ NEW v2.1                    │            │
+│  │ - GET /api/explore (search & filter)              │            │
+│  │ - GET /api/explore/categories                     │            │
+│  │ - GET /api/explore/[userId]                       │            │
+│  └──────────────────────────────────────────────────┘            │
 └─────────────────────────────────────────────────────────────────────┘
                                │
                                ▼
@@ -113,7 +121,7 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
 
 #### PROFILE TABLES (10 Tables)
 
-##### 1. `user_profiles` ⭐ UPDATED
+##### 1. `user_profiles` ⭐ UPDATED (Version 2.1)
 Stores user profile information linked to authentication.
 
 **Key Fields:**
@@ -125,10 +133,18 @@ Stores user profile information linked to authentication.
 - `country_code` ⭐ NEW - Phone country code (ISO)
 - `profile_photo_url`, `banner_url`
 - `country`, `city`
-- `availability` ⭐ NEW - Work status (Available/Not Available)
+- `availability` ⭐ NEW - Work status (Available/Not Available/Booked)
 - `profile_completion_percentage` ⭐ NEW - 0-100 completion score
 - `is_profile_complete` (Boolean)
 - `updated_at` ⭐ NEW - Last update timestamp
+
+**Explore Feature Fields (v2.1):** ⭐ NEW
+- `experience_level` - Skill level (Intern/Learning|Assisted/Competent|Independent/Expert|Lead)
+- `day_rate` - Daily rate for work (integer)
+- `rate_currency` - Currency code (AED, USD, EUR, etc.)
+- `production_types` - Array of production types (commercial, tv, film, social)
+- `visible_in_explore` - Boolean flag for explore visibility
+- `primary_category` - Main role category for filtering (Director, Cinematographer, etc.)
 
 **Indexes:**
 - Primary key on `user_id`
@@ -565,9 +581,13 @@ WITH CHECK (
 │       └── applications/
 │           ├── route.js                         # GET applications
 │           └── [applicationId]/status/route.js  # PATCH status
-└── applications/
-    ├── my/route.js                              # GET my apps
-    └── [id]/route.js                            # GET app details
+├── applications/
+│   ├── my/route.js                              # GET my apps
+│   └── [id]/route.js                            # GET app details
+└── explore/ ⭐ NEW (v2.1)
+    ├── route.js                             # GET search & filter profiles
+    ├── categories/route.js                  # GET all categories
+    └── [userId]/route.js                    # GET profile details
 ```
 
 ### Request/Response Format
@@ -842,6 +862,169 @@ Response: { "status": "ok", "timestamp": "2025-01-15T10:00:00Z" }
 
 ---
 
+## 🔍 Explore/Crew Directory Feature (v2.1)
+
+### Overview
+The Explore section (also called Crew Directory) allows users to discover and search for crew members based on various criteria including roles, location, experience, availability, and day rates.
+
+### Frontend Location
+- **Path:** `/app/(app)/(explore)/`
+- **Main Pages:**
+  - `/explore` - Browse all crew profiles
+  - `/explore/[slug]` - Browse by category (Director, Cinematographer, etc.)
+- **Components:**
+  - `template.tsx` - Filter sidebar and search bar
+  - Profile card display with avatar, banner, name, location, bio, roles
+
+### Backend Requirements
+
+#### Database Fields (user_profiles)
+| Field | Type | Purpose | Example |
+|-------|------|---------|---------|
+| `experience_level` | TEXT (enum) | Skill level | "Competent \| Independent" |
+| `day_rate` | INTEGER | Daily rate | 1500 |
+| `rate_currency` | TEXT | Currency code | "AED" |
+| `production_types` | TEXT[] | Production types | ["commercial", "tv"] |
+| `visible_in_explore` | BOOLEAN | Explore visibility | true |
+| `primary_category` | TEXT | Main role category | "Director" |
+
+#### API Endpoints
+
+##### 1. GET /api/explore
+**Purpose:** Search and filter crew profiles
+
+**Query Parameters:**
+- `keyword` - Search in name, bio, roles
+- `role` - Filter by specific role
+- `category` - Filter by primary category
+- `availability` - Filter by availability status
+- `productionType` - Filter by production type
+- `location` - Search in country/city
+- `experienceLevel` - Filter by experience level
+- `minRate` / `maxRate` - Rate range filter
+- `page` / `limit` - Pagination
+- `sortBy` / `sortOrder` - Sorting
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "profiles": [
+      {
+        "id": "uuid",
+        "name": "John Doe",
+        "location": "UAE, Dubai",
+        "summary": "Award-winning cinematographer...",
+        "roles": ["Director", "Director | Commercial"],
+        "availability": "Available",
+        "category": "Director",
+        "slug": "director",
+        "bgimage": "https://...",
+        "avatar": "https://...",
+        "dayRate": 2000,
+        "rateCurrency": "AED",
+        "experienceLevel": "Expert | Lead",
+        "productionTypes": ["commercial", "tv"]
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalProfiles": 87,
+      "limit": 20
+    }
+  }
+}
+```
+
+##### 2. GET /api/explore/categories
+**Purpose:** Get all role categories with counts
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "categories": [
+      {
+        "slug": "director",
+        "title": "Director",
+        "count": 25,
+        "roles": ["Director", "Director | Commercial", "Assistant Director"]
+      }
+    ]
+  }
+}
+```
+
+##### 3. GET /api/explore/[userId]
+**Purpose:** Get detailed profile for a specific user
+
+**Response:** Complete profile object with all relations
+
+### Filter Options
+
+#### Role Categories (15 main categories)
+1. **Director** - Director, Director | Commercial, Assistant Director, 1st/2nd/3rd AD
+2. **Cinematographer** - Cinematographer, DP, Camera Operator, 1st/2nd AC, DIT, Steadicam, Gimbal, Drone
+3. **Editor** - Editor, Assistant Editor, Colorist, VFX Artist, Motion Graphics, Sound Editor
+4. **Producer** - Producer, Executive Producer, Line Producer, PM, Coordinator, PA
+5. **Writer** - Writer, Screenwriter, Script Supervisor, Story Editor
+6. **Production Designer** - Production Designer, Art Director, Set Designer, Set Decorator, Props, Costume, Makeup, Hair
+7. **Sound Designer** - Sound Designer, Sound Mixer, Boom Operator, Location Sound
+8. **Camera Operator** - Camera Operator, Steadicam, Gimbal, Drone
+9. **Gaffer** - Gaffer, Key Gaffer, Best Boy, Grips
+10. **Location Scout** - Location Scout, Location Assistant
+11. **VFX Artist** - VFX Artist, VFX Supervisor, VFX Assistant
+12. **Colorist** - Colorist, Color Timer, Color Grading/Correction
+13. **Sound Engineer** - Sound Engineer, Sound Technician
+14. **Makeup Artist** - Makeup Artist (various specializations)
+15. **Other** - Miscellaneous roles
+
+#### Experience Levels
+- **Intern** - Helped on set, shadowed role
+- **Learning | Assisted** - Assisted the role under supervision
+- **Competent | Independent** - Can handle role solo
+- **Expert | Lead** - Leads team, multiple projects
+
+#### Production Types
+- Commercial
+- TV
+- Film
+- Social / Digital
+
+#### Other Filters
+- **Availability:** Available, Not Available, Booked
+- **Location:** Free text search
+- **Rate Range:** 0 - 5000+ (with currency)
+
+### Implementation Status
+- ✅ Frontend UI complete with hardcoded data
+- ⏳ Backend database fields (pending - see implementation plan)
+- ⏳ API endpoints (pending - see implementation plan)
+- ⏳ Frontend-backend integration (pending - see implementation plan)
+
+### Implementation Guide
+See detailed step-by-step guide:
+- **`backend-command/explore/01_EXPLORE_BACKEND_IMPLEMENTATION_PLAN.md`**
+
+---
+
+## 🆕 What's New in Version 2.1
+
+### Explore/Search Feature
+- ✅ Analyzed frontend explore section requirements
+- ✅ Identified 6 new database fields needed for user_profiles
+- ✅ Designed 3 new API endpoints for search and discovery
+- ✅ Created comprehensive implementation plan
+- ✅ Documented filter options and data structures
+- ⏳ Database migration pending
+- ⏳ API implementation pending
+- ⏳ Frontend integration pending
+
+---
+
 ## 🆕 What's New in Version 2.0
 
 ### Schema Changes
@@ -909,7 +1092,7 @@ Refer to the following documents for detailed information:
 5. **FRONTEND_INTEGRATION_CHECKLIST.md** - Step-by-step implementation
 6. **COMMON_PITFALLS_AND_SOLUTIONS.md** - Troubleshooting guide
 
-### Profile Schema Documentation (New) ⭐
+### Profile Schema Documentation (Version 2.0) ⭐
 7. **backend-command/profile/01_analysis.md** - Gap analysis
 8. **backend-command/profile/02_alter_commands.sql** - ALTER statements
 9. **backend-command/profile/03_create_tables.sql** - CREATE statements
@@ -917,6 +1100,9 @@ Refer to the following documents for detailed information:
 11. **backend-command/profile/05_execution_plan.md** - Execution guide
 12. **backend-command/profile/06_schema_diagram.md** - Visual schema
 13. **backend-command/profile/07_quick_reference.md** - Quick reference
+
+### Explore/Search Documentation (Version 2.1) ⭐ NEW
+14. **backend-command/explore/01_EXPLORE_BACKEND_IMPLEMENTATION_PLAN.md** - Complete implementation guide
 
 ---
 
@@ -929,10 +1115,10 @@ Refer to the following documents for detailed information:
 | Total Tables | 18 |
 | Profile Tables | 10 |
 | Gigs/Application Tables | 8 |
-| Total Indexes | 30+ |
-| Total RLS Policies | 60+ |
+| Total Indexes | 35+ (⭐ +5 for explore v2.1) |
+| Total RLS Policies | 62+ (⭐ +2 for explore v2.1) |
 | Storage Buckets | 3 |
-| API Endpoints | 40+ |
+| API Endpoints | 43+ (⭐ +3 for explore v2.1) |
 
 ### Code Coverage
 
@@ -948,7 +1134,13 @@ Refer to the following documents for detailed information:
 
 ---
 
-**Document Version:** 2.0.0  
+**Document Version:** 2.1.0  
 **Last Updated:** January 2025  
-**Backend Status:** ✅ Production Ready (Updated with Profile Schema)  
-**Database Schema:** ✅ 18 Tables (10 Profile + 8 Gigs/Apps)
+**Backend Status:** ✅ Production Ready (Profile Schema) | ⏳ Explore Feature (Implementation Planned)  
+**Database Schema:** ✅ 18 Tables (10 Profile + 8 Gigs/Apps) | ⏳ +6 Fields for Explore  
+**API Endpoints:** ✅ 40+ Existing | ⏳ +3 Explore Endpoints Planned
+
+### Recent Updates
+- **v2.1 (Explore/Search):** Added comprehensive implementation plan for crew directory feature
+- **v2.0 (Profile Schema):** Enhanced profile system with 8 new tables and advanced features
+- **v1.0 (Core System):** Initial gigs, applications, and authentication system
