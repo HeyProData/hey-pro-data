@@ -122,7 +122,7 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                                 size="icon"
                                 variant="ghost"
                                 onClick={handleAddLanguage}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[10px] text-white hover:bg-[#34A353] bg-[#34A353]"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[10px] text-white hover:bg-[#31A7AC] bg-[#31A7AC]"
                                 aria-label="Add language"
                             >
                                 <Plus className="h-[40px] w-[40px] " color="white" />
@@ -130,7 +130,7 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                         </div>
 
                         {tempLanguages.length > 0 && (
-                            <div className="space-y-2">
+                            <div className="space-y-2 bg-white max-w-72">
                                 <p className="text-sm font-medium text-muted-foreground">Added Languages:</p>
                                 <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
                                     {tempLanguages.map((language) => (
@@ -138,7 +138,7 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                                             key={language.name}
                                             className="flex items-center justify-between gap-3 p-3  bg-white"
                                         >
-                                            <span className="text-base font-medium whitespace-nowrap flex-shrink-0 rounded-xl border border-[#31A7AC] w-[259px] h-[41px] items-center justify-start px-4 mx-auto flex  ">
+                                            <span className="text-base font-medium whitespace-nowrap flex-shrink-0 rounded-xl border border-[#31A7AC] min-w-[100px] max-w-[259px] h-[41px] items-center justify-start px-4 mx-auto flex  ">
                                                 {language.name}
                                             </span>
 
@@ -192,7 +192,7 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                         )}
                     </div>
 
-                    <DialogFooter className="mt-6 flex gap-3 ">
+                    <DialogFooter className="mt-6 flex flex-row gap-3 ">
                         <DialogClose asChild>
                             <Button variant="outline" className="border-[#31A7AC] text-[#31A7AC] w-[128px] h-[44px] rounded-[16px]">
                                 Cancel
