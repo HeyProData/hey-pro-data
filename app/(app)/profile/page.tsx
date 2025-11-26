@@ -158,11 +158,12 @@ export default function Profile() {
                       phoneNumber={profile.phoneNumber}
                     />
                   </div>
+
+                  <div className="flex-none">
+                    <RoleDialog />
+                  </div>
                   <div className="flex-none ">
                     <AvalableCountryForTravel availableCountries={profile.AvailableCountriesForTravel} />
-                  </div>
-                  <div>
-                    <RoleDialog />
                   </div>
                 </div>
                 {showLeftArrow && (

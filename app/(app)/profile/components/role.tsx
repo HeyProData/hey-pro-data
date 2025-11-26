@@ -55,76 +55,75 @@ export function RoleDialog() {
     }
 
     return (
-        <div className="rounded-[24px] border">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+        <>
+            <Dialog open={open} onOpenChange={handleOpenChange}>
+                <DialogTrigger asChild>
+                    <div
 
-                <Dialog open={open} onOpenChange={handleOpenChange}>
-                    <DialogTrigger asChild>
-                        <DialogTrigger asChild>
-                            <div className="flex flex-row gap-5 h-[44px] w-auto text-base font-medium rounded-[15px]  bg-transparent border px-9 justify-center items-center cursor-pointer hover:bg-muted/50 border-[#444444] ">
-                                Roles
-                            </div>
-                        </DialogTrigger>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[420px] rounded-[24px]">
-                        <DialogHeader>
-                            <DialogTitle className="flex items-start mt-10">Roles</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 -mt-15">
-                            <p className="text-sm font[400] text-slate-500">Let people know what all language you speak.</p>
-                            <div className="flex justify-center items-center gap-2 w-full border border-[#31A7AC] h-[41px] rounded-[15px]">
-                                <Input
-                                    value={newRole}
-                                    onChange={(event) => setNewRole(event.target.value)}
-                                    placeholder="e.g. Cinematographer"
-                                    onKeyDown={(event) => {
-                                        if (event.key === "Enter") {
-                                            event.preventDefault()
-                                            handleAddRole()
-                                        }
-                                    }}
-                                    className=" border-none focus:ring-0"
-                                />
-                                <Button type="button" className="bg-transparent" onClick={handleAddRole}>
-                                    <Plus className="h-7 w-7 text-[#31A7AC]" />
-                                </Button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {draftRoles.length === 0 && (
-                                    <p className="text-xs text-slate-400">No roles yet.</p>
-                                )}
-                                {draftRoles.map((role) => (
-                                    <span
-                                        key={role}
-                                        className="inline-flex items-center gap-2 rounded-[15px] border border-[#31A7AC] h-[41px] px-3 py-1 text-sm text-slate-700"
-                                    >
-                                        {role}
-                                        <button
-                                            type="button"
-                                            className="text-xs text-slate-400 hover:text-slate-600"
-                                            onClick={() => handleRemoveRole(role)}
-                                            aria-label={`Remove ${role}`}
-                                        >
-                                            ✕
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                        <DialogFooter className=" flex flex-row justify-start items-start">
-                            <DialogClose asChild>
-                                <Button type="button" className="h-[44px] w-[128px] rounded-[15px] border-[#31A7AC]" variant="outline">
-                                    <span className="text-[#31A7AC]">Cancel</span>
-                                </Button>
-                            </DialogClose>
-                            <Button type="button" className="h-[44px] rounded[15px] bg-[#31A7AC]" onClick={handleSaveRoles}>
-                                Save roles
+                        className="flex flex-row gap-5 h-[44px] w-auto text-base font-[400] rounded-[15px]  bg-transparent border px-9 justify-start items-center cursor-pointer hover:bg-muted/50 border-[#444444] "
+                    >
+                        Role
+                    </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[420px] rounded-[24px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-start mt-10">Roles</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 -mt-15">
+                        <p className="text-sm font[400] text-slate-500">Let people know what all language you speak.</p>
+                        <div className="flex justify-center items-center gap-2 w-full border border-[#31A7AC] h-[41px] rounded-[15px]">
+                            <Input
+                                value={newRole}
+                                onChange={(event) => setNewRole(event.target.value)}
+                                placeholder="e.g. Cinematographer"
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter") {
+                                        event.preventDefault()
+                                        handleAddRole()
+                                    }
+                                }}
+                                className=" border-none focus:ring-0"
+                            />
+                            <Button type="button" className="bg-transparent" onClick={handleAddRole}>
+                                <Plus className="h-7 w-7 text-[#31A7AC]" />
                             </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {draftRoles.length === 0 && (
+                                <p className="text-xs text-slate-400">No roles yet.</p>
+                            )}
+                            {draftRoles.map((role) => (
+                                <span
+                                    key={role}
+                                    className="inline-flex items-center gap-2 rounded-[15px] border border-[#31A7AC] h-[41px] px-3 py-1 text-sm text-slate-700"
+                                >
+                                    {role}
+                                    <button
+                                        type="button"
+                                        className="text-xs text-slate-400 hover:text-slate-600"
+                                        onClick={() => handleRemoveRole(role)}
+                                        aria-label={`Remove ${role}`}
+                                    >
+                                        ✕
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                    <DialogFooter className=" flex flex-row justify-start items-start">
+                        <DialogClose asChild>
+                            <Button type="button" className="h-[44px] w-[128px] rounded-[15px] border-[#31A7AC]" variant="outline">
+                                <span className="text-[#31A7AC]">Cancel</span>
+                            </Button>
+                        </DialogClose>
+                        <Button type="button" className="h-[44px] rounded[15px] bg-[#31A7AC]" onClick={handleSaveRoles}>
+                            Save roles
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
 
-        </div>
+
     )
 }
