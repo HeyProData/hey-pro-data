@@ -207,8 +207,8 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
     return (
         <>
             <div className="">
-                <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">Crew Directory</span>
-                <div className="mt-4 mb-6 flex w-full flex-row gap-3 md:flex-row md:items-center">
+                <span className="hidden md:inline-block bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">Crew Directory</span>
+                <div className="sticky top-0 z-20 flex w-full flex-row gap-3 rounded-2xl bg-white/90 p-4 shadow-sm backdrop-blur sm:flex-row sm:items-center">
                     <button
                         className={`flex h-12 w-auto items-center justify-between rounded-full border px-4 py-2 text-sm font-medium transition-all whitespace-nowrap ${isFilterOpen ? 'bg-[#FA6E80] text-white border-[#FA6E80]' : 'bg-transparent text-[#FA6E80] border-[#FA6E80]'}`}
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -222,7 +222,7 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                         <input
                             type="text"
                             placeholder="Search by name, role, or department..."
-                            className="w-full border-none bg-transparent text-sm outline-none focus:ring-0"
+                            className="border-none w-[calc(100%-3rem)] text-sm outline-none focus:ring-0"
                             onChange={(e) => console.log(e.target.value)}
                         />
                         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FA6E80]">

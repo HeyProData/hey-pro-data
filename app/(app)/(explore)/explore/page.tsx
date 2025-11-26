@@ -30,44 +30,9 @@ const AVAILABILITY_COPY: Record<MixedProfile["availability"], { label: string; c
 
 export default function ExplorePage() {
     const profiles = buildMixedProfiles()
-    const totalProfiles = profiles.length
-    const availableProfiles = profiles.filter((profile) => profile.availability === "available").length
 
     return (
         <section className="space-y-10">
-            <header className="space-y-6 rounded-3xl border border-slate-100 bg-white/90 p-8 shadow-[0_25px_65px_rgba(4,42,61,0.05)]">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div className="space-y-3">
-                        <p className="text-xs uppercase tracking-[0.2em] text-emerald-600">Explore talent</p>
-                        <h1 className="text-4xl font-semibold text-slate-900">Mixed Crew Directory</h1>
-                        <p className="max-w-3xl text-base text-slate-600">
-                            Browse a blended lineup of directors, producers, and production managers trusted across MENA.
-                            Use this view when you need inspiration or want to message multiple disciplines at once.
-                        </p>
-                    </div>
-                    <div className="flex gap-6 text-sm text-slate-600">
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-slate-400">Profiles</p>
-                            <p className="text-2xl font-semibold text-slate-900">{totalProfiles}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-slate-400">Available now</p>
-                            <p className="text-2xl font-semibold text-slate-900">{availableProfiles}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex flex-wrap gap-3 text-sm text-slate-500">
-                    {Array.from(new Set(profiles.map((profile) => profile.category))).map((category) => (
-                        <span
-                            key={category}
-                            className="rounded-full border border-[#31A7AC]/40 bg-[#F0FBFB] px-4 py-1 text-[#017A7C]"
-                        >
-                            {category}
-                        </span>
-                    ))}
-                </div>
-            </header>
-
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {profiles.map((profile) => {
                     const availabilityCopy = AVAILABILITY_COPY[profile.availability]
