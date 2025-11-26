@@ -409,7 +409,7 @@ export default function Header() {
             <Compass className="h-6 w-6" />
           </Link>
           <Link
-            href="/"
+            href="/explore"
             className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             onClick={() => {
               setChatOpen(false)
@@ -420,7 +420,7 @@ export default function Header() {
             <Search className="h-6 w-6" />
           </Link>
           <Link
-            href="/jobs"
+            href="/gigs"
             className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             onClick={() => {
               setChatOpen(false)
@@ -431,7 +431,7 @@ export default function Header() {
             <Briefcase className="h-6 w-6" />
           </Link>
           <Link
-            href="/events"
+            href="/collab"
             className="flex flex-col items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             onClick={() => {
               setChatOpen(false)
