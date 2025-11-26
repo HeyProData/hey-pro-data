@@ -200,7 +200,7 @@ export default function ShortProfile({ Profile }: { Profile: ProfileDataTypes })
                     {highlightedRoles.map((role) => (
                         <span
                             key={role}
-                            className="rounded-[29px] bg-[#FA6E80] px-4 py-1 text-xs font-medium uppercase tracking-wide text-white"
+                            className="flex items-center rounded-[29px] h-[19px] bg-[#FA6E80] px-4 py-1 text-[10px] font-[400] tracking-wide text-white"
                         >
                             {role}
                         </span>
