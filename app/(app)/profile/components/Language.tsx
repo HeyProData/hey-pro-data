@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import { Separator } from "@/components/ui/separator"
 
 interface Language {
     name: string;
@@ -91,20 +92,17 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                 <DialogTrigger asChild>
                     <div
                         onClick={handleOpenLanguagesDialog}
-                        className="flex flex-row gap-5 h-[44px] w-auto text-base font-medium rounded-[15px]  bg-transparent border px-9 justify-center items-center cursor-pointer hover:bg-muted/50 border-[#444444] "
+                        className="flex flex-row gap-5 h-[44px] w-auto text-base font-[400] rounded-[15px]  bg-transparent border px-9 justify-start items-center cursor-pointer hover:bg-muted/50 border-[#444444] "
                     >
                         Language
                     </div>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
+                <DialogContent className="">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-bold">Languages</DialogTitle>
-                        {/* <DialogDescription>
-                            Showcase your linguistic skills to employers. Add the languages you speak.
-                        </DialogDescription> */}
+                        <DialogTitle className="text-[22px] font-[400] flex items-start justify-start">Languages</DialogTitle>
                     </DialogHeader>
-                    <div className="mt-4 space-y-4">
-                        <div className="relative">
+                    <div className="space-y-4 -mt-15">
+                        <div className="relative flex flex-row gap-2  items-center">
                             <Input
                                 placeholder="Enter a language (e.g., English, Spanish)"
                                 value={newLanguage}
@@ -115,30 +113,29 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                                         handleAddLanguage()
                                     }
                                 }}
-                                className="flex-1 h-11 rounded-full w-full pr-12 focus-visible:border-[#31A7AC] focus-visible:ring-ring/10 border-[#31A7AC]"
+                                className="flex-1 h-[41px] rounded-[15px] w-full pr-12 focus-visible:border-[#31A7AC] focus-visible:ring-ring/10 border-[#31A7AC]"
                             />
                             <Button
                                 type="button"
                                 size="icon"
                                 variant="ghost"
                                 onClick={handleAddLanguage}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-[10px] text-white hover:bg-[#31A7AC] bg-[#31A7AC]"
+                                className="h-[40px] w-[40px] rounded-[15px] text-white  bg-[#34A353]"
                                 aria-label="Add language"
                             >
                                 <Plus className="h-[40px] w-[40px] " color="white" />
                             </Button>
                         </div>
-
+                        <Separator className="border border-[#959595]" />
                         {tempLanguages.length > 0 && (
                             <div className="space-y-2 bg-white max-w-72">
-                                <p className="text-sm font-medium text-muted-foreground">Added Languages:</p>
-                                <div className="flex flex-col gap-3 max-h-96 overflow-y-auto">
+                                <div className="flex flex-col gap-[10px] max-h-96 overflow-y-auto">
                                     {tempLanguages.map((language) => (
                                         <div
                                             key={language.name}
                                             className="flex items-center justify-between gap-3 p-3  bg-white"
                                         >
-                                            <span className="text-base font-medium whitespace-nowrap flex-shrink-0 rounded-xl border border-[#31A7AC] min-w-[100px] max-w-[259px] h-[41px] items-center justify-start px-4 mx-auto flex  ">
+                                            <span className="text-base font-[400] whitespace-nowrap flex-shrink-0 rounded-xl border border-[#31A7AC] min-w-[100px] max-w-[259px] h-[41px] items-center justify-start px-4 mx-auto flex  ">
                                                 {language.name}
                                             </span>
 
@@ -149,7 +146,7 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                                                     variant="ghost"
                                                     onClick={() => handleToggleSkill(language.name, 'speak')}
                                                     className={`h-[40px] w-[40px] rounded-xl ${language.canSpeak
-                                                        ? 'bg-[#31A7AC] hover:bg-[#31A7AC]/90 text-white'
+                                                        ? 'bg-[#FA6E80] hover:bg-[#31A7AC]/90 text-white'
                                                         : 'bg-gray-100 hover:bg-gray-200 text-gray-400'
                                                         }`}
                                                     aria-label={`Toggle speaking ${language.name}`}
@@ -178,7 +175,7 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                                                     size="icon"
                                                     variant="ghost"
                                                     onClick={() => handleRemoveLanguage(language.name)}
-                                                    className="h-[40px] w-[40px] rounded-xl text-red-500"
+                                                    className="h-[40px] w-[40px] rounded-xl text-black"
                                                     aria-label={`Remove ${language.name}`}
                                                     title="Delete Language"
                                                 >
@@ -192,13 +189,13 @@ export default function AddLanguageSection({ languages: initialLanguages }: { la
                         )}
                     </div>
 
-                    <DialogFooter className="mt-6 flex flex-row gap-3 ">
+                    <DialogFooter className=" flex flex-row gap-3 ">
                         <DialogClose asChild>
-                            <Button variant="outline" className="border-[#31A7AC] text-[#31A7AC] w-[128px] h-[44px] rounded-[16px]">
+                            <Button variant="outline" className="border-[#31A7AC] text-[#31A7AC] w-[128px] h-[41px] rounded-[16px]">
                                 Cancel
                             </Button>
                         </DialogClose>
-                        <Button onClick={handleSaveLanguages} className="bg-[#31A7AC] hover:bg-[#31A7AC] w-[128px] h-[44px] text-[#FFFFFF] rounded-[16px]">
+                        <Button onClick={handleSaveLanguages} className="bg-[#31A7AC] hover:bg-[#31A7AC] w-[128px] h-[41px] text-[#FFFFFF] rounded-[16px]">
                             Save
                         </Button>
                     </DialogFooter>
