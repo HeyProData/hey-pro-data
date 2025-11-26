@@ -6,7 +6,7 @@ import Link from "next/link"
 const MainGigHeader = () => {
     return (
         <div className="space-y-4 fixed flex flex-col max-w-6xl w-full mx-auto -mt-4.5 z-10 bg-white">
-            <div className="flex flex-row justify-between items-start gap-4 p-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 p-4">
                 <div className="flex flex-col gap-1">
                     <span className="text-lg font-semibold">Top Gigs For You</span>
                     <span className="text-sm text-muted-foreground">

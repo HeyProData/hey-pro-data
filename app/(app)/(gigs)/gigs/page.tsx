@@ -15,7 +15,7 @@ export default function GigsPage() {
         <>
             <MainGigHeader />
             <div className="px-4 pb-10 overflow-x-auto">
-                <section className="mx-auto max-w-5xl mt-25">
+                <section className="mx-auto max-w-5xl mt-40 sm:mt-25">
                     <form
                         onSubmit={(event) => event.preventDefault()}
                         className="relative flex h-[52px] w-full items-center justify-center rounded-full border border-[#FA6E80] bg-white"
