@@ -1,463 +1,573 @@
 /** @format */
 
 "use client";
-
-import { useState } from "react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
-
-import { Textarea } from "@/components/ui/textarea";
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
-    DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Menu, X, GripVertical, CalendarIcon, Upload, ImageIcon } from "lucide-react";
 import {
-    DndContext,
-    closestCenter,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
-    type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    useSortable,
-    verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { toast } from "sonner";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-
-export interface Credit {
-    id: string;
-    creditTitle: string;
-    startDate?: Date;
-    endDate?: Date;
-    description: string;
-    image?: string | null;
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toast } from "sonner";
+import { CalendarIcon, Upload, ChevronDownIcon } from "lucide-react";
+import Image from "next/image";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
+import React from "react";
+interface CreditsEditorProps {
+    trigger: React.ReactNode;
+    initialCredits?: {
+        id: string;
+        creditTitle: string;
+        description: string;
+        startDate: Date;
+        endDate: Date;
+        imgUrl?: string;
+    }[];
 }
 
-function SortableCreditItem({ credit }: { credit: Credit }) {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id: credit.id });
+const defaultCreditForm = {
+    productionType: "",
+    role: "",
+    projectTitle: "",
+    brandClient: "",
+    localCompany: "",
+    internationalCompany: "",
+    country: "",
+    releaseYear: "",
+    isUnreleased: false,
+    startDate: "",
+    endDate: "",
+    description: "",
+    image: "",
+};
 
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-    };
+const defaultAccoladeForm = {
+    type: "",
+    category: "",
+    by: "",
+    year: "",
+    awardGroup: "",
+    date: "",
+};
 
-    const dateRange = credit.startDate && credit.endDate
-        ? `${format(credit.startDate, "LLL yyyy")} - ${format(credit.endDate, "LLL yyyy")}`
-        : "No date range";
+interface YearPickerProps {
+    value: string;
+    onChange: (year: string) => void;
+    fromYear?: number;
+    toYear?: number;
+}
+
+function YearPicker({ value, onChange, fromYear = 1980, toYear = new Date().getFullYear() + 5 }: YearPickerProps) {
+    const years = useMemo(() => {
+        const list: number[] = [];
+        for (let year = toYear; year >= fromYear; year -= 1) {
+            list.push(year);
+        }
+        return list;
+    }, [fromYear, toYear]);
 
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className="flex items-center gap-3 p-4 bg-white rounded-xl border-2 border-gray-200"
-        >
-            <div
-                {...attributes}
-                {...listeners}
-                className="cursor-grab active:cursor-grabbing touch-none"
-            >
-                <GripVertical className="h-6 w-6 text-gray-400" />
-            </div>
-            <div className="flex-1">
-                <p className="font-medium text-gray-900">{credit.creditTitle}</p>
-                <p className="text-sm text-gray-500">{dateRange}</p>
-                <p className="text-sm text-gray-500 line-clamp-1">
-                    {credit.description || "No description"}
-                </p>
-            </div>
+        <div className="grid grid-cols-3 gap-2 p-3">
+            {years.map((year) => (
+                <button
+                    type="button"
+                    key={year}
+                    onClick={() => onChange(year.toString())}
+                    className={`rounded-[10px] border px-3 py-2 text-sm font-medium transition-colors ${value === year.toString()
+                        ? "border-[#31A7AC] bg-[#E6FFFE] text-[#0C4A4F]"
+                        : "border-[#E4E4E7] text-[#211536] hover:border-[#31A7AC]"
+                        }`}
+                >
+                    {year}
+                </button>
+            ))}
         </div>
     );
 }
-
-interface CreditsEditorProps {
-    initialCredits: Credit[];
-    trigger: React.ReactNode;
+interface Accolade {
+    id: string;
+    type: string;
+    category: string;
+    by: string;
+    year: string;
 }
-
-export default function CreditsEditor({ initialCredits, trigger }: CreditsEditorProps) {
-    const [credits, setCredits] = useState<Credit[]>(initialCredits);
+export default function CreditsEditor({ trigger, initialCredits }: CreditsEditorProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [isReorderOpen, setIsReorderOpen] = useState(false);
-    const [tempCredits, setTempCredits] = useState<Credit[]>([]);
+    const [creditForm, setCreditForm] = useState(defaultCreditForm);
+    const [accoladeForm, setAccoladeForm] = useState(defaultAccoladeForm);
+    const [startDateOpen, setStartDateOpen] = React.useState(false)
+    const [endDateOpen, setEndDateOpen] = React.useState(false)
+    const [startDate, setStartDate] = React.useState<Date | undefined>(undefined)
+    const [endDate, setEndDate] = React.useState<Date | undefined>(undefined)
+    const [open, setOpen] = useState(false);
+    const [accolades, setAccolades] = React.useState<Accolade[]>([]);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
-
-    const handleDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event;
-
-        if (over && active.id !== over.id) {
-            setTempCredits((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over.id);
-                return arrayMove(items, oldIndex, newIndex);
-            });
+    useEffect(() => {
+        if (isDialogOpen && initialCredits?.length) {
+            const first = initialCredits[0];
+            setCreditForm((prev) => ({
+                ...prev,
+                productionType: prev.productionType || "Feature Film",
+                role: prev.role || "Director",
+                projectTitle: first.creditTitle || "",
+                description: first.description || "",
+            }));
         }
+    }, [isDialogOpen, initialCredits]);
+
+    const handleCreditChange = (field: keyof typeof creditForm, value: string | boolean) => {
+        setCreditForm((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleReorderClick = () => {
-        setTempCredits([...credits]);
-        setIsReorderOpen(true);
+    const handleAccoladeChange = (field: keyof typeof accoladeForm, value: string) => {
+        setAccoladeForm((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleReorderSave = () => {
-        setCredits(tempCredits);
-        setIsReorderOpen(false);
-        toast.success("Credit order saved!");
-    };
-
-    const handleAddCredit = () => {
-        toast.success("New credit added!");
-        const newCredit: Credit = {
-            id: Date.now().toString(),
-            creditTitle: "",
-            description: "",
-            startDate: undefined,
-            endDate: undefined,
-            image: null,
+    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            toast.error("Please upload an image file");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image must be under 5MB");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            handleCreditChange("image", reader.result as string);
+            toast.success("Image uploaded");
         };
-        setCredits([...credits, newCredit]);
+        reader.readAsDataURL(file);
     };
-
-    const handleRemoveCredit = (id: string) => {
-        toast.success("Credit removed!");
-        setCredits(credits.filter((credit) => credit.id !== id));
+    useEffect(() => {
+        setOpen(false);
+    }, [accoladeForm]);
+    const handelOpenChange = () => {
+        setOpen(!open);
     };
-
-    const handleCreditChange = (
-        id: string,
-        field: keyof Omit<Credit, "id">,
-        value: string | Date | undefined
-    ) => {
-        setCredits(
-            credits.map((credit) =>
-                credit.id === id ? { ...credit, [field]: value } : credit
-            )
-        );
-    };
-
-    const handleImageUpload = (id: string, event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                toast.error("Please upload an image file");
-                return;
-            }
-
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("Image size should be less than 5MB");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                handleCreditChange(id, "image", reader.result as string);
-                toast.success("Image uploaded successfully!");
-            };
-            reader.readAsDataURL(file);
+    const handleAddAward = () => {
+        if (!accoladeForm.type || !accoladeForm.category) {
+            toast.error("Please fill at least type and category");
+            return;
         }
+        const newAward = {
+            id: Date.now().toString(),
+            type: accoladeForm.type,
+            category: accoladeForm.category,
+            by: accoladeForm.by || "Unknown",
+            year: accoladeForm.year || "--",
+        };
+        setAccolades((prev) => [...prev, newAward]);
+        setAccoladeForm(defaultAccoladeForm);
+        toast.success("Award added");
     };
 
-    const handleRemoveImage = (id: string) => {
-        handleCreditChange(id, "image", undefined);
-        toast.info("Image removed");
-    };
-
-    const handleSaveChanges = () => {
-        // Console log all the edited/added data
-        console.log("=== Credits Data ===");
-        console.log("Total Credits:", credits.length);
-        console.log("Credits Details:", JSON.stringify(credits, null, 2));
-
+    const handleSave = () => {
+        console.log("Credit form", creditForm);
+        console.log("Accolades", accolades);
+        toast.success("Credits saved");
         setIsDialogOpen(false);
-        toast.success("Credits updated successfully!");
-
-        // TODO: Send data to API
-        // Example:
-        // await fetch('/api/credits', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ credits })
-        // });
     };
 
     const handleCancel = () => {
-        setCredits(initialCredits);
+        setCreditForm(defaultCreditForm);
+        setAccoladeForm(defaultAccoladeForm);
         setIsDialogOpen(false);
     };
 
-    return (
-        <>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>{trigger}</DialogTrigger>
-                <DialogContent className="max-w-4xl w-auto mx-auto h-[90vh] flex flex-col">
-                    <DialogHeader className="p-0 sm:p-1 md:p-1 pb-0">
-                        <h1 className="text-2xl font-normal text-gray-900 mb-0">
-                            Edit Credits
-                        </h1>
-                        <p className="text-base text-gray-600 mb-3 ">
-                            Add or edit your work credits, projects, or experiences.
-                        </p>
-                        <div className="flex flex-wrap gap-3 mb-1">
-                            <Button
-                                onClick={handleReorderClick}
-                                variant="outline"
-                                className="flex items-center h-10 gap-2 px-6 py-3 text-base border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-50 rounded-2xl bg-transparent"
-                            >
-                                <Menu className="h-5 w-5" />
-                                Reorder
-                            </Button>
-                            <Button
-                                onClick={handleAddCredit}
-                                variant="outline"
-                                className="flex items-center h-10 gap-2 px-6 py-3 text-base border-2 border-cyan-500 text-cyan-600 hover:bg-cyan-50 rounded-2xl bg-transparent"
-                            >
-                                <Plus className="h-5 w-5" />
-                                Add Credit
-                            </Button>
-                        </div>
-                    </DialogHeader>
+    const baseInputClasses =
+        "w-full h-[41px] rounded-[15px] border border-[#828282] bg-white px-5 text-sm text-[#211536] placeholder:text-[#A3A3A3] focus-visible:outline-[#31A7AC]";
 
-                    <div className="flex-1 overflow-y-auto px-6 sm:px-8 md:px-10">
-                        <div className="space-y-6 mb-8">
-                            {credits.map((credit) => (
-                                <div key={credit.id} className="space-y-3">
-                                    <div className="flex w-full  items-center gap-2 border border-[#31A7AC] rounded-full">
-                                        <input
-                                            value={credit.creditTitle}
-                                            onChange={(e) =>
-                                                handleCreditChange(credit.id, "creditTitle", e.target.value)
-                                            }
-                                            placeholder="Credit Title"
-                                            className="flex-1 h-10 px-6 py-6 text-base border-none border-gray-300 rounded-full focus:border-none focus:ring-none focus:outline-none "
+
+    return (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>{trigger}</DialogTrigger>
+            <DialogContent
+                className="w-full border border-[#EFEFEF] rounded-[15px] p-0 overflow-y-auto"
+            >
+                <div className="px-[30px] pt-[30px] pb-6 flex flex-col gap-6">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <h2 className="text-[20px] leading-[34px] font-[400]  text-[#211536]">Manage Credits</h2>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row gap-6">
+                        <section className="w-full lg:max-w-[483px] rounded-[20px] p-6 space-y-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <select
+                                        value={creditForm.productionType}
+                                        onChange={(e) => handleCreditChange("productionType", e.target.value)}
+                                        className={`${baseInputClasses} appearance-none`}
+                                    >
+                                        <option value="">Select type</option>
+                                        <option value="Feature Film">Feature Film</option>
+                                        <option value="Commercial">Commercial</option>
+                                        <option value="Music Video">Music Video</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <select
+                                        value={creditForm.role}
+                                        onChange={(e) => handleCreditChange("role", e.target.value)}
+                                        className={`${baseInputClasses} appearance-none`}
+                                    >
+                                        <option value="">Select Role</option>
+                                        <option value="Feature Film">Feature Film</option>
+                                        <option value="Commercial">Commercial</option>
+                                        <option value="Music Video">Music Video</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="space-y-2">
+                                    <input
+                                        value={creditForm.projectTitle}
+                                        onChange={(e) => handleCreditChange("projectTitle", e.target.value)}
+                                        placeholder="City of Echoes"
+                                        className={baseInputClasses}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <input
+                                        value={creditForm.brandClient}
+                                        onChange={(e) => handleCreditChange("brandClient", e.target.value)}
+                                        placeholder="Brand/Client"
+                                        className={baseInputClasses}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1  gap-4">
+                                <div className="space-y-2">
+                                    <input
+                                        value={creditForm.localCompany}
+                                        onChange={(e) => handleCreditChange("localCompany", e.target.value)}
+                                        placeholder="Local Production company"
+                                        className={baseInputClasses}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <input
+                                        value={creditForm.internationalCompany}
+                                        onChange={(e) => handleCreditChange("internationalCompany", e.target.value)}
+                                        placeholder="International Production company"
+                                        className={baseInputClasses}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="space-y-2">
+                                    <input
+                                        value={creditForm.country}
+                                        onChange={(e) => handleCreditChange("country", e.target.value)}
+                                        placeholder="Country"
+                                        className={baseInputClasses}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-start h-[41px] rounded-[15px] border border-[#828282] bg-white px-5 text-sm font-normal text-[#211536]"
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4 text-[#9F9F9F]" />
+                                                {creditForm.releaseYear || "Select year"}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-[260px] bg-white p-2">
+                                            <ScrollArea className="h-64">
+                                                <YearPicker
+                                                    value={creditForm.releaseYear}
+                                                    onChange={(year) => {
+                                                        handleCreditChange("releaseYear", year);
+                                                    }}
+                                                    fromYear={1970}
+                                                    toYear={new Date().getFullYear() + 2}
+                                                />
+                                            </ScrollArea>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="flex items-center gap-2 text-xs text-[#494949] font-medium">
+                                        <Checkbox
+                                            checked={creditForm.isUnreleased}
+                                            onCheckedChange={(checked) => handleCreditChange("isUnreleased", checked)}
+                                            className="h-[20px] w-[20px] rounded-[3px] border-[#828282] text-[#211536] focus:ring-[#211536]"
                                         />
+                                        Yet to be released
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <div className="relative">
+                                        <Popover open={startDateOpen} onOpenChange={setStartDateOpen} >
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    id="date"
+                                                    className="w-[200px] rounded-[15px] h-[38px] justify-between font-normal border border-[#828282]"
+                                                >
+                                                    <span className="text-[#494949]">
+                                                        {startDate ? startDate.toLocaleDateString() : "Select date"}
+                                                    </span>
+
+                                                    <ChevronDownIcon className="h-4 w-4 text-[#9F9F9F]" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={startDate}
+                                                    captionLayout="dropdown"
+                                                    onSelect={(date) => {
+                                                        setStartDate(date)
+                                                        setStartDateOpen(false)
+                                                    }}
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="relative">
+                                        <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    id="date"
+                                                    className="w-[200px] justify-between rounded-[15px] h-[38px] font-normal border border-[#828282]"
+                                                >
+                                                    <span className="text-[#494949]">
+                                                        {endDate ? endDate.toLocaleDateString() : "Select date"}
+                                                    </span>
+                                                    <ChevronDownIcon className="h-4 w-4 text-[#9F9F9F]" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={endDate}
+                                                    captionLayout="dropdown"
+                                                    onSelect={(date) => {
+                                                        setEndDate(date)
+                                                        setEndDateOpen(false)
+                                                    }}
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <textarea
+                                    value={creditForm.description}
+                                    onChange={(e) => handleCreditChange("description", e.target.value)}
+                                    placeholder="Write about this project..."
+                                    className="w-full min-h-[104px] rounded-[20px] border border-[#828282] bg-white px-5 py-3 text-sm text-[#211536] placeholder:text-[#A3A3A3] focus-visible:outline-[#31A7AC]"
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                {creditForm.image ? (
+                                    <div className="relative rounded-[20px] overflow-hidden border border-[#E5E5E5]">
+                                        <Image
+                                            src={creditForm.image}
+                                            alt="Credit artwork"
+                                            className="w-full h-48 object-cover"
+                                            height={100}
+                                            width={100}
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-3">
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                className="bg-white text-[#211536] hover:bg-white/90"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                <Upload className="h-4 w-4 mr-2" /> Replace image
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => handleCreditChange("image", "")}
+                                            >
+                                                Remove
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="rounded-[20px] border border-dashed border-[#31A7AC] bg-white/80 px-6 py-8 text-center">
+                                        <p className="text-sm text-[#211536] font-medium mb-2">Upload artwork / press stills</p>
+                                        <p className="text-xs text-[#8D8D8D] mb-4">PNG, JPG up to 5MB</p>
                                         <Button
-                                            onClick={() => handleRemoveCredit(credit.id)}
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-12 w-12 text-red-500 hover:bg-red-50 rounded-full"
+                                            type="button"
+                                            variant="outline"
+                                            className="rounded-full border-[#31A7AC] text-[#31A7AC] px-5"
+                                            onClick={() => fileInputRef.current?.click()}
                                         >
-                                            <X className="h-5 w-5" />
+                                            <Upload className="h-4 w-4 mr-2" /> Upload image
                                         </Button>
                                     </div>
+                                )}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleImageUpload}
+                                />
+                            </div>
+                        </section>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className="w-full justify-start text-left font-normal border-gray-500 rounded-full h-12"
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {credit.startDate ? format(credit.startDate, "PPP") : <span>Pick a start date</span>}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={credit.startDate}
-                                                    onSelect={(date) => handleCreditChange(credit.id, "startDate", date)}
-                                                    initialFocus
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className="w-full justify-start text-left font-normal border-gray-500 rounded-full h-12"
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {credit.endDate ? format(credit.endDate, "PPP") : <span>Pick an end date</span>}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={credit.endDate}
-                                                    onSelect={(date) => handleCreditChange(credit.id, "endDate", date)}
-                                                    disabled={(date) =>
-                                                        credit.startDate ? date < credit.startDate : false
-                                                    }
-                                                    initialFocus
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
+                        <div className="hidden lg:block w-px bg-gradient-to-b from-[#31A7AC] via-[#FA6E80] to-[#F8B661] rounded-full" aria-hidden />
 
-                                    <Textarea
-                                        value={credit.description}
-                                        onChange={(e) =>
-                                            handleCreditChange(credit.id, "description", e.target.value)
-                                        }
-                                        placeholder="Write credit description..."
-                                        className="min-h-[120px] px-6 py-4 text-base border-2 border-gray-500 rounded-3xl focus:border-[#31A7AC] focus:outline-none focus:ring-none resize-none"
-                                    />
-
-                                    {/* Image Upload Section */}
-                                    <div className="space-y-3">
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Credit Image
-                                        </label>
-
-                                        {credit.image ? (
-                                            <div className="relative w-full h-48 border-2 border-gray-300 rounded-2xl overflow-hidden">
-                                                <Image
-                                                    src={credit.image}
-                                                    alt="Credit preview"
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                                <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                    <label className="cursor-pointer">
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={(e) => handleImageUpload(credit.id, e)}
-                                                            className="hidden"
-                                                        />
-                                                        <Button
-                                                            type="button"
-                                                            variant="secondary"
-                                                            size="sm"
-                                                            className="pointer-events-none"
-                                                        >
-                                                            <Upload className="h-4 w-4 mr-2" />
-                                                            Change
-                                                        </Button>
-                                                    </label>
-                                                    <Button
-                                                        type="button"
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleRemoveImage(credit.id)}
-                                                    >
-                                                        <X className="h-4 w-4 mr-2" />
-                                                        Remove
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer hover:border-[#31A7AC] hover:bg-gray-50 transition-colors">
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleImageUpload(credit.id, e)}
-                                                    className="hidden"
-                                                />
-                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                    <ImageIcon className="w-12 h-12 mb-3 text-gray-400" />
-                                                    <p className="mb-2 text-sm text-gray-500">
-                                                        <span className="font-semibold">Click to upload</span> or drag and drop
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">
-                                                        PNG, JPG, GIF up to 5MB
-                                                    </p>
-                                                </div>
-                                            </label>
-                                        )}
-                                    </div>
-
-                                    {credit !== credits[credits.length - 1] && (
-                                        <div className="border-t border-gray-200 mt-2" />
-                                    )}
+                        <section className="flex-1 rounded-[20px] bg-white text-[#211536] p-6 space-y-5">
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-[22px] text-[#000000]">My Accolades</p>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col justify-start sm:flex-row gap-4 p-3 sm:p-4 md:p-5 pt-6 border-t">
-                        <Button
-                            onClick={handleCancel}
-                            variant="outline"
-                            className="flex-1 py-3 h-15 text-lg border-2 border-[#FA6E80] text-[#FA6E80]  rounded-2xl bg-transparent"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleSaveChanges}
-                            className="flex-1 py-3 h-15 text-lg bg-[#FA6E80] text-white rounded-2xl"
-                        >
-                            Save
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+                            </div>
 
-            {/* Reorder Dialog */}
-            <Dialog open={isReorderOpen} onOpenChange={setIsReorderOpen}>
-                <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold">
-                            Reorder Credits
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto py-4">
-                        <DndContext
-                            sensors={sensors}
-                            collisionDetection={closestCenter}
-                            onDragEnd={handleDragEnd}
-                        >
-                            <SortableContext
-                                items={tempCredits.map((c) => c.id)}
-                                strategy={verticalListSortingStrategy}
-                            >
+                            <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-3">
-                                    {tempCredits.map((credit) => (
-                                        <SortableCreditItem
-                                            key={credit.id}
-                                            credit={credit}
-                                        />
-                                    ))}
+                                    <select
+                                        value={accoladeForm.type}
+                                        onChange={(e) => handleAccoladeChange("type", e.target.value)}
+                                        className="w-full h-[41px] rounded-[15px] border border-[#DCDCDC] bg-[#FBFBFB] px-4 font-[400] text-sm text-[#211536] placeholder:text-[#9F9F9F] focus-visible:outline-[#31A7AC]"
+                                    >
+                                        <option value="">Accolade Type</option>
+                                        <option value="Best Director">Best Director</option>
+                                        <option value="Best Cinematography">Best Cinematography</option>
+                                        <option value="Best Screenplay">Best Screenplay</option>
+                                        <option value="Best Editing">Best Editing</option>
+                                        <option value="Best Visual Effects">Best Visual Effects</option>
+                                        <option value="Best Sound Design">Best Sound Design</option>
+                                        <option value="Best Production Design">Best Production Design</option>
+                                        <option value="Best Original Score">Best Original Score</option>
+                                        <option value="Best Actor">Best Actor</option>
+                                        <option value="Best Actress">Best Actress</option>
+                                    </select>
                                 </div>
-                            </SortableContext>
-                        </DndContext>
+                                <div className="space-y-3">
+                                    <input
+                                        value={accoladeForm.category}
+                                        onChange={(e) => handleAccoladeChange("category", e.target.value)}
+                                        placeholder="Accolade Category"
+                                        className="w-full h-[41px] rounded-[15px] border border-[#DCDCDC] bg-[#FBFBFB] px-4 text-sm text-[#211536] placeholder:text-[#9F9F9F] focus-visible:outline-[#31A7AC]"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <input
+                                        value={accoladeForm.by}
+                                        onChange={(e) => handleAccoladeChange("by", e.target.value)}
+                                        placeholder="Accolade by:"
+                                        className="w-full h-[41px] rounded-[15px] border border-[#DCDCDC] bg-[#FBFBFB] px-4 text-sm text-[#211536] placeholder:text-[#9F9F9F] focus-visible:outline-[#31A7AC]"
+                                    />
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="w-full justify-start rounded-[15px] h-[41px] border border-[#828282] bg-white px-5 text-sm font-normal text-[#211536]"
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4 text-[#9F9F9F]" />
+                                            {accoladeForm.year || "Select year"}
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-[260px] bg-white p-2">
+                                        <ScrollArea className="h-64">
+                                            <YearPicker
+                                                value={accoladeForm.year}
+                                                onChange={(year) => {
+                                                    handleAccoladeChange("year", year);
+                                                }}
+                                                fromYear={1970}
+                                                toYear={new Date().getFullYear() + 2}
+
+                                            />
+                                        </ScrollArea>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
+                                <Button
+                                    onClick={handleAddAward}
+                                    size="sm"
+                                    className="border h-[41px] rounded-[15px] "
+                                    variant="default"
+                                >
+                                    Add new award
+                                </Button>
+                            </div>
+                            <div className="h-px w-full bg-gradient-to-b from-[#31A7AC] via-[#FA6E80] to-[#F8B661] rounded-full" aria-hidden />
+
+
+                            <Accordion type="multiple" className="space-y-3">
+                                {accolades.length > 0 && (
+                                    accolades.map((award) => (
+                                        <AccordionItem value={award.id} key={award.id} className="border border-[#E3E3E3] rounded-[18px] px-4">
+                                            <AccordionTrigger className="flex w-full items-center justify-between py-3 text-left gap-3" onClick={handelOpenChange}>
+                                                <div className="text-sm text-[#211536] flex flex-row gap-2.5 transition-opacity duration-200 data-[state=open]:opacity-0 data-[state=open]:pointer-events-none">
+                                                    {open && <span>{` ${award.type}` || "N/A"}</span>}
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="pb-4 text-sm text-[#3A3A3A]">
+                                                <div className="text-sm text-[#444444] flex flex-row gap-2.5"><span className="font-[600]">Accolade Type </span> <span>{` ${award.type}` || "N/A"}</span></div>
+                                                <div className="text-sm text-[#444444] flex flex-row gap-2.5 font-[600]">Accolade Category <span className="font-[400]">{award.category || "N/A"}</span></div>
+                                                <div className="text-sm text-[#444444] flex flex-row gap-2.5 font-[600] ">Accolade by <span className="font-[400]">{award.by || "Unknown presenter"}</span></div>
+                                                <div className="text-sm text-[#444444] flex flex-row gap-2.5 font-[600]">Year <span className="font-[400]">{award.year || "--"}</span></div>
+
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    ))
+                                )
+                                }
+                            </Accordion>
+                        </section>
                     </div>
-                    <div className="flex gap-3 pt-4 border-t">
-                        <Button
-                            onClick={() => setIsReorderOpen(false)}
-                            variant="outline"
-                            className="flex-1 border-2 border-gray-300"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleReorderSave}
-                            className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white"
-                        >
-                            Save Order
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </>
+                </div>
+                <div className="flex items-center justify-end gap-3 px-[30px] py-4 border-t bg-[#FDFDFD]">
+                    <Button
+                        variant="outline"
+                        className="rounded-[15px] h-[47px] border-[#FA6E80] text-[#FA6E80] px-8"
+                        onClick={handleCancel}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        className="rounded-[15px] h-[47px] px-8"
+                        onClick={handleSave}
+                    >
+                        Save changes
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }
