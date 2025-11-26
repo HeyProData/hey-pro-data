@@ -46,9 +46,25 @@ export type ProfileDataTypes = {
   credits: {
     id: number | string;
     creditTitle: string;
-    startDate: Date;
-    endDate: Date;
+    startDate: Date | string;
+    endDate: Date | string;
     description: string;
+    imgUrl?: string;
+    productionType?: string;
+    role?: string;
+    projectTitle?: string;
+    brandClient?: string;
+    localCompany?: string;
+    internationalCompany?: string;
+    country?: string;
+    releaseYear?: string;
+    isUnreleased?: boolean;
+    headlineStats?: string;
+    awardsSummary?: string;
+    awards?: {
+      title: string;
+      detail?: string;
+    }[];
   }[];
   recomendPeoples: {
     imgUrl: string;

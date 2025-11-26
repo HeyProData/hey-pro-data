@@ -112,12 +112,12 @@ export default function ShortProfile({ Profile }: { Profile: ProfileDataTypes })
                     {Profile.profileCompletion}%
                 </span>
             </div>
-            <div className="absolute right-4 top-[96px]  sm:top-[200px] flex items-center gap-3">
+            <div className="absolute right-4 top-[98px]  sm:top-[200px] flex items-center gap-3">
                 <ProfileEditor
                     initialProfile={Profile.persionalDetails}
                     trigger={
                         <Button
-                            className="h-[28px] w-[28px] rounded-full bg-[#31A7AC] text-white shadow-[0_4px_16px_rgba(49,167,172,0.35)] hover:bg-[#27939f]"
+                            className="h-[28px] w-[28px] mt-2 rounded-full bg-[#31A7AC] text-white shadow-[0_4px_16px_rgba(49,167,172,0.35)] hover:bg-[#27939f]"
                             aria-label="Edit profile"
                         >
                             <Edit2 className="h-5 w-5" />
