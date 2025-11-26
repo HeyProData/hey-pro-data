@@ -136,3 +136,7 @@ export function getExploreCategory(slug: string) {
 export function listExploreSlugs() {
   return categories.map((category) => category.slug)
 }
+
+export function listExploreCategories() {
+  return categories
+}
