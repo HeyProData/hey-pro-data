@@ -350,8 +350,10 @@ Main table for job postings with comprehensive gig management.
 - `idx_gigs_slug` on `slug` ⭐ NEW - For slug-based lookups
 - `idx_gigs_role` on `role` ⭐ NEW - Filter by role
 - `idx_gigs_type` on `type` ⭐ NEW - Filter by type
+- `idx_gigs_department` on `department` ⭐ NEW - Filter by department
 - `idx_gigs_expiry_date` on `expiry_date` ⭐ NEW - Filter expired gigs
 - `idx_gigs_status_expiry` on `(status, expiry_date)` ⭐ NEW - Active gigs query
+- `idx_gigs_created_by_status` on `(created_by, status)` ⭐ NEW - User's gigs query
 - `idx_gigs_search` (GIN) on title + description ⭐ NEW - Full-text search
 
 ##### 12. `gig_dates`
@@ -383,6 +385,7 @@ User applications to gigs.
 **Indexes:**
 - `idx_applications_gig_id` on `gig_id`
 - `idx_applications_applicant_user_id` on `applicant_user_id`
+- `idx_applications_gig_status` on `(gig_id, status)` ⭐ NEW v2.3 - Filter applications by status
 
 ##### 15. `crew_availability` ⭐ ENHANCED (Version 2.3)
 User availability calendar with status tracking.
