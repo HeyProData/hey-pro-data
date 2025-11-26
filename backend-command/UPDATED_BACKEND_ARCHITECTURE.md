@@ -5,7 +5,7 @@
 This document provides a comprehensive overview of the **UPDATED** backend architecture including all profile-related enhancements.
 
 **Last Updated:** January 2025  
-**Version:** 2.3 (Updated with Gigs Enhancement)
+**Version:** 2.4 (Updated with Slate Group Social Media Feature)
 
 ---
 
@@ -845,7 +845,9 @@ WITH CHECK (
 ├── upload/
 │   ├── resume/route.js                          # POST resume
 │   ├── portfolio/route.js                       # POST portfolio
-│   └── profile-photo/route.js                   # POST photo
+│   ├── profile-photo/route.js                   # POST photo
+│   ├── collab-cover/route.js                    # POST collab cover ⭐ NEW v2.2
+│   └── slate-media/route.js                     # POST slate media ⭐ NEW v2.4
 ├── gigs/
 │   ├── route.js                                 # GET/POST gigs
 │   └── [id]/
@@ -861,17 +863,30 @@ WITH CHECK (
 │   ├── route.js                             # GET search & filter profiles
 │   ├── categories/route.js                  # GET all categories
 │   └── [userId]/route.js                    # GET profile details
-└── collab/ ⭐ NEW (v2.2)
-    ├── route.js                             # POST create, GET list all
-    ├── my/route.js                          # GET my collab posts
-    └── [id]/
-        ├── route.js                         # GET details, PATCH update, DELETE
-        ├── interest/route.js                # POST express, DELETE remove
-        ├── interests/route.js               # GET list interested users
-        ├── collaborators/
-        │   ├── route.js                     # GET list, POST add
-        │   └── [userId]/route.js            # DELETE remove collaborator
-        └── close/route.js                   # PATCH close collab
+├── collab/ ⭐ NEW (v2.2)
+│   ├── route.js                             # POST create, GET list all
+│   ├── my/route.js                          # GET my collab posts
+│   └── [id]/
+│       ├── route.js                         # GET details, PATCH update, DELETE
+│       ├── interest/route.js                # POST express, DELETE remove
+│       ├── interests/route.js               # GET list interested users
+│       ├── collaborators/
+│       │   ├── route.js                     # GET list, POST add
+│       │   └── [userId]/route.js            # DELETE remove collaborator
+│       └── close/route.js                   # PATCH close collab
+└── slate/ ⭐ NEW (v2.4)
+    ├── route.js                             # POST create, GET feed
+    ├── my/route.js                          # GET user's posts
+    ├── saved/route.js                       # GET saved posts
+    ├── [id]/
+    │   ├── route.js                         # GET details, PATCH update, DELETE
+    │   ├── like/route.js                    # POST like, DELETE unlike
+    │   ├── likes/route.js                   # GET who liked
+    │   ├── comment/route.js                 # POST comment, GET comments
+    │   ├── share/route.js                   # POST share, DELETE unshare
+    │   └── save/route.js                    # POST save, DELETE unsave
+    └── comment/
+        └── [commentId]/route.js             # PATCH edit, DELETE delete
 ```
 
 ### Request/Response Format
@@ -1754,6 +1769,590 @@ The collab feature integrates seamlessly with:
 - ✅ Pagination support on all list endpoints
 - ✅ Query optimization with selective field fetching
 - ✅ Storage optimization (5MB limit, optimized paths)
+
+---
+
+## 🎨 Slate Feature Overview (v2.4) ⭐ NEW
+
+### Purpose
+The Slate feature is a social media-style posts platform where users can:
+- Create posts with text, images, and videos
+- Engage with posts through likes, comments, and shares
+- Save/bookmark posts for later viewing
+- Browse personalized feed with search and filters
+- Comment with nested replies support
+- View post engagement metrics in real-time
+
+### Frontend Location
+- **Path:** `/app/(app)/(slate-group)/`
+- **Main Pages:**
+  - `/slate` - Main feed page with all published posts
+  - Template with profile sidebar and account suggestions
+
+### User Features
+
+#### For All Users
+1. **Browse Slate Feed:**
+   - View all published posts
+   - See post content (text + media)
+   - View engagement counts (likes, comments, shares)
+   - See author information (name, avatar, roles)
+   - Infinite scroll pagination
+   - Search posts by content
+
+2. **Engagement Features:**
+   - Like posts (heart icon)
+   - Comment on posts
+   - Reply to comments (nested structure)
+   - Share/repost content
+   - View who liked/commented
+
+3. **Post Display:**
+   - Text content with "Show More/Less" toggle (truncated at 150 chars)
+   - Single or multiple media attachments
+   - Author profile info with role badges
+   - Timestamp and engagement metrics
+   - Quick actions menu
+
+#### For Post Authors
+1. **Create Posts:**
+   - Write text content (up to 5000 characters)
+   - Upload multiple images/videos (10MB per file)
+   - Set status (published/draft/archived)
+   - Auto-generated URL slug for sharing
+
+2. **Manage Posts:**
+   - Edit existing posts
+   - Update media attachments
+   - Change status (publish/unpublish)
+   - Delete posts
+   - View who liked/commented
+
+3. **Draft Support:**
+   - Save posts as drafts before publishing
+   - Private drafts (only author can view)
+   - Edit and publish later
+
+### Backend Implementation
+
+#### Database Tables (6 New Tables)
+
+**1. slate_posts (Main table)**
+- `id` (UUID, PK) - Unique post identifier
+- `user_id` (UUID, FK → auth.users) - Post author
+- `content` (TEXT, NOT NULL) - Post text/description (max 5000 chars)
+- `slug` (TEXT, UNIQUE) - URL-friendly identifier
+- `status` (TEXT) - "published" | "draft" | "archived"
+- `likes_count` (INTEGER, DEFAULT 0) - Cached like count
+- `comments_count` (INTEGER, DEFAULT 0) - Cached comment count
+- `shares_count` (INTEGER, DEFAULT 0) - Cached share count
+- `created_at` (TIMESTAMPTZ) - Creation timestamp
+- `updated_at` (TIMESTAMPTZ) - Last update timestamp
+
+**2. slate_media (Media attachments)**
+- `id` (UUID, PK)
+- `post_id` (UUID, FK → slate_posts)
+- `media_url` (TEXT, NOT NULL) - Supabase Storage URL
+- `media_type` (TEXT) - "image" | "video"
+- `sort_order` (INTEGER) - Display order for multiple attachments
+- `created_at` (TIMESTAMPTZ)
+
+**3. slate_likes (Like tracking)**
+- `id` (UUID, PK)
+- `post_id` (UUID, FK → slate_posts)
+- `user_id` (UUID, FK → auth.users)
+- `created_at` (TIMESTAMPTZ)
+- **Constraint:** UNIQUE(post_id, user_id) - One like per user per post
+
+**4. slate_comments (Comments system)**
+- `id` (UUID, PK)
+- `post_id` (UUID, FK → slate_posts)
+- `user_id` (UUID, FK → auth.users)
+- `parent_comment_id` (UUID, FK → slate_comments) - NULL for top-level
+- `content` (TEXT, NOT NULL) - Comment text (max 2000 chars)
+- `created_at` (TIMESTAMPTZ)
+- `updated_at` (TIMESTAMPTZ)
+
+**5. slate_shares (Share tracking)**
+- `id` (UUID, PK)
+- `post_id` (UUID, FK → slate_posts)
+- `user_id` (UUID, FK → auth.users)
+- `created_at` (TIMESTAMPTZ)
+- **Constraint:** UNIQUE(post_id, user_id) - One share per user per post
+
+**6. slate_saved (Bookmarked posts)**
+- `id` (UUID, PK)
+- `post_id` (UUID, FK → slate_posts)
+- `user_id` (UUID, FK → auth.users)
+- `created_at` (TIMESTAMPTZ)
+- **Constraint:** UNIQUE(post_id, user_id) - One save per user per post
+
+#### Storage Bucket
+
+**slate-media/ (Public)**
+- **Purpose:** Images and videos for slate posts
+- **Max Size:** 10 MB per file
+- **Allowed Types:** PNG, JPG, JPEG, WebP, MP4, MOV, AVI
+- **Path Structure:** `{user_id}/{post_id}/{filename}`
+- **Access Control:**
+  - Public read access (anyone can view published post media)
+  - Authenticated write to own folder
+  - File size validation enforced
+  - Type validation enforced
+
+#### API Endpoints (19 Total)
+
+**CRUD Operations (6 endpoints):**
+1. `POST /api/slate` - Create new post
+2. `GET /api/slate` - List all published posts (feed with pagination)
+3. `GET /api/slate/my` - Get user's own posts (all statuses)
+4. `GET /api/slate/[id]` - Get specific post details
+5. `PATCH /api/slate/[id]` - Update post (owner only)
+6. `DELETE /api/slate/[id]` - Delete post (owner only)
+
+**Like Management (3 endpoints):**
+7. `POST /api/slate/[id]/like` - Like a post
+8. `DELETE /api/slate/[id]/like` - Unlike a post
+9. `GET /api/slate/[id]/likes` - List users who liked
+
+**Comment Management (5 endpoints):**
+10. `POST /api/slate/[id]/comment` - Add comment or reply
+11. `GET /api/slate/[id]/comments` - Get all comments for post
+12. `PATCH /api/slate/comment/[commentId]` - Edit own comment
+13. `DELETE /api/slate/comment/[commentId]` - Delete own comment
+14. `GET /api/slate/comment/[commentId]/replies` - Get comment replies
+
+**Share Management (2 endpoints):**
+15. `POST /api/slate/[id]/share` - Share/repost
+16. `DELETE /api/slate/[id]/share` - Remove share
+
+**Saved Posts (3 endpoints):**
+17. `POST /api/slate/[id]/save` - Save/bookmark post
+18. `DELETE /api/slate/[id]/save` - Unsave post
+19. `GET /api/slate/saved` - Get user's saved posts
+
+**Media Upload (1 endpoint):**
+20. `POST /api/upload/slate-media` - Upload post media
+
+#### Row Level Security (28 Policies)
+
+**slate_posts (7 policies):**
+- ✅ Public can view published posts
+- ✅ Users can view own drafts and archived posts
+- ✅ Authenticated users can create posts
+- ✅ Only owners can update their posts
+- ✅ Only owners can delete their posts
+
+**slate_media (5 policies):**
+- ✅ Public can view media for published posts
+- ✅ Users can view own post media
+- ✅ Only post owner can add media
+- ✅ Only post owner can delete media
+
+**slate_likes (4 policies):**
+- ✅ Anyone can view like counts
+- ✅ Authenticated users can like published posts
+- ✅ Users can unlike own likes
+- ✅ Cannot like drafts
+
+**slate_comments (6 policies):**
+- ✅ Public can view comments on published posts
+- ✅ Users can view comments on own posts
+- ✅ Users can view own comments
+- ✅ Authenticated users can comment on published posts
+- ✅ Users can edit own comments
+- ✅ Users can delete own comments
+
+**slate_shares (3 policies):**
+- ✅ Anyone can view share counts
+- ✅ Authenticated users can share published posts
+- ✅ Users can remove own shares
+
+**slate_saved (3 policies):**
+- ✅ Users can only view own saved posts
+- ✅ Authenticated users can save published posts
+- ✅ Users can unsave posts
+
+#### Performance Indexes (20+)
+
+**slate_posts indexes:**
+- `idx_slate_posts_user_id` ON `user_id` (filter by author)
+- `idx_slate_posts_status` ON `status` (filter by status)
+- `idx_slate_posts_created_at` ON `created_at DESC` (sort by date)
+- `idx_slate_posts_slug` ON `slug` (lookup by slug)
+- `idx_slate_posts_user_status` ON `(user_id, status, created_at DESC)` (user posts by status)
+- `idx_slate_posts_likes_count` ON `(likes_count DESC, created_at DESC)` (sort by popularity)
+- `idx_slate_posts_comments_count` ON `(comments_count DESC, created_at DESC)` (sort by engagement)
+- Full-text search index on `content`
+
+**slate_media indexes:**
+- `idx_slate_media_post_id` ON `post_id` (join with posts)
+- `idx_slate_media_post_sort` ON `(post_id, sort_order)` (ordered media)
+- `idx_slate_media_type` ON `media_type` (filter by type)
+
+**slate_likes indexes:**
+- `idx_slate_likes_post_id` ON `post_id` (count likes)
+- `idx_slate_likes_user_id` ON `user_id` (user's likes)
+- `idx_slate_likes_user_post` ON `(user_id, post_id)` (check if liked)
+
+**slate_comments indexes:**
+- `idx_slate_comments_post_id` ON `post_id` (all comments)
+- `idx_slate_comments_user_id` ON `user_id` (user's comments)
+- `idx_slate_comments_parent_id` ON `parent_comment_id` (nested replies)
+- `idx_slate_comments_post_created` ON `(post_id, created_at DESC)` (sorted comments)
+- `idx_slate_comments_post_top_level` ON `(post_id, created_at DESC) WHERE parent_comment_id IS NULL` (top-level only)
+
+**slate_shares indexes:**
+- `idx_slate_shares_post_id` ON `post_id` (count shares)
+- `idx_slate_shares_user_id` ON `user_id` (user's shares)
+- `idx_slate_shares_user_post` ON `(user_id, post_id)` (check if shared)
+
+**slate_saved indexes:**
+- `idx_slate_saved_user_id` ON `user_id` (user's saved)
+- `idx_slate_saved_post_id` ON `post_id` (who saved)
+- `idx_slate_saved_user_created` ON `(user_id, created_at DESC)` (sorted saved)
+
+### API Request/Response Examples
+
+#### Create Post
+**Request:**
+```json
+POST /api/slate
+{
+  "content": "My first slate post with insights!",
+  "status": "published",
+  "media_urls": [
+    "https://project.supabase.co/storage/v1/object/public/slate-media/{user_id}/{post_id}/image1.jpg"
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post created successfully",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "content": "My first slate post with insights!",
+    "slug": "my-first-slate-post-abc123",
+    "status": "published",
+    "likes_count": 0,
+    "comments_count": 0,
+    "shares_count": 0,
+    "created_at": "2025-01-15T10:00:00.000Z"
+  }
+}
+```
+
+#### List Feed (with filters)
+**Request:**
+```
+GET /api/slate?page=1&limit=20&sort=popular&search=cinematography
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "posts": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "content": "Lorem ipsum dolor sit amet...",
+        "status": "published",
+        "likes_count": 10000,
+        "comments_count": 1000,
+        "shares_count": 50,
+        "created_at": "2025-01-15T10:00:00.000Z",
+        "author": {
+          "id": "123e4567-e89b-12d3-a456-426614174000",
+          "name": "Jone Dev",
+          "avatar": "https://avatar.jpg",
+          "role": "Cinematographer",
+          "totalRoles": 15
+        },
+        "media": [
+          {
+            "id": "abc-123",
+            "url": "https://slate-media.jpg",
+            "type": "image",
+            "sort_order": 0
+          }
+        ],
+        "user_has_liked": false,
+        "user_has_saved": false
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 100,
+      "hasMore": true
+    }
+  }
+}
+```
+
+#### Like a Post
+**Request:**
+```json
+POST /api/slate/[id]/like
+{}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Post liked",
+  "data": {
+    "likes_count": 10001
+  }
+}
+```
+
+#### Add Comment
+**Request:**
+```json
+POST /api/slate/[id]/comment
+{
+  "content": "Great post! Very insightful.",
+  "parent_comment_id": null
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Comment added",
+  "data": {
+    "id": "comment-uuid",
+    "content": "Great post! Very insightful.",
+    "parent_comment_id": null,
+    "created_at": "2025-01-15T10:05:00.000Z",
+    "author": {
+      "id": "user-uuid",
+      "name": "John Doe",
+      "avatar": "https://avatar.jpg"
+    }
+  }
+}
+```
+
+### Data Relationships
+
+```
+auth.users (Supabase Auth)
+    │
+    ├──[1:N]──> slate_posts (User's posts)
+    │               │
+    │               ├──[1:N]──> slate_media (Post attachments)
+    │               ├──[1:N]──> slate_likes (Post likes)
+    │               ├──[1:N]──> slate_comments (Post comments)
+    │               └──[1:N]──> slate_shares (Post shares)
+    │
+    ├──[1:N]──> slate_likes (User's liked posts)
+    ├──[1:N]──> slate_comments (User's comments)
+    ├──[1:N]──> slate_shares (User's shared posts)
+    └──[1:N]──> slate_saved (User's saved posts)
+```
+
+### Data Flow Examples
+
+#### Creating a Post
+```
+1. (Optional) User uploads media → POST /api/upload/slate-media
+2. Backend validates file (size < 10MB, type allowed)
+3. Backend stores in slate-media/{user_id}/temp/{filename}
+4. Backend returns public URL
+5. User submits post → POST /api/slate with content and media URLs
+6. Backend validates auth and required fields
+7. Backend generates URL-friendly slug from content
+8. Backend inserts into slate_posts
+9. Backend inserts media records into slate_media (batch insert)
+10. Triggers update counts (likes_count, comments_count = 0)
+11. Backend returns complete post object with slug
+12. Frontend displays new post in feed
+```
+
+#### Liking a Post
+```
+1. User clicks like button → POST /api/slate/[id]/like
+2. Backend validates:
+   - User is authenticated
+   - Post exists and is published
+   - User hasn't already liked (unique constraint)
+3. Backend inserts into slate_likes
+4. Trigger automatically increments slate_posts.likes_count
+5. Backend fetches updated likes_count
+6. Backend returns updated count
+7. Frontend updates button state to "liked" with new count
+```
+
+#### Viewing Feed
+```
+1. Request GET /api/slate?page=1&limit=20&sort=latest
+2. Backend queries slate_posts with status = 'published'
+3. Backend JOINs with user_profiles (author data)
+4. Backend JOINs with slate_media (first image)
+5. If authenticated:
+   - Check which posts user has liked (batch query)
+   - Check which posts user has saved (batch query)
+6. Backend applies sorting (created_at DESC or likes_count DESC)
+7. Backend applies pagination (LIMIT/OFFSET)
+8. Backend counts total posts for pagination metadata
+9. Backend combines all data into post objects
+10. Frontend renders feed with engagement buttons
+```
+
+#### Adding a Comment
+```
+1. User writes comment → POST /api/slate/[id]/comment
+2. Backend validates:
+   - User is authenticated
+   - Content length (1-2000 chars)
+   - Post exists and is published
+   - parent_comment_id exists (if replying)
+3. Backend inserts into slate_comments
+4. Trigger automatically increments slate_posts.comments_count
+5. Backend fetches comment with author profile
+6. Backend creates notification for post author (optional)
+7. Backend returns complete comment object
+8. Frontend adds comment to UI without reload
+```
+
+### Validation Rules
+
+**Post Creation:**
+- `content`: Required, 1-5000 characters
+- `status`: Enum ("published" | "draft" | "archived"), defaults to "published"
+- `media_urls`: Optional, array of valid URLs from slate-media bucket
+
+**Media Upload:**
+- Max file size: 10 MB
+- Allowed types: PNG, JPG, JPEG, WebP, MP4, MOV, AVI only
+- Path validation: user must own the folder
+
+**Comment Creation:**
+- `content`: Required, 1-2000 characters
+- `parent_comment_id`: Optional, must exist if provided
+- Post must be "published" status
+
+**Engagement Actions:**
+- Cannot like own posts (optional business rule)
+- Cannot duplicate like/share/save (unique constraints)
+- Can only perform actions on "published" posts
+
+### Implementation Guide
+See complete step-by-step implementation guide:
+- **`backend-command/slate-group/README.md`** - Overview and quick start (START HERE)
+- **`backend-command/slate-group/00_FRONTEND_ANALYSIS.md`** - Frontend analysis and requirements
+- **`backend-command/slate-group/01_CREATE_TABLES.sql`** - Database table creation SQL
+- **`backend-command/slate-group/02_RLS_POLICIES.sql`** - Row Level Security policies SQL
+- **`backend-command/slate-group/03_INDEXES.sql`** - Performance optimization indexes SQL
+- **`backend-command/slate-group/04_STORAGE_BUCKET.sql`** - Storage bucket setup SQL
+- **`backend-command/slate-group/05_API_IMPLEMENTATION_GUIDE.md`** - Complete API documentation with examples
+
+### Implementation Checklist
+
+**Phase 1: Database Setup**
+- [ ] Execute 01_CREATE_TABLES.sql (creates 6 tables + triggers)
+- [ ] Execute 02_RLS_POLICIES.sql (applies 28 security policies)
+- [ ] Execute 03_INDEXES.sql (creates 20+ performance indexes)
+- [ ] Execute 04_STORAGE_BUCKET.sql (creates slate-media bucket)
+- [ ] Verify tables exist and have correct schema
+- [ ] Verify RLS policies are active
+- [ ] Verify indexes are created
+- [ ] Verify storage bucket is configured
+
+**Phase 2: API Implementation**
+- [ ] Create /api/slate route structure
+- [ ] Implement POST /api/slate (create post)
+- [ ] Implement GET /api/slate (list feed)
+- [ ] Implement GET /api/slate/my (user's posts)
+- [ ] Implement GET /api/slate/[id] (details)
+- [ ] Implement PATCH /api/slate/[id] (update)
+- [ ] Implement DELETE /api/slate/[id] (delete)
+- [ ] Implement like endpoints (POST, DELETE, GET)
+- [ ] Implement comment endpoints (POST, GET, PATCH, DELETE)
+- [ ] Implement share endpoints (POST, DELETE)
+- [ ] Implement save endpoints (POST, DELETE, GET)
+- [ ] Implement POST /api/upload/slate-media
+
+**Phase 3: Frontend Integration**
+- [ ] Create API utility functions in frontend
+- [ ] Update /slate page (replace hardcoded data)
+- [ ] Implement create post modal
+- [ ] Implement engagement buttons (like, comment, share)
+- [ ] Implement media upload component
+- [ ] Add loading states and error handling
+- [ ] Implement infinite scroll pagination
+- [ ] Add search functionality
+- [ ] Test all user flows end-to-end
+
+**Phase 4: Testing & Optimization**
+- [ ] Test create/edit/delete posts
+- [ ] Test like/unlike functionality
+- [ ] Test comment/reply functionality
+- [ ] Test share/save functionality
+- [ ] Test RLS policies (try unauthorized actions)
+- [ ] Test file upload validation
+- [ ] Performance test with large dataset (1000+ posts)
+- [ ] Test pagination and filters
+- [ ] Test nested comments display
+
+### Implementation Status
+- ✅ Frontend UI complete with hardcoded data
+- ✅ Backend architecture designed and documented
+- ✅ Database schema created (6 tables, complete SQL with triggers)
+- ✅ RLS policies designed (28 policies, complete SQL)
+- ✅ Performance indexes designed (20+ indexes, complete SQL)
+- ✅ Storage bucket configured (complete SQL)
+- ✅ API endpoints documented (19 endpoints with examples)
+- ✅ Implementation plan ready (step-by-step guide)
+- ⏳ Database migration pending (run SQL files in order)
+- ⏳ API routes implementation pending
+- ⏳ Frontend-backend integration pending
+
+### Integration with Existing System
+The slate feature integrates seamlessly with:
+- **auth.users** - User authentication and profiles
+- **user_profiles** - User names, avatars, roles for display
+- **user_roles** - Professional roles for author info
+- **notifications** - Optional notifications for engagement
+- **Storage system** - Uses existing Supabase Storage infrastructure
+
+### Security Features
+- ✅ Row Level Security (RLS) on all tables
+- ✅ JWT token authentication via Supabase Auth
+- ✅ Ownership validation (users can only modify own content)
+- ✅ File upload validation (size, type, ownership)
+- ✅ Anti-spam (unique constraints on likes/shares/saves)
+- ✅ Public read for published posts, private for drafts
+- ✅ Cached counts prevent count manipulation
+
+### Performance Features
+- ✅ Database indexes on all foreign keys
+- ✅ Composite indexes for common queries
+- ✅ Full-text search indexes for content
+- ✅ Pagination support on all list endpoints
+- ✅ Query optimization with selective field fetching
+- ✅ Storage optimization (10MB limit, optimized paths)
+- ✅ Cached engagement counts (likes, comments, shares)
+- ✅ Automatic count updates via triggers
+
+### Performance Expectations
+
+| Operation | Expected Response Time |
+|-----------|------------------------|
+| Feed query (20 posts) | < 50ms |
+| Post details | < 20ms |
+| Like/Unlike | < 10ms |
+| Add comment | < 30ms |
+| Search posts | < 100ms (full-text) |
+| Media upload | < 500ms (depends on file size) |
 
 ---
 
