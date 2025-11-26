@@ -1,127 +1,201 @@
 
 "use client"
 
+import React, { useState } from "react"
+import Image from "next/image"
+import { Calendar as CalendarIcon, Camera, Edit2, LinkIcon, MapPin } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Camera, Edit2 } from "lucide-react";
-import { ProfileProgress } from "@/app/(app)/profile/components/profileProgress";
+import { Button } from "@/components/ui/button"
+import { ProfileProgress } from "@/app/(app)/profile/components/profileProgress"
+import { ProfileDataTypes } from "@/types"
+// import { countries } from "@/lib/countries"
 
+import AvalableDilog from "./Avalable"
+import LinksDialog from "./Links"
+import ProfileEditor from "./ProfileEdit"
+import { CalendarDialog } from "./calendar"
 
-
-import React, { useState } from "react";
-
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import LinksDialog from "./Links";
-import ProfileEditor from "./ProfileEdit";
-import { ProfileDataTypes } from "@/types";
-import AvalableDilog from "./Avalable";
-import { CalendarDialog } from "./calendar";
 export default function ShortProfile({ Profile }: { Profile: ProfileDataTypes }) {
-
+    const [coverImageHovered, setCoverImageHovered] = useState(false)
     const [profileImageHovered, setProfileImageHovered] = useState(false)
 
+    // const nationality = countries.find((country) => country.code === Profile.countryCode)?.name ?? Profile.countryCode ?? "Unknown"
+    const locationDescriptor = [Profile.persionalDetails.location?.trim()].filter(Boolean).join(" • ")
+    const highlightedRoles = Profile.roles.slice(0, 6)
+    const extraRecommendations = Math.max(Profile.recomendPeoples.length - 2, 0)
+    const primaryLink = Profile.persionalDetails.links[0]?.url ?? ""
+    const linkSummary = (() => {
+        if (!primaryLink) return "No links added"
+        try {
+            const host = new URL(primaryLink).hostname.replace(/^www\./, "")
+            const extra = Profile.persionalDetails.links.length - 1
+            const icon = <LinkIcon className="h-5 w-5" color="#FA6E80" />
+            return extra > 0 ? <>{icon} {host} & {extra} other link{extra > 1 ? "s" : ""}</> : host
+        } catch {
+            const extra = Profile.persionalDetails.links.length - 1
+            return extra > 0 ? `${primaryLink} & ${extra} other link${extra > 1 ? "s" : ""}` : primaryLink
+        }
+    })()
+
     return (
-        <>
-            {/* Profile Picture - Overlapping */}
-            <div className="-mt-40 ml-15" >
-                <div className="relative w-[112px] h-[112px]" onMouseEnter={() => setProfileImageHovered(true)} onMouseLeave={() => setProfileImageHovered(false)}>
-                    <ProfileProgress value={Profile.profileCompletion} imageUrl={Profile.avtar} className="rounded-full" />
-                    {Profile.profileCompletion > 0 && <div className="absolute text-xl px-3 py-1.5 text-[#FA6E80] -bottom-4 ml-9 mx-auto  bg-[#FFFFFF] rounded-2xl">{Profile.profileCompletion}%</div>}
-                    <div className={`absolute inset-1 p-3.5 h-full w-full  flex flex-col items-center justify-center rounded-full transition-opacity ${profileImageHovered ? 'opacity-100 bg-black/60 text-white' : 'opacity-0'}`}>
-                        <div className="flex gap-3 -mt-2">
-                            <Button variant="default" size="sm" className="rounded-full bg-transparent hover:bg-transparent"><Camera className="h-10 w-10" /></Button>
+        <section className="relative w-full border-b  border-[#DADADA] pb-6 ">
+            <div
+                className="relative h-[228px]"
+                onMouseEnter={() => setCoverImageHovered(true)}
+                onMouseLeave={() => setCoverImageHovered(false)}
+            >
+                <div className="relative sm:h-[150px] h-[88px] w-full overflow-hidden rounded-[20px]">
+                    <Image
+                        src={Profile.backgroundAvtar}
+                        alt="Cover image"
+                        fill
+                        sizes="600px"
+                        className="object-cover"
+                    />
+                    <input type="file" accept="image/*" id="cover-image-upload" className="hidden" />
+                    <div
+                        className={`absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-black/60 text-center text-white transition-opacity ${coverImageHovered ? "opacity-100" : "opacity-0"}`}
+                    >
+                        <p className="text-sm font-semibold">Replace Banner Image</p>
+                        <span className="text-xs opacity-80">Optimal dimensions: 3000x759px</span>
+                        <div className="flex gap-3">
+                            <label htmlFor="cover-image-upload">
+                                <Button variant="default" className="rounded-full bg-[#FA6E80] hover:bg-[#FA6E80]" asChild>
+                                    <span className="cursor-pointer">Replace Image</span>
+                                </Button>
+                            </label>
+                            <Button variant="ghost" className="rounded-full border border-white text-white">
+                                Remove
+                            </Button>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Profile Info Section */}
-            <div className="space-y-2 mx-auto">
-                {/* Name and Status */}
-                <div className="flex flex-row sm:flex-row sm:items-center sm:justify-between gap-4 justify-end">
-                    <div className="flex flex-row justify-between w-full">
-                        <div className="">
-                            <div className="flex items-center gap-3 flex-wrap">
-                                <h1 className="text-3xl sm:text-4xl font-bold">{Profile.persionalDetails.name}</h1>
-                                <div className="flex flex-row justify-center items-center gap-0   px-2 py-1">
-                                    <span className="h-2 w-2 rounded-full bg-[#34A353]" />
-                                    <Badge className=" text-green-700 text-xl  bg-transparent"><AvalableDilog initialProfile={Profile.persionalDetails} /></Badge>
-                                    {Profile.persionalDetails.availability === "Available" && (
-                                        <div className="flex flex-row justify-center items-center gap-3 text-[#31A7AC]">
-                                            <CalendarDialog />
-                                        </div>
-                                    )}
-
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 mt-2 text-muted-foreground">
-                                <MapPin className="h-5 w-5" />
-                                <span className="text-base">{Profile.persionalDetails.location}</span>
-                            </div>
-                        </div>
-                        <ProfileEditor
-                            initialProfile={Profile.persionalDetails}
-                            trigger={
-                                <Button size="icon" variant="ghost" className="rounded-full bg-[#31A7AC] hover:bg-[#31A7AC]">
-                                    <Edit2 className="h-5 w-5 text-white" />
-                                </Button>
-                            }
-
-                        />
-
+            <div className="absolute inset-x-0 top-[38px] sm:top-[108px] left-[9px] sm:left-[58px] flex justify-start">
+                <div
+                    className="relative flex h-[112px] w-[112px] items-center justify-center"
+                    onMouseEnter={() => setProfileImageHovered(true)}
+                    onMouseLeave={() => setProfileImageHovered(false)}
+                >
+                    <div className={`absolute inset-0  rounded-full border-[3px]  border-white bg-white`} />
+                    <ProfileProgress value={Profile.profileCompletion} imageUrl={Profile.avtar} className="rounded-full" />
+                    <div
+                        className={`absolute inset-1 flex items-center justify-center rounded-full transition-opacity ${profileImageHovered ? "bg-black/60 text-white" : "bg-transparent text-transparent"}`}
+                    >
+                        <Camera className="h-6 w-6" />
                     </div>
                 </div>
-                {/* Role */}
-                <div>
-                    {Profile.roles.map((role, index) => (
-                        <div key={index} className="inline-flex">
-                            <Badge className="bg-[#FA6E80] h-[22px] text-[#ffffff] rounded-full px-4 py-2 m-1">{role}</Badge>
-                        </div>
-                    ))}
-                </div>
-                {/* shortAbout */}
-                <p className="text-base leading-relaxed ">
-                    {Profile.persionalDetails.shortAbout}
-                </p>
-                {/* Links */}
-                <div className="flex items-center gap-2 text-cyan-500">
-                    <LinksDialog links={Profile.persionalDetails.links} />
-                </div>
-                <div className="">
-                    <div>
-                        {Profile.recomendPeoples.length > 0 && (
-                            <div className="space-y-2">
-                                <p className="text-sm font-medium text-muted-foreground">People also viewed:</p>
-                                <div className="flex items-center flex-row">
-                                    {Profile.recomendPeoples.slice(0, 5).map((person, index) => (
-                                        <div key={index} className={`w-12 h-12 rounded-full overflow-hidden border-2 border-white ${index > 0 ? '-ml-4' : ''}`}>
 
-                                            <Image
-                                                src={person.imgUrl}
-                                                alt={`Profile ${index + 1}`}
-                                                width={50}
-                                                height={50}
-                                                className="object-cover w-full h-full"
-                                            />
-                                        </div>
+            </div>
+            <div className="absolute top-[129px] left-[48px]  sm:top-[199px] sm:left-[88px] ">
+                <span className="inline-flex justify-center items-center rounded-[10px] bg-white px-4 py-1 text-xs font-semibold text-[#FA6E80] w-[41px] h-[25px]">
+                    {Profile.profileCompletion}%
+                </span>
+            </div>
+            <div className="absolute right-4 top-[96px]  sm:top-[200px] flex items-center gap-3">
+                <ProfileEditor
+                    initialProfile={Profile.persionalDetails}
+                    trigger={
+                        <Button
+                            className="h-[28px] w-[28px] rounded-full bg-[#31A7AC] text-white shadow-[0_4px_16px_rgba(49,167,172,0.35)] hover:bg-[#27939f]"
+                            aria-label="Edit profile"
+                        >
+                            <Edit2 className="h-5 w-5" />
+                        </Button>
+                    }
+                />
+            </div>
+            <div className="absolute inset-x-0 top-[160px] max-w-[367.8px] left-[200px] hidden justify-center font-[400] text-[11px] sm:flex ">
+                <div className="flex items-center gap-2 bg-white px-4 py-2 text-[#393939] ">
+                    <MapPin className="h-3.5 w-3.5 text-[#393939]" />
+                    <span className="whitespace-nowrap">{locationDescriptor}</span>
+                </div>
+                <div className="flex items-center gap-2  bg-white px-4 py-2 text-[#34A353] ">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#34A353]" />
+                    <AvalableDilog
+                        initialProfile={Profile.persionalDetails}
+                        triggerClassName="h-auto border-none bg-transparent p-0 text-[11px] font-[400] text-[#34A353] hover:bg-transparent"
+                    />
+                </div>
+                <CalendarDialog
+                    triggerClassName="flex h-[40px] items-center gap-2 rounded-full border-none bg-[#31A7AC] px-4 py-0 text-[11px] font-[400] text-white  hover:bg-[#27939f]"
+                    triggerLabel={
+                        <>
+                            <CalendarIcon className="h-4 w-4" />
+                            View Calendar
+                        </>
+                    }
+                />
+            </div>
+            <div className="flex sm:mt-10 -mt-10 flex-col gap-4 px-4 sm:px-[58px]">
+                <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <h1 className="text-[22px] font-semibold leading-[33px] text-black">{Profile.persionalDetails.name}</h1>
+                        {Profile.recomendPeoples.length > 0 && (
+                            <div className="flex items-center gap-3">
+                                <div className="flex -space-x-3">
+                                    {Profile.recomendPeoples.slice(0, 3).map((person, index) => (
+                                        <Image
+                                            key={`${person.imgUrl}-${index}`}
+                                            src={person.imgUrl}
+                                            alt="Referred profile"
+                                            width={32}
+                                            height={32}
+                                            className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                                        />
                                     ))}
-                                    {Profile.recomendPeoples.length > 1 && (
-                                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center -ml-4 border-2 border-white">
-                                            <span className="text-sm font-semibold text-gray-700">+{Profile.recomendPeoples.length - 2}</span>
-                                        </div>
+                                    {extraRecommendations > 0 && (
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-white text-xs font-semibold text-[#444444]">
+                                            +{extraRecommendations}
+                                        </span>
                                     )}
-                                    <span className="text-[#FA6E80] text-xl">+{Profile.recomendPeoples.length - 2} recommendation</span>
                                 </div>
+                                <span className="text-xs font-semibold text-[#FA6E80]">
+                                    +{Math.max(Profile.recomendPeoples.length, 0)} Referrals
+                                </span>
                             </div>
                         )}
                     </div>
+                    <p className="text-sm text-[#181818]">
+                        {(() => {
+                            const sentences = Profile.positions
+                                .flatMap(pos =>
+                                    pos
+                                        .split(/(?<=[.!?])\s+/)
+                                        .map(s => s.trim())
+                                )
+                                .filter(Boolean);
+
+                            return sentences.map((s, i) => (
+                                <React.Fragment key={i}>
+                                    {s}
+                                    {i < sentences.length - 1 && <br />}
+                                </React.Fragment>
+                            ));
+                        })()}
+                    </p>
                 </div>
 
-                {/* Recommend Peoples */}
+                <div className="flex flex-wrap gap-2">
+                    {highlightedRoles.map((role) => (
+                        <span
+                            key={role}
+                            className="rounded-[29px] bg-[#FA6E80] px-4 py-1 text-xs font-medium uppercase tracking-wide text-white"
+                        >
+                            {role}
+                        </span>
+                    ))}
+                </div>
 
+                <p className="text-[14px] leading-[21px] text-[#181818]">{Profile.persionalDetails.shortAbout}</p>
+                <p className="text-[14px] leading-[21px] text-[#181818]">140+ Awards were received</p>
 
-
+                <LinksDialog
+                    links={Profile.persionalDetails.links}
+                    triggerClassName="h-auto justify-start p-0 -ml-4 text-[12px] font-medium text-[#31A7AC] hover:bg-transparent"
+                    triggerLabel={linkSummary}
+                />
             </div>
-        </>)
+        </section>
+    )
 }

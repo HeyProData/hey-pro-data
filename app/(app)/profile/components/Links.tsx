@@ -1,5 +1,5 @@
 "use client"
-import React from "react"
+import React, { type ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { LinkIcon, Linkedin, Twitter, Github, Globe, Mail, Facebook, Youtube } from "lucide-react";
 import {
@@ -9,8 +9,15 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
 
-export default function LinksDialog({ links }: { links: { label: string; url: string }[] }) {
+interface LinksDialogProps {
+    links: { label: string; url: string }[]
+    triggerClassName?: string
+    triggerLabel?: ReactNode
+}
+
+export default function LinksDialog({ links, triggerClassName, triggerLabel }: LinksDialogProps) {
 
     const [open, setOpen] = React.useState(false)
     const [copiedIndex, setCopiedIndex] = React.useState<number | null>(null)
@@ -63,9 +70,16 @@ export default function LinksDialog({ links }: { links: { label: string; url: st
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 text-[#31A7AC border border-none ">
-                    <LinkIcon className="h-5 w-5" color="#FA6E80" />
-                    {links[0]?.url ?? "No links"} &nbsp;({links.length} links)
+                <Button
+                    variant="ghost"
+                    className={cn("flex items-center gap-2 border border-none text-[#31A7AC]", triggerClassName)}
+                >
+                    {triggerLabel ?? (
+                        <>
+                            <LinkIcon className="h-5 w-5" color="#FA6E80" />
+                            {links[0]?.url ?? "No links"} &nbsp;({links.length} links)
+                        </>
+                    )}
                 </Button>
             </DialogTrigger>
 

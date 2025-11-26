@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "lucide-react"
+import { cn } from "@/lib/utils"
 import {
     Dialog,
     DialogContent,
@@ -43,13 +44,22 @@ const buildMonthMatrix = (year: number, month: number) => {
     return rows
 }
 
-export function CalendarDialog() {
+type CalendarDialogProps = {
+    triggerClassName?: string
+    triggerLabel?: React.ReactNode
+}
+
+export function CalendarDialog({ triggerClassName, triggerLabel }: CalendarDialogProps) {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline" className="border-none text-[#31A7AC]">
-                    <span>View in Calendar</span>
-                    <Calendar className="ml-2 h-5 w-5" color="#31A7AC" />
+                <Button variant="outline" className={cn("border-none text-[#31A7AC]", triggerClassName)}>
+                    {triggerLabel ?? (
+                        <>
+                            <span>View in Calendar</span>
+                            <Calendar className="ml-2 h-5 w-5" color="#31A7AC" />
+                        </>
+                    )}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[360px] rounded-[24px] border-none px-0 pb-6 pt-4">

@@ -36,7 +36,6 @@ import AddLanguageSection from "./components/Language";
 import WhatupNumbers from "./components/WhatAppNumber";
 import AvalableCountryForTravel from "./components/AvalableCountryForTravel";
 import SkillEditor from "@/app/(app)/profile/components/SkillEditor";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import ShortProfile from "./components/ShortProfiel";
 import Highlights from "./components/Highlights";
@@ -46,7 +45,6 @@ import SlateView from "./components/slate";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<"profile" | "slate">("profile")
-  const [coverImageHovered, setCoverImageHovered] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -103,38 +101,8 @@ export default function Profile() {
   }
 
   return (
-    <section className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-6 pt-6 pb-20 px-3 xs:px-4 sm:px-6 lg:px-8">
-      <main className="flex-1 w-full max-w-full lg:max-w-[700px] space-y-3 flex flex-col">
-        <div className="relative mb-16 sm:mb-20 lg:mb-24" onMouseEnter={() => setCoverImageHovered(true)} onMouseLeave={() => setCoverImageHovered(false)}>
-          <div className="relative h-40 xs:h-44 sm:h-56 md:h-60 rounded-2xl overflow-hidden bg-gradient-to-br from-cyan-400 to-blue-500">
-            <Image src={profile.backgroundAvtar} alt="Cover" width={100} height={100} className="w-full h-full object-cover" />
-
-            <div className={`absolute inset-0 flex flex-col items-center justify-center px-4 text-center transition-opacity ${coverImageHovered ? 'opacity-100 bg-black/60 text-white' : 'opacity-0'}`}>
-              <div className="flex flex-col items-center justify-center mb-4 text-center">
-                <span className="text-white font-semibold mb-2 text-sm sm:text-base">Replace Banner Image</span>
-                <span className="text-[10px] sm:text-xs">Optimal dimensions: 3000x759px</span>
-              </div>
-              <div className="flex flex-col xs:flex-row gap-3 -mt-1 sm:-mt-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  // onChange={(e) => { }}
-                  className="hidden"
-                  id="cover-image-upload"
-                />
-                <label htmlFor="cover-image-upload">
-                  <Button variant="default" className="rounded-full bg-[#FA6E80] hover:bg-[#FA6E80] w-full xs:w-auto" asChild>
-                    <span className="cursor-pointer">Replace Image</span>
-                  </Button>
-                </label>
-                <Button variant="ghost" className="rounded-full border border-white hover:bg-transparent hover:text-white w-full xs:w-auto">
-                  Remove
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
+    <section className="relative mx-auto flex w-full max-w-[1180px] flex-col items-center gap-8 px-3 xs:px-4 sm:px-6 lg:flex-row lg:items-start lg:justify-center lg:gap-12 pt-6 pb-20">
+      <main className="flex w-full max-w-[600px] flex-col space-y-4">
         <ShortProfile Profile={profile} />
         <div className="w-full bg-slate-200 h-px sm:h-[1px] mb-5" />
 
@@ -215,7 +183,10 @@ export default function Profile() {
 
               <Dialog open={isReorderDialogOpen} onOpenChange={setIsReorderDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-auto gap-2 text-sm sm:text-base h-12 rounded-full bg-transparent">
+                  <Button
+                    variant="outline"
+                    className="h-12 w-full gap-2 rounded-full border-[#31A7AC] bg-white text-sm text-[#31A7AC] sm:w-auto sm:text-base"
+                  >
                     <List className="h-5 w-5" />
                     Reorder sections
                   </Button>
@@ -290,7 +261,9 @@ export default function Profile() {
           )}
         </div>
       </main>
-      <Highlights highlights={highlights} />
+      <div className="w-full max-w-[336px]">
+        <Highlights highlights={highlights} />
+      </div>
     </section>
   )
 }
@@ -298,8 +271,8 @@ export default function Profile() {
 function SkillItem({ title, description }: { title: string; description?: string }) {
   return (
     <div className="space-y-2">
-      <h3 className="font-semibold text-base sm:text-lg">{title}</h3>
-      {description && <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>}
+      <h3 className="text-base font-semibold text-[#000] sm:text-lg">{title}</h3>
+      {description && <p className="text-sm leading-relaxed text-[#444444]">{description}</p>}
     </div>
   )
 }
@@ -337,14 +310,14 @@ function SortableItem({ id }: { id: SectionType }) {
 
 function AboutSection({ Profile: profile }: { Profile: { about: string } }) {
   return (
-    <div className="space-y-4 max-w-full sm:max-w-3xl mx-auto shadow-md p-6 sm:p-8 lg:p-10 rounded-xl bg-[#FAFAFA]">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold">About</h2>
-        <Button size="icon" variant="ghost" className="rounded-full">
-          <Edit className="h-5 w-5 text-cyan-500" />
+    <div className="w-full rounded-[20px] bg-[#FAFAFA] px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.1)] sm:px-10 sm:py-9">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-[22px] font-semibold leading-[33px] text-[#000]">About</h2>
+        <Button size="icon" variant="ghost" className="rounded-full border border-[#31A7AC]/30 bg-white text-[#31A7AC]">
+          <Edit className="h-5 w-5" />
         </Button>
       </div>
-      <div className="space-y-4 text-sm sm:text-base leading-relaxed text-muted-foreground">
+      <div className="space-y-4 text-sm leading-[21px] text-[#181818] sm:text-base">
         {profile.about}
       </div>
     </div>
@@ -353,19 +326,19 @@ function AboutSection({ Profile: profile }: { Profile: { about: string } }) {
 
 function SkillsSection({ Profile: profile }: { Profile: { skills: { id: string, skillName: string, description: string }[] } }) {
   return (
-    <div className="space-y-4 max-w-full sm:max-w-3xl mx-auto shadow-md p-6 sm:p-8 lg:p-10 rounded-xl bg-[#FAFAFA]">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl sm:text-2xl font-bold">Skills</h2>
+    <div className="w-full rounded-[20px] bg-[#FAFAFA] px-6 py-7 shadow-[0_1px_10px_rgba(0,0,0,0.1)] sm:px-10 sm:py-9">
+      <div className="mb-5 flex items-center justify-between">
+        <h2 className="text-[22px] font-semibold leading-[33px] text-[#000]">Skills</h2>
         <SkillEditor
           initialSkills={profile.skills}
           trigger={
-            <Button size="icon" variant="ghost" className="rounded-full">
-              <Edit className="h-4 w-4 sm:h-5 sm:w-5" color="#31A7AC" />
+            <Button size="icon" variant="ghost" className="rounded-full border border-[#31A7AC]/30 bg-white text-[#31A7AC]">
+              <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           }
         />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-4">
         {profile.skills.map((skill, index) => (
           <SkillItem key={index} title={skill.skillName} description={skill.description} />
         ))}

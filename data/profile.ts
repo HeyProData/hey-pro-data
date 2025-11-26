@@ -1,11 +1,11 @@
 export const profileData = {
     id: "1",
     avtar: "/image (2).png",
-    backgroundAvtar: "/image.png",
+    backgroundAvtar: "/bg.jpg",
     persionalDetails: {
         name: "John Doe",
         aliasName: "JD",
-        location: "India, Tamil Nadu, Chennai ",
+        location: "Tamil Nadu, Chennai ",
         availability: "Available",
         shortAbout:
             "Award-winning cinematographer with 10+ years in narrative film and commercial work. Visual storytelling and collaborative filmmaking.",
@@ -61,7 +61,7 @@ export const profileData = {
         },
     ],
     roles: ["Director", "Cinematographer", "Editor", "Producer", "Screenwriter"],
-
+    positions: ["Freelance Cinematographer", "Founder • HeyProData • Film Tech SaaS",],
     credits: [
         {
             id: "1",
