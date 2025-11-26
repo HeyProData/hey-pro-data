@@ -15,6 +15,7 @@ import { gigsData } from "@/data/gigs";
 
 import { sampleApplicants } from "./sample-data";
 import { SeeAllReferralsDialog } from "./see-all-referrals";
+import Image from "next/image";
 
 type ApplicationTabProps = {
     selectedGigIds: string[];
@@ -56,7 +57,7 @@ export function ApplicationTab({ selectedGigIds }: ApplicationTabProps) {
                 </Button>
             </div>
             {selectedGigs.map((gig) => (
-                <section key={gig.id} className="space-y-4 rounded-3xl bg-white p-4 shadow-sm sm:p-6">
+                <section key={gig.id} className="space-y-4 rounded-3xl p-4 shadow-sm sm:p-6  ">
                     <header className="space-y-3">
 
                         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
@@ -78,8 +79,8 @@ export function ApplicationTab({ selectedGigIds }: ApplicationTabProps) {
                         </div>
                     </header>
 
-                    <div className="overflow-hidden rounded-2xl border border-gray-200">
-                        <table className="min-w-full border-collapse text-sm">
+                    <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+                        <table className="min-w-[900px] border-collapse text-sm">
                             <thead className="bg-gray-50 text-left text-gray-500">
                                 <tr>
                                     <th className="border border-gray-200 px-4 py-3 font-medium text-gray-700">Name</th>
@@ -105,7 +106,7 @@ export function ApplicationTab({ selectedGigIds }: ApplicationTabProps) {
                                         <tr key={rowKey} className="text-gray-800">
                                             <td className="border border-gray-200 px-4 py-3">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-full bg-gray-200" />
+                                                    <Image src={person.avatar} alt={person.name} width={30} height={30} className="rounded-full" />
                                                     <div>
                                                         <p className="font-medium text-gray-900">{person.name}</p>
                                                         <p className="text-xs text-gray-500">{gig.title}</p>
