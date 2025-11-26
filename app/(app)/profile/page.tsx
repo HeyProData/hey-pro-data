@@ -44,6 +44,7 @@ import CreditsSection from "./components/CreditView";
 import { profileData, highlightsData } from "@/data/profile";
 import SlateView from "./components/slate";
 import AddNewSkill from "./components/add-new-skill";
+import { RoleDialog } from "./components/role";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState<"profile" | "slate">("profile")
@@ -159,6 +160,9 @@ export default function Profile() {
                   </div>
                   <div className="flex-none ">
                     <AvalableCountryForTravel availableCountries={profile.AvailableCountriesForTravel} />
+                  </div>
+                  <div>
+                    <RoleDialog />
                   </div>
                 </div>
                 {showLeftArrow && (

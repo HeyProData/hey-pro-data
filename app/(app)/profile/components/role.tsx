@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { profileData } from "@/data/profile"
+import { Plus } from "lucide-react"
 
 export function RoleDialog() {
     const [roles, setRoles] = useState<string[]>(profileData.roles ?? [])
@@ -54,25 +55,24 @@ export function RoleDialog() {
     }
 
     return (
-        <div className="rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
+        <div className="rounded-[24px] border">
             <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h3 className="text-lg font-semibold text-slate-900">Roles</h3>
-                    <p className="text-sm text-slate-500">Add the hats you wear most often.</p>
-                </div>
+
                 <Dialog open={open} onOpenChange={handleOpenChange}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" className="rounded-full border-[#31A7AC] text-[#31A7AC]">
-                            Manage roles
-                        </Button>
+                        <DialogTrigger asChild>
+                            <div className="flex flex-row gap-5 h-[44px] w-auto text-base font-medium rounded-[15px]  bg-transparent border px-9 justify-center items-center cursor-pointer hover:bg-muted/50 border-[#444444] ">
+                                Roles
+                            </div>
+                        </DialogTrigger>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[420px] rounded-[24px]">
                         <DialogHeader>
-                            <DialogTitle>Roles</DialogTitle>
+                            <DialogTitle className="flex items-start mt-10">Roles</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4">
-                            <p className="text-sm text-slate-500">Enter each role and press Add. Keep it short, like “Director” or “Editor”.</p>
-                            <div className="flex gap-2">
+                        <div className="space-y-4 -mt-15">
+                            <p className="text-sm font[400] text-slate-500">Let people know what all language you speak.</p>
+                            <div className="flex justify-center items-center gap-2 w-full border border-[#31A7AC] h-[41px] rounded-[15px]">
                                 <Input
                                     value={newRole}
                                     onChange={(event) => setNewRole(event.target.value)}
@@ -83,9 +83,10 @@ export function RoleDialog() {
                                             handleAddRole()
                                         }
                                     }}
+                                    className=" border-none focus:ring-0"
                                 />
-                                <Button type="button" onClick={handleAddRole}>
-                                    Add
+                                <Button type="button" className="bg-transparent" onClick={handleAddRole}>
+                                    <Plus className="h-7 w-7 text-[#31A7AC]" />
                                 </Button>
                             </div>
                             <div className="flex flex-wrap gap-2">
@@ -95,7 +96,7 @@ export function RoleDialog() {
                                 {draftRoles.map((role) => (
                                     <span
                                         key={role}
-                                        className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700"
+                                        className="inline-flex items-center gap-2 rounded-[15px] border border-[#31A7AC] h-[41px] px-3 py-1 text-sm text-slate-700"
                                     >
                                         {role}
                                         <button
@@ -110,29 +111,20 @@ export function RoleDialog() {
                                 ))}
                             </div>
                         </div>
-                        <DialogFooter>
+                        <DialogFooter className=" flex flex-row justify-start items-start">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">
-                                    Cancel
+                                <Button type="button" className="h-[44px] w-[128px] rounded-[15px] border-[#31A7AC]" variant="outline">
+                                    <span className="text-[#31A7AC]">Cancel</span>
                                 </Button>
                             </DialogClose>
-                            <Button type="button" onClick={handleSaveRoles}>
+                            <Button type="button" className="h-[44px] rounded[15px] bg-[#31A7AC]" onClick={handleSaveRoles}>
                                 Save roles
                             </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-                {roles.length === 0 && (
-                    <p className="text-sm text-slate-500">No roles added yet.</p>
-                )}
-                {roles.map((role) => (
-                    <span key={role} className="rounded-full bg-[#E6F7F8] px-4 py-1 text-sm font-medium text-[#1F9BA7]">
-                        {role}
-                    </span>
-                ))}
-            </div>
+
         </div>
     )
 }
