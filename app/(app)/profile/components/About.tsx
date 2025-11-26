@@ -62,15 +62,14 @@ export default function AboutSectionComponent({ icon, title, about: initialAbout
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <form onSubmit={handleSubmit}>
-                    <DialogHeader>
+                    <DialogHeader className="flex flex-col items-start justify-start ">
                         <DialogTitle>Edit {finalTitle}</DialogTitle>
-                        <DialogDescription>
+                        <div className="text-start text-[12px] font-[400]">
                             You can write about your years of experience, industry, or skills. People also talk about their achievements or previous job experiences.
-                        </DialogDescription>
+                        </div>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-3">
-                            <Label htmlFor="about-textarea">About</Label>
                             <Textarea
                                 id="about-textarea"
                                 placeholder="Type your message here."
@@ -79,16 +78,16 @@ export default function AboutSectionComponent({ icon, title, about: initialAbout
                                     setAbout(e.target.value);
                                     if (error) setError(null); // Clear error when user starts typing
                                 }}
-                                className={`h-72 ${error ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                                className={`h-72 rounded-[15px] ${error ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                             />
                             {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
                         </div>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="flex flex-row ">
                         <DialogClose asChild>
-                            <Button type="button" variant="outline">Cancel</Button>
+                            <Button type="button" variant="outline" className="rounded-[16px] h-[44px] w-[128px]">Cancel</Button>
                         </DialogClose>
-                        <Button type="submit">Save changes</Button>
+                        <Button type="submit" className="rounded-[16px] h-[44px]">Save changes</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
