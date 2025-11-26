@@ -3,14 +3,14 @@ import Link from "next/link"
 
 const Header = () => {
     return (
-        <div className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-0 space-y-4 px-2 sm:px-0">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
                 <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">
                     Collab
                 </span>
                 <Link
                     href="/collab/manage-collab"
-                    className="inline-flex w-full items-center justify-center rounded-[12px] border border-transparent bg-[#31A7AC] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 sm:w-auto"
+                    className="inline-flex w-[192px] h-[44px] items-center justify-center rounded-[12px] border border-transparent bg-[#31A7AC] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 sm:w-auto"
                 >
                     Manage Collab
                 </Link>

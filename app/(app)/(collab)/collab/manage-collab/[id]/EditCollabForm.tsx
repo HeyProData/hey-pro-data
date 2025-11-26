@@ -6,9 +6,7 @@ import React from "react";
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
@@ -96,11 +94,11 @@ export function EditCollabForm({ collab }: EditCollabFormProps) {
     };
 
     return (
-        <section className="rounded-[36px] border border-[#F2F4F7] bg-white p-6 shadow-[0_25px_120px_rgba(0,0,0,0.06)]">
-            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row w-full gap-6">
-                <div className="w-full md:w-[360px] flex-shrink-0 space-y-6">
+        <section className="rounded-[36px] border border-[#F2F4F7] bg-white p-4 sm:p-6 shadow-[0_25px_120px_rgba(0,0,0,0.06)]">
+            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6 lg:flex-row">
+                <div className="w-full flex-shrink-0 space-y-6 lg:max-w-[360px]">
                     <div className="rounded-[30px] p-4 text-center text-sm text-gray-500">
-                        <div className="relative h-[410px] w-[348px] overflow-hidden rounded-[24px] bg-white">
+                        <div className="relative mx-auto h-[280px] w-full max-w-[360px] overflow-hidden rounded-[24px] bg-white sm:h-[360px]">
                             <input
                                 type="file"
                                 accept="image/png,image/jpeg,image/jpg"
@@ -199,12 +197,12 @@ export function EditCollabForm({ collab }: EditCollabFormProps) {
                 </div>
             </form>
             <div>
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <span className="font-semibold text-2xl">Collaborators</span>
-                    <button className="ml-2 text-white bg-[#31A7AC] border rounded-[10px] px-4 py-2 ">Close Collab</button>
+                    <button className="ml-0 w-full rounded-[10px] border border-transparent bg-[#31A7AC] px-4 py-2 text-white transition hover:opacity-90 sm:ml-2 sm:w-auto">Close Collab</button>
                 </div>
-                <div className="w-full">
-                    <Table className="w-full table-fixed">
+                <div className="w-full overflow-x-auto">
+                    <Table className="w-full min-w-[600px] table-fixed">
                         <TableHeader>
                             <TableRow className="border-b border-gray-300">
                                 <TableHead className="w-2/3">Name</TableHead>
