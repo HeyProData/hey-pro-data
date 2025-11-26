@@ -47,16 +47,29 @@ const initialFormValues: GigFormValues = {
     expiryDate: "",
 }
 
-const defaultSelectedDates = [1, 2, 3, 4, 12, 13, 14]
+const buildDateKey = (year: number, monthIndex: number, day: number) => new Date(year, monthIndex, day).getTime()
+
+const defaultSelectedDates = [
+    buildDateKey(2025, 8, 1),
+    buildDateKey(2025, 8, 2),
+    buildDateKey(2025, 8, 4),
+    buildDateKey(2025, 8, 13),
+    buildDateKey(2025, 8, 14),
+    buildDateKey(2025, 8, 15),
+    buildDateKey(2025, 8, 16),
+    buildDateKey(2025, 8, 17),
+]
 
 const capitalizeLabel = (value: string) => {
     if (!value) return ""
     return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
-const buildDateRangeString = (dates: number[]) => {
-    if (!dates.length) return ""
-    const sorted = [...new Set(dates)].sort((a, b) => a - b)
+const getDateKey = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+
+const buildDayRangeString = (days: number[]) => {
+    if (!days.length) return ""
+    const sorted = [...new Set(days)].sort((a, b) => a - b)
     const ranges: Array<[number, number]> = []
     let start = sorted[0]
     let end = sorted[0]
@@ -78,11 +91,48 @@ const buildDateRangeString = (dates: number[]) => {
         .join(", ")
 }
 
+const formatSelectedDates = (dateKeys: number[]) => {
+    if (!dateKeys.length) return [] as string[]
+    const uniqueSorted = [...new Set(dateKeys)].sort((a, b) => a - b)
+    return uniqueSorted.map((key) => format(new Date(key), "d MMM, yyyy"))
+}
+
+const buildMonthSummaries = (dateKeys: number[]) => {
+    const monthMap = new Map<string, { label: string; days: number[]; key: string }>()
+
+    dateKeys.forEach((key) => {
+        const date = new Date(key)
+        const monthKey = `${date.getFullYear()}-${date.getMonth()}`
+        const existing = monthMap.get(monthKey)
+        if (existing) {
+            existing.days.push(date.getDate())
+        } else {
+            monthMap.set(monthKey, {
+                key: monthKey,
+                label: format(date, "MMM yyyy"),
+                days: [date.getDate()],
+            })
+        }
+    })
+
+    const sortedEntries = [...monthMap.values()].sort((a, b) => {
+        const [aYear, aMonth] = a.key.split("-").map(Number)
+        const [bYear, bMonth] = b.key.split("-").map(Number)
+        if (aYear === bYear) return aMonth - bMonth
+        return aYear - bYear
+    })
+
+    return sortedEntries.map(({ label, days }) => ({
+        label,
+        ranges: buildDayRangeString(days),
+    }))
+}
+
 export default function AddGigPage() {
     const [crewCount, setCrewCount] = useState(1)
     const [formValues, setFormValues] = useState<GigFormValues>(initialFormValues)
     const [currentMonth, setCurrentMonth] = useState(new Date(2025, 8, 1))
-    const [selectedDates, setSelectedDates] = useState<number[]>(defaultSelectedDates)
+    const [selectedDates, setSelectedDates] = useState<number[]>([...defaultSelectedDates])
     const [isTbc, setIsTbc] = useState(false)
     const [requestQuote, setRequestQuote] = useState(false)
     const [expiryDate, setExpiryDate] = useState<Date | null>(null)
@@ -112,28 +162,57 @@ export default function AddGigPage() {
 
     const toggleDate = (day: Date) => {
         if (!isSameMonth(day, currentMonth)) return
-        const dayNumber = day.getDate()
+        const dayKey = getDateKey(day)
         setSelectedDates((prev) =>
-            prev.includes(dayNumber)
-                ? prev.filter((existing) => existing !== dayNumber)
-                : [...prev, dayNumber].sort((a, b) => a - b),
+            prev.includes(dayKey)
+                ? prev.filter((existing) => existing !== dayKey)
+                : [...prev, dayKey].sort((a, b) => a - b),
         )
     }
-
-    const dateRangeString = useMemo(() => buildDateRangeString(selectedDates), [selectedDates])
+    const formattedSelectedDates = useMemo(() => formatSelectedDates(selectedDates), [selectedDates])
+    const monthDateSummaries = useMemo(() => buildMonthSummaries(selectedDates), [selectedDates])
     const formattedMonthLabel = format(currentMonth, "MMM yyyy")
     const hasActivePreview = useMemo(() => {
         const textFilled = Object.values(formValues).some((value) => value.trim().length > 0)
         const controlsChanged = crewCount !== 1 || isTbc || requestQuote || referenceFile || expiryDate
         return textFilled || controlsChanged
     }, [formValues, crewCount, isTbc, requestQuote, referenceFile, expiryDate])
+    const previewDetailRows = useMemo(
+        () => [
+            { label: "Role", value: capitalizeLabel(formValues.role) || "Not provided" },
+            { label: "Type", value: capitalizeLabel(formValues.type) || "Not provided" },
+            { label: "Department", value: formValues.department || "Not provided" },
+            { label: "Location", value: formValues.location || "Not provided" },
+            { label: "Company", value: formValues.company || "Not provided" },
+            { label: "Crew count", value: String(crewCount) },
+            { label: "TBC", value: isTbc ? "Yes" : "No" },
+            { label: "Request quote", value: requestQuote ? "Yes" : "No" },
+            { label: "GIG rate", value: requestQuote ? "Requesting quote" : formValues.gigRate ? `AED ${formValues.gigRate}` : "Not provided" },
+            { label: "Description", value: formValues.description || "Not provided" },
+            { label: "Qualifying criteria", value: formValues.qualifyingCriteria || "Not provided" },
+            {
+                label: "Dates selected",
+                value: monthDateSummaries.length
+                    ? monthDateSummaries.map((entry) => `${entry.label} | ${entry.ranges}`).join("; ")
+                    : "No dates selected",
+            },
+            {
+                label: "Individual dates",
+                value: formattedSelectedDates.length ? formattedSelectedDates.join(", ") : "No dates selected",
+            },
+            { label: "Reference URL", value: formValues.referenceUrl || "Not provided" },
+            { label: "Reference file", value: referenceFile?.name || "No file uploaded" },
+            { label: "Expiry date", value: formValues.expiryDate || "Auto-expire in 3 days" },
+        ],
+        [formValues, crewCount, isTbc, requestQuote, referenceFile, monthDateSummaries, formattedSelectedDates],
+    )
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
         const payload = {
             crewCount,
             ...formValues,
-            dates: selectedDates.map((day) => new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)),
+            dates: selectedDates.map((key) => new Date(key)),
             isTbc,
             requestQuote,
             referenceFileName: referenceFile?.name || null,
@@ -146,7 +225,7 @@ export default function AddGigPage() {
     const resetForm = () => {
         setCrewCount(1)
         setFormValues(initialFormValues)
-        setSelectedDates(defaultSelectedDates)
+        setSelectedDates([...defaultSelectedDates])
         setIsTbc(false)
         setRequestQuote(false)
         setExpiryDate(null)
@@ -323,24 +402,39 @@ export default function AddGigPage() {
                                     ))}
                                 </div>
                                 <ScrollArea className="mt-3 max-h-[260px]">
-                                    <div className="grid grid-cols-7 gap-2">
+                                    <div className="grid grid-cols-7 gap-x-0 gap-y-2">
                                         {calendarDays.map((day, index) => {
                                             const dayNumber = day.getDate()
                                             const isCurrentMonthDay = isSameMonth(day, currentMonth)
-                                            const isSelected = selectedDates.includes(dayNumber)
-                                            const hasPrevInRow = index % 7 !== 0
-                                            const hasNextInRow = index % 7 !== 6
-                                            const isPrevSelected = isSelected && hasPrevInRow && selectedDates.includes(dayNumber - 1)
-                                            const isNextSelected = isSelected && hasNextInRow && selectedDates.includes(dayNumber + 1)
-                                            const selectionShapeClass = !isSelected
-                                                ? "rounded-full"
-                                                : isPrevSelected && isNextSelected
-                                                    ? "rounded-none"
-                                                    : isPrevSelected
-                                                        ? "rounded-r-full rounded-l-none"
-                                                        : isNextSelected
-                                                            ? "rounded-l-full rounded-r-none"
-                                                            : "rounded-full"
+                                            const dayKey = getDateKey(day)
+                                            const isSelected = isCurrentMonthDay && selectedDates.includes(dayKey)
+                                            const columnIndex = index % 7
+                                            const atRowStart = columnIndex === 0
+                                            const atRowEnd = columnIndex === 6
+                                            const prevCell = columnIndex > 0 ? calendarDays[index - 1] : null
+                                            const nextCell = columnIndex < 6 ? calendarDays[index + 1] : null
+                                            const isPrevSelected = Boolean(
+                                                prevCell &&
+                                                isSameMonth(prevCell, currentMonth) &&
+                                                selectedDates.includes(getDateKey(prevCell))
+                                            )
+                                            const isNextSelected = Boolean(
+                                                nextCell &&
+                                                isSameMonth(nextCell, currentMonth) &&
+                                                selectedDates.includes(getDateKey(nextCell))
+                                            )
+
+                                            const shapeClass = cn(
+                                                "rounded-full",
+                                                isSelected && isPrevSelected && isNextSelected && "rounded-none",
+                                                isSelected && isPrevSelected && !isNextSelected &&
+                                                (atRowEnd ? "rounded-none" : "rounded-r-full rounded-l-none"),
+                                                isSelected && !isPrevSelected && isNextSelected && (atRowStart ? "rounded-none" : "rounded-l-full rounded-r-none"),
+                                                isSelected && !isPrevSelected && !isNextSelected && [
+                                                    atRowStart ? "rounded-l-none" : "rounded-l-full",
+                                                    atRowEnd ? "rounded-r-none" : "rounded-r-full",
+                                                ]
+                                            )
 
                                             return (
                                                 <button
@@ -348,12 +442,14 @@ export default function AddGigPage() {
                                                     type="button"
                                                     disabled={!isCurrentMonthDay}
                                                     onClick={() => toggleDate(day)}
-                                                    className={`flex h-10 w-10 items-center justify-center text-sm font-semibold transition ${selectionShapeClass} ${!isCurrentMonthDay
-                                                        ? "text-[#D7E3E5]"
-                                                        : isSelected
-                                                            ? "bg-[#1FB3B0] text-white"
-                                                            : "text-[#1FB3B0]"
-                                                        }`}
+                                                    className={cn(
+                                                        "flex h-12 w-full items-center justify-center text-sm font-semibold transition",
+                                                        shapeClass,
+                                                        !isCurrentMonthDay && "text-[#D7E3E5]",
+                                                        isCurrentMonthDay && !isSelected && "text-[#199490]",
+                                                        isSelected && "bg-[#1FB3B0] text-white",
+                                                        !isCurrentMonthDay && "cursor-default"
+                                                    )}
                                                 >
                                                     {dayNumber}
                                                 </button>
@@ -538,21 +634,31 @@ export default function AddGigPage() {
                                 <p className="mt-3 text-sm text-[#6F6F6F]">
                                     {formValues.description || "Description of the GIG will be here ..."}
                                 </p>
+                                <div className="my-4 h-px w-full border-b border-dotted border-[#E0E0E0]" />
 
-                                <div className="mt-4 space-y-2 text-sm text-[#1D1D1F]">
+                                <div className="space-y-4 text-sm text-[#1D1D1F]">
                                     <div className="flex gap-3">
                                         <CalendarIcon className="mt-1 h-4 w-4 text-[#6F6F6F]" />
-                                        <div>
-                                            {dateRangeString ? (
-                                                <p>
-                                                    {formattedMonthLabel} | {dateRangeString}
-                                                </p>
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-[#8F8F8F]">Selected dates</p>
+                                            {monthDateSummaries.length ? (
+                                                <div className="space-y-1">
+                                                    {monthDateSummaries.map((entry) => (
+                                                        <p key={`${entry.label}-${entry.ranges}`} className="text-sm text-[#4F4F4F]">
+                                                            <span className="font-semibold text-[#1D1D1F]">{entry.label}</span>
+                                                            <span className="px-2 text-[#A3A3A3]">|</span>
+                                                            {entry.ranges}
+                                                        </p>
+                                                    ))}
+                                                </div>
                                             ) : (
-                                                <p>No dates selected yet</p>
+                                                <p className="text-[#6F6F6F]">No dates selected yet</p>
                                             )}
                                         </div>
                                     </div>
-                                    <p className="text-base font-semibold">AED {formValues.gigRate || "0"}</p>
+                                    <p className="text-base font-semibold">
+                                        {requestQuote ? "Requesting quote" : `AED ${formValues.gigRate || "0"}`}
+                                    </p>
                                     <p className="text-sm font-semibold text-[#1D1D1F]">
                                         Qualifying criteria:
                                         <span className="pl-1 font-normal text-[#6F6F6F]">
@@ -566,6 +672,23 @@ export default function AddGigPage() {
                                         </div>
                                     )}
                                 </div>
+
+                                {/* <div className="mt-6">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-[#199490]">Form summary</p>
+                                    <dl className="mt-3 grid gap-3 text-sm text-[#1D1D1F]">
+                                        {previewDetailRows.map((row) => (
+                                            <div
+                                                key={row.label}
+                                                className="rounded-xl px-3 py-2"
+                                            >
+                                                <dt className="text-xs font-semibold uppercase tracking-wide text-[#8F8F8F]">
+                                                    {row.label}
+                                                </dt>
+                                                <dd className="text-sm text-[#1D1D1F]">{row.value}</dd>
+                                            </div>
+                                        ))}
+                                    </dl>
+                                </div> */}
 
                                 <p className="mt-4 text-xs text-[#8F8F8F]">Posted on {format(new Date(), "d MMM, yyyy")}</p>
                                 <p className="mt-1 text-xs font-semibold text-[#FF5470]">
