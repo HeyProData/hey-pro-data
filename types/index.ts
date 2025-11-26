@@ -42,6 +42,7 @@ export type ProfileDataTypes = {
     description: string;
   }[];
   roles: string[];
+  positions: string[];
   credits: {
     id: number | string;
     creditTitle: string;

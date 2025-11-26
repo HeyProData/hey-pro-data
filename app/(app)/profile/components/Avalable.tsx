@@ -1,6 +1,7 @@
 "use client"
 import React from "react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import {
     Dialog,
     DialogContent,
@@ -14,8 +15,9 @@ interface EditAvalableProps {
     initialProfile: {
         availability: string
     }
+    triggerClassName?: string
 }
-export default function AvalableDilog({ initialProfile }: EditAvalableProps) {
+export default function AvalableDilog({ initialProfile, triggerClassName }: EditAvalableProps) {
 
     const [open, setOpen] = React.useState(false)
     const [availability, setAvailability] = React.useState(initialProfile.availability)
@@ -42,7 +44,10 @@ export default function AvalableDilog({ initialProfile }: EditAvalableProps) {
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 border border-none text-[#31A7AC]">
+                <Button
+                    variant="ghost"
+                    className={cn("flex items-center gap-2 border border-none text-[#31A7AC]", triggerClassName)}
+                >
                     {availability}
                 </Button>
             </DialogTrigger>

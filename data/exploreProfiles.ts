@@ -12,6 +12,8 @@ export type ExploreProfile = {
   summary: string
   roles: string[]
   availability: "available" | "booked"
+  bgimage?: string
+  avatar?: string
 }
 
 export type ExploreCategory = {
@@ -38,6 +40,8 @@ const categories: ExploreCategory[] = [
           "Behind-the-scenes documentary capturing the energy and creativity of Dubai Fashion Week 2024.",
         roles: ["Producer", "Producer | Creative", "Production Manager"],
         availability: "available",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
       {
         id: "producer-alia",
@@ -47,6 +51,8 @@ const categories: ExploreCategory[] = [
           "Cross-cultural storyteller delivering large-scale live experiences for global luxury houses.",
         roles: ["Executive Producer", "Line Producer"],
         availability: "available",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
       {
         id: "producer-samir",
@@ -56,6 +62,8 @@ const categories: ExploreCategory[] = [
           "Hybrid producer blending physical production with virtual stages for high-speed automotive shoots.",
         roles: ["Producer", "Virtual Production"],
         availability: "booked",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
     ],
   },
@@ -72,6 +80,8 @@ const categories: ExploreCategory[] = [
         summary: "Character-first director focused on grounded sci-fi and high-gloss automotive spots.",
         roles: ["Director", "Director | Commercial"],
         availability: "available",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
       {
         id: "director-adil",
@@ -81,6 +91,8 @@ const categories: ExploreCategory[] = [
           "Long-form storyteller fluent in Arabic, French, and English, leading crews across North Africa.",
         roles: ["Director", "Writer"],
         availability: "booked",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
       {
         id: "director-ines",
@@ -89,6 +101,8 @@ const categories: ExploreCategory[] = [
         summary: "Documentary director embedding with sports teams and live events worldwide.",
         roles: ["Director", "Assistant Director"],
         availability: "available",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
     ],
   },
@@ -106,6 +120,8 @@ const categories: ExploreCategory[] = [
         summary: "Logistics lead for desert shoots handling permits, talent travel, and armored transport.",
         roles: ["Production Manager", "Logistics"],
         availability: "available",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
       {
         id: "pm-jake",
@@ -114,6 +130,8 @@ const categories: ExploreCategory[] = [
         summary: "Specializes in EU / GCC co-productions with deep tax incentive knowledge.",
         roles: ["Line Producer", "Production Manager"],
         availability: "available",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
       {
         id: "pm-saira",
@@ -122,6 +140,8 @@ const categories: ExploreCategory[] = [
         summary: "Remote-friendly PM coordinating multi-country documentary crews on tight timelines.",
         roles: ["Production Coordinator", "Production Manager"],
         availability: "booked",
+        bgimage: "/image.png",
+        avatar: "/image (2).png"
       },
     ],
   },

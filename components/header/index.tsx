@@ -332,7 +332,7 @@ export default function Header() {
                       className="fixed inset-0 z-40"
                       onClick={() => setUserMenuOpen(false)}
                     />
-                    <div className="absolute right-0 mt-1 w-64 bg-background border border-border rounded-lg shadow-lg z-50 p-4">
+                    <div className="absolute right-0 mt-0 w-[199px] h-[358px]  bg-background border border-border rounded-[15px] shadow-lg z-50 p-4">
                       <div className="absolute top-2 right-2">
                         <Button
                           variant="ghost"
@@ -343,47 +343,68 @@ export default function Header() {
                           <X className="h-5 w-5" />
                         </Button>
                       </div>
-                      <div className="flex flex-col items-center pt-8">
-                        <div className="relative mb-4">
+                      <div className="flex flex-col items-center  ">
+                        <div className="relative -mt-3 ">
                           <Avatar className="h-20 w-20">
                             <AvatarImage src="/image (2).png" alt="User" />
                             <AvatarFallback className="bg-primary text-primary-foreground text-2xl">JD</AvatarFallback>
                           </Avatar>
-                          <span className="absolute bottom-1 right-1 block h-4 w-4 rounded-full bg-green-500 ring-2 ring-background" />
+                          <span className="absolute bottom-1 right-10 block h-[10px] w-[10px] border-[1px] rounded-full bg-[#34A353] ring-2 ring-background" />
                         </div>
-                        <p className="font-semibold text-lg">John Doe</p>
-                        <p className="text-sm text-muted-foreground">john@example.com</p>
+                        <p className="font-[500] text-lg">John Doe</p>
                       </div>
-                      {/* <Separator className="my-4" /> */}
                       <div className="-space-y-5">
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base" asChild>
-                          <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
-                            <User className="h-5 w-5" />
-                            Profile
+                          <Link href="/profile" onClick={() => setUserMenuOpen(false)} className="">
+                            <span className="font-[400]">
+                              Profile
+                            </span>
+
                           </Link>
                         </Button>
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base" asChild>
-                          <Link href="/friends" onClick={() => setUserMenuOpen(false)}>
-                            <Save className="h-5 w-5" />
-                            Saved
+                          <Link href="/profile/saved" onClick={() => setUserMenuOpen(false)}>
+                            <span className="font-[400]">
+                              Saved
+                            </span>
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base" asChild>
+                          <Link href="/help" onClick={() => setUserMenuOpen(false)}>
+                            <span className="font-[400]">
+                              Help
+                            </span>
                           </Link>
                         </Button>
                         <Button variant="ghost" className="w-full justify-start gap-3 h-12 text-base" asChild>
                           <Link href="/settings" onClick={() => setUserMenuOpen(false)}>
-                            <Settings className="h-5 w-5" />
-                            Settings
+                            <span className="font-[400]">
+                              Settings
+                            </span>
                           </Link>
                         </Button>
+                        <Separator className="mt-2 mb-0" />
                         <Button
                           variant="ghost"
                           className="w-full justify-start gap-3 h-12 text-base"
                           onClick={() => {
                             setUserMenuOpen(false)
-                            // Add logout logic here
                           }}
                         >
-                          <LogOut className="h-5 w-5" />
-                          Logout
+                          <span className="font-[400]">
+                            Sign Out
+                          </span>
+
+
+                        </Button>
+                      </div>
+                      <div className="group relative flex w-[141px] h-[41px] items-center mx-auto justify-center overflow-hidden rounded-[10px] p-[1px]">
+                        <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC]" />
+                        <Button className="relative flex h-full w-full items-center justify-center gap-3 rounded-[inherit] bg-white text-transparent shadow-none hover:bg-gray-50 dark:bg-slate-950 dark:hover:bg-slate-900">
+                          <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent">
+                            Send Invite
+                          </span>
+
                         </Button>
                       </div>
                     </div>

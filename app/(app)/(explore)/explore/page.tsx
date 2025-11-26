@@ -1,5 +1,6 @@
-import { Badge } from "@/components/ui/badge"
 import { listExploreCategories } from "@/data/exploreProfiles"
+import { MapPin } from "lucide-react"
+import Image from "next/image"
 
 type MixedProfile = {
     id: string
@@ -10,6 +11,8 @@ type MixedProfile = {
     availability: "available" | "booked"
     category: string
     slug: string
+    bgimage: string
+    avatar: string
 }
 
 const buildMixedProfiles = (): MixedProfile[] => {
@@ -19,68 +22,77 @@ const buildMixedProfiles = (): MixedProfile[] => {
             ...profile,
             category: category.title,
             slug: category.slug,
+            bgimage: profile.bgimage || "",
+            avatar: profile.avatar || "",
         })),
     )
-}
-
-const AVAILABILITY_COPY: Record<MixedProfile["availability"], { label: string; color: string }> = {
-    available: { label: "Available", color: "text-emerald-600" },
-    booked: { label: "Currently booked", color: "text-amber-600" },
 }
 
 export default function ExplorePage() {
     const profiles = buildMixedProfiles()
 
     return (
-        <section className="space-y-10">
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {profiles.map((profile) => {
-                    const availabilityCopy = AVAILABILITY_COPY[profile.availability]
+        <section className="flex flex-wrap  gap-3 sm:gap-3 w-[352px] sm:w-[615px]">
+            {profiles.map((profile) => {
+                const initials = profile.name
+                    .split(" ")
+                    .map((chunk) => chunk[0])
+                    .join("")
+                    .slice(0, 2)
+                return (
+                    <article
+                        key={profile.id}
+                        className="relative h-[188px] sm:h-[218px] w-[169px] sm:w-[197px] flex-none rounded-[8.5px]  bg-[#FAFAFA]"
+                    >
+                        {profile.bgimage && (
+                            <Image
+                                src={profile.bgimage}
+                                alt={profile.name}
+                                width={198}
+                                height={48}
+                                className="absolute left-0 top-0 h-[48px] w-full object-cover rounded-[8.5px] "
+                            />
+                        )}
 
-                    return (
-                        <article
-                            key={profile.id}
-                            className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_15px_35px_rgba(4,42,61,0.07)]"
-                        >
-                            <div className="h-24 bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500" />
-                            <div className="-mt-10 flex flex-col gap-4 px-6 pb-6">
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-slate-200 text-lg font-semibold text-slate-600">
-                                        {profile.name
-                                            .split(" ")
-                                            .map((chunk) => chunk[0])
-                                            .join("")}
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="text-xs uppercase tracking-wide text-[#017A7C]">{profile.category}</p>
-                                        <p className="text-lg font-semibold text-slate-900">{profile.name}</p>
-                                        <p className="text-sm text-slate-500">{profile.location}</p>
-                                        <p className={`text-xs font-medium ${availabilityCopy.color}`}>{availabilityCopy.label}</p>
-                                    </div>
-                                </div>
-                                <p className="text-sm leading-relaxed text-slate-600">{profile.summary}</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {profile.roles.map((role) => (
-                                        <Badge
-                                            key={`${profile.id}-${role}`}
-                                            variant="outline"
-                                            className="border-[#31A7AC]/40 bg-[#E4F5F5] text-xs text-[#017A7C]"
-                                        >
-                                            {role}
-                                        </Badge>
-                                    ))}
-                                </div>
-                                <a
-                                    href={`/explore/${profile.slug}`}
-                                    className="mt-1 inline-flex items-center text-sm font-semibold text-[#017A7C] hover:text-[#015e60]"
-                                >
-                                    View category
-                                </a>
+                        <div className="absolute left-1/2 top-[21px] flex h-[63px] w-[63px] -translate-x-1/2 items-center justify-center overflow-hidden rounded-full border border-white bg-[#D9D9D9] text-xs font-semibold text-gray-700">
+                            {profile.avatar ? (
+                                <Image
+                                    src={profile.avatar}
+                                    alt={profile.name}
+                                    width={63}
+                                    height={63}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                initials || profile.name.charAt(0)
+                            )}
+                        </div>
+
+                        <div className="absolute left-1/2 top-[86px] flex w-[120px] -translate-x-1/2 flex-col items-center text-center">
+                            <p className="text-[12px] font-medium text-black">{profile.name}</p>
+                            <div className="mt-1 flex items-center gap-1 text-[8.5px] text-[#444444]">
+                                <MapPin className="h-[10px] w-[10px] stroke-[1.2px] text-[#444444]" />
+                                <span className="truncate">{profile.location}</span>
                             </div>
-                        </article>
-                    )
-                })}
-            </div>
+                        </div>
+
+                        <p className="absolute left-3 top-[126px] w-[173px] text-[7.7px] leading-[11px] text-[#444444] line-clamp-3">
+                            {profile.summary}
+                        </p>
+
+                        <div className="absolute left-3 top-[167px] flex w-[173px] flex-wrap gap-1.5">
+                            {profile.roles.slice(0, 3).map((role) => (
+                                <span
+                                    key={`${profile.id}-${role}`}
+                                    className="rounded-[2px] border border-[#31A7AC] bg-white px-[5px] py-[2.5px] text-[7.7px] text-[#31A7AC]"
+                                >
+                                    {role}
+                                </span>
+                            ))}
+                        </div>
+                    </article>
+                )
+            })}
         </section>
     )
 }

@@ -2,6 +2,12 @@
 import { ChevronDown, ChevronUp, Filter, Search, MapPin } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button";
 const toSlug = (s: string) =>
     s
         .toLowerCase()
@@ -206,53 +212,33 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
     };
     return (
         <>
-            <div className="">
-                <span className="hidden md:inline-block bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">Crew Directory</span>
-                <div className="sticky top-0 z-20 flex w-full flex-row gap-3 rounded-2xl bg-white/90 p-4 shadow-sm backdrop-blur sm:flex-row sm:items-center">
-                    <button
-                        className={`flex h-12 w-auto items-center justify-between rounded-full border px-4 py-2 text-sm font-medium transition-all whitespace-nowrap ${isFilterOpen ? 'bg-[#FA6E80] text-white border-[#FA6E80]' : 'bg-transparent text-[#FA6E80] border-[#FA6E80]'}`}
-                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    >
-                        <span className="flex items-center space-x-2">
-                            <span>Filter (<span>{"3"}</span>)</span>
-                            <Filter className="h-5 w-5" />
-                        </span>
-                    </button>
-                    <div className="flex h-12 flex-row w-full items-center justify-between rounded-full border px-2 py-2">
-                        <input
-                            type="text"
-                            placeholder="Search by name, role, or department..."
-                            className="border-none w-[calc(100%-3rem)] text-sm outline-none focus:ring-0"
-                            onChange={(e) => console.log(e.target.value)}
-                        />
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FA6E80]">
-                            <Search className="h-5 w-5 text-white" />
-                        </span>
-                    </div>
+            <div className="max-w-[960px]">
+                <span className="hidden p-2 md:inline-block bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">Crew Directory</span>
+                <div className="sticky top-0 z-20 flex w-full flex-row gap-3 bg-white/90 p-4 backdrop-blur sm:flex-row sm:items-center">
 
-                </div>
-                <div className="flex w-full flex-col gap-6 lg:flex-row">
-                    <div className={`${isFilterOpen ? 'flex' : 'hidden lg:flex'} w-full flex-col gap-4 rounded-2xl border border-gray-100 bg-white/50 p-4 lg:max-w-[280px] lg:overflow-y-auto`}>
-                        {isFilterOpen && (
-                            <form onSubmit={handleFilterSubmit} className="space-y-5 border rounded-xl bg-white p-4 text-[#017A7C]">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold">Availability</label>
-                                    <select
-                                        value={filterForm.availability}
-                                        onChange={(e) => handleFilterChange("availability", e.target.value)}
-                                        className="w-full rounded-full border border-[#017A7C]/30 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#31A7AC]"
-                                    >
-                                        <option value="available">Available</option>
-                                        <option value="not_available">Not Available</option>
-                                    </select>
+                    <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                className={`flex h-12 w-auto items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition-all whitespace-nowrap ${isFilterOpen ? 'bg-[#FA6E80] text-white border-[#FA6E80] sm:w-[281px] ' : 'bg-transparent text-[#FA6E80] border-[#FA6E80]'}`}
+                            >
+                                <span className="flex items-center space-x-2">
+                                    <span>Filter (<span>{"3"}</span>)</span>
+                                    <Filter className="h-5 w-5" />
+                                </span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[273px] border-none" align="start">
+                            <form onSubmit={handleFilterSubmit} className=" space-y-2 rounded-[10px] bg-[#F8F8F8] p-4 text-[#017A7C]">
+                                <div className="space-y-1 rounded-[5.71px]  border border-[#017A7C]/30 px-4 py-2 justify-center items-center flex ">
+                                    <label className="text-sm font-[400]">Availability</label>
+
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold">Production Types</label>
+                                <div className="space-y-1">
                                     <select
                                         value={filterForm.productionType}
                                         onChange={(e) => handleFilterChange("productionType", e.target.value)}
-                                        className="w-full rounded-xl border border-[#017A7C]/30 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#31A7AC]"
+                                        className="w-full rounded-[5.71px] border border-[#017A7C]/30 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#31A7AC]"
                                     >
                                         <option value="">Select production type</option>
                                         <option value="commercial">Commercial</option>
@@ -263,7 +249,6 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-semibold">Location</label>
                                     <div className="flex items-center gap-2 rounded-xl border border-[#017A7C]/30 px-4 py-2">
                                         <MapPin className="h-4 w-4 text-[#017A7C]" />
                                         <input
@@ -276,7 +261,7 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
 
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <label className="text-sm font-semibold">Experience</label>
+                                        <label className="text-sm font-[400]">Experience</label>
                                         <ChevronDown className="h-4 w-4 text-[#017A7C]" />
                                     </div>
                                     <div className="space-y-3 rounded-xl border border-[#017A7C]/20 px-4 py-3">
@@ -287,7 +272,7 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                                                 onClick={() => handleFilterChange("experience", exp.title)}
                                                 className={`w-full text-left text-sm ${filterForm.experience === exp.title ? "text-[#017A7C] font-semibold" : "text-gray-700"}`}
                                             >
-                                                <div>{exp.title}</div>
+                                                <div className="font-bold">{exp.title}</div>
                                                 <div className="text-xs text-gray-500">{exp.description}</div>
                                             </button>
                                         ))}
@@ -341,38 +326,41 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3">
-                                    <button
-                                        type="submit"
-                                        className="flex-1 rounded-full bg-[#31A7AC] py-2 text-sm font-semibold text-white hover:bg-[#279497]"
-                                    >
-                                        Apply Filters
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="flex-1 rounded-full border border-[#31A7AC] py-2 text-sm font-semibold text-[#31A7AC]"
-                                        onClick={() => setFilterForm({ ...initialFilterState })}
-                                    >
-                                        Reset
-                                    </button>
-                                </div>
+
                             </form>
-                        )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <div className="flex h-12 flex-row w-full items-center justify-between rounded-full border px-2 py-2">
+                        <input
+                            type="text"
+                            placeholder="Search by name, role, or department..."
+                            className="border-none w-[calc(100%-3rem)] text-sm outline-none focus:ring-0"
+                            onChange={(e) => console.log(e.target.value)}
+                        />
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FA6E80]">
+                            <Search className="h-5 w-5 text-white" />
+                        </span>
+                    </div>
+
+                </div>
+                <div className="flex w-full flex-col gap-6 lg:flex-row">
+                    <div className={`${isFilterOpen ? 'flex' : 'hidden lg:flex'} w-full flex-col gap-4 rounded-2xl bg-white/50 p-4 lg:max-w-[280px] lg:overflow-y-auto`}>
+
                         {filterOptions.map(opt => (
-                            <details key={opt.label} className="group rounded-md border bg-white">
-                                <summary className="cursor-pointer select-none flex items-center justify-between px-3 py-2 text-sm font-medium">
+                            <details key={opt.label} className="group  rounded-[10px]  border-[1px] border-[#989898]/10 rotate-[5px]  bg-whit">
+                                <summary className="cursor-pointer select-none flex items-center justify-between px-3 py-2 text-sm font-[400px]">
                                     <span>{opt.label}</span>
                                     <span>
                                         <span className="group-open:hidden"><ChevronUp className="h-4 w-4 text-[#FA6E80]" /></span>
                                         <span className="hidden group-open:inline"><ChevronDown className="h-4 w-4 text-[#FA6E80]" /></span>
                                     </span>
                                 </summary>
-                                <ul className="px-3 pb-2 space-y-1">
+                                <ul className="px-3 pb-2 space-y-1 bg-[#FAFAFA]">
                                     {opt.value.map(v => (
                                         <li key={v.label}>
                                             <Link
                                                 href={v.href}
-                                                className="text-xs text-[#017A7C] hover:text-[#FA6E80] cursor-pointer block py-1"
+                                                className="text-xs text-[#444444] hover:text-[#FA6E80] cursor-pointer block py-1"
                                             >
                                                 {v.label}
                                             </Link>
@@ -383,7 +371,7 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                         ))
                         }
                     </div>
-                    <div className="w-full flex-1 overflow-x-hidden rounded-2xl border border-gray-100 bg-white/70 p-2 sm:p-4 lg:min-h-[600px]">{children}</div>
+                    <div className="w-full flex-1 overflow-x-hidden  p-2 sm:p-4 lg:min-h-[600px]">{children}</div>
                 </div>
 
             </div>

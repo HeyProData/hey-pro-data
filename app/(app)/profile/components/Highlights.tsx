@@ -33,12 +33,12 @@ export function HighlightCard({
 
     return (
         <article className={`space-y-3 ${className}`}>
-            <div className="relative w-full overflow-hidden rounded-2xl aspect-[4/3] lg:aspect-[3/4]">
+            <div className="relative w-[275px] h-[263px] overflow-hidden rounded-[8px]">
                 <Image
                     src={highlight.images}
                     alt={highlight.title}
                     fill
-                    sizes="(max-width: 1024px) 80vw, 320px"
+                    sizes="275px"
                     className="object-cover"
                 />
             </div>
@@ -47,7 +47,7 @@ export function HighlightCard({
                 {truncated}
                 {hasMore && (
                     <>
-                        …<Link href={'#'} className="ml-1 text-[#FA596E]">Read more</Link>
+                        …<br /><Link href={'#'} className="ml-1 text-[#FA596E]">Read more</Link>
                     </>
                 )}
             </p>
@@ -62,7 +62,6 @@ export default function Highlights({ highlights }: HighlightsProps) {
 
     return (
         <section className="w-full hidden lg:block">
-            {/* Desktop / large screens - keep original vertical layout with sticky sidebar */}
             <div className="hidden lg:flex gap-6">
                 <aside className="sticky top-24 self-start w-full max-w-[336px] space-y-6">
                     <Button
