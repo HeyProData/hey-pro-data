@@ -3,8 +3,8 @@ import Link from "next/link"
 
 const Header = () => {
     return (
-        <div className="mt-0 space-y-4 px-2 sm:px-0">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between w-full">
+        <div className="mt-0 space-y-4 px-2 sm:px-0 max-w-6xl w-full">
+            <div className="flex flex-row justify-between gap-3 w-full">
                 <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">
                     Collab
                 </span>
