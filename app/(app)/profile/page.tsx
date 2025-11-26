@@ -42,9 +42,10 @@ import ShortProfile from "./components/ShortProfiel";
 import Highlights from "./components/Highlights";
 import CreditsSection from "./components/CreditView";
 import { profileData, highlightsData } from "@/data/profile";
+import SlateView from "./components/slate";
 
 export default function Profile() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "activities">("dashboard")
+  const [activeTab, setActiveTab] = useState<"profile" | "slate">("profile")
   const [coverImageHovered, setCoverImageHovered] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -117,7 +118,7 @@ export default function Profile() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => { }}
+                  // onChange={(e) => { }}
                   className="hidden"
                   id="cover-image-upload"
                 />
@@ -140,147 +141,153 @@ export default function Profile() {
         <div className="space-y-2 mx-auto w-full">
           <div className="flex flex-row  gap-3 sm:gap-6 text-black mb-6 sm:mb-8">
             <Button
-              onClick={() => setActiveTab("dashboard")}
-              className={`flex-1 min-h-[44px] text-sm sm:text-base font-semibold rounded-[12px] sm:rounded-[15px] ${activeTab === "dashboard"
+              onClick={() => setActiveTab("profile")}
+              className={`flex-1 min-h-[44px] text-sm sm:text-base font-semibold rounded-[12px] sm:rounded-[15px] ${activeTab === "profile"
                 ? "bg-[#FA6E80] text-white hover:bg-[#FA6E80] hover:text-white hover:opacity-100"
                 : "bg-[#f3f4f6] shadow-sm text-foreground hover:bg-[#f3f4f6] hover:text-foreground hover:opacity-100"
                 }`}
             >
-              Profile Dashboard
+              Profile
             </Button>
             <Button
-              onClick={() => setActiveTab("activities")}
-              className={`flex-1 min-h-[44px] text-sm sm:text-base font-semibold rounded-[12px] sm:rounded-[15px] ${activeTab === "activities"
+              onClick={() => setActiveTab("slate")}
+              className={`flex-1 min-h-[44px] text-sm sm:text-base font-semibold rounded-[12px] sm:rounded-[15px] ${activeTab === "slate"
                 ? "bg-[#FA6E80] text-white hover:bg-[#FA6E80] hover:text-white hover:opacity-100"
                 : "bg-[#ffffff] shadow-sm text-foreground hover:bg-[#ffffff] hover:text-foreground hover:opacity-100"
                 }`}
             >
-              Activities
+              Slate
             </Button>
           </div>
 
-          <div className="relative">
-            <div
-              ref={scrollContainerRef}
-              onScroll={handleScroll}
-              className="flex flex-row overflow-x-auto gap-x-4 mb-6 sm:mb-7 scrollbar-hide -mx-2 xs:-mx-1 sm:mx-0 px-2 xs:px-1 sm:px-0"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <div className="flex-none ">
-                <AboutSectionComponent title="About" about={profile.about} />
+          {activeTab === "profile" ? (
+            <div className=" max-w-[600px]">
+              <div className="relative">
+                <div
+                  ref={scrollContainerRef}
+                  onScroll={handleScroll}
+                  className="flex flex-row overflow-x-auto gap-x-4 mb-6 sm:mb-7 scrollbar-hide -mx-2 xs:-mx-1 sm:mx-0 px-2 xs:px-1 sm:px-0"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  <div className="flex-none ">
+                    <AboutSectionComponent title="About" about={profile.about} />
+                  </div>
+                  <div className="flex-none ">
+                    <VisaSection visaType={''} visaIssueBy={''} visaExpData={''} />
+                  </div>
+                  <div className="flex-none ">
+                    <WorkStatusSection statusProp={profile.persionalDetails.availability} />
+                  </div>
+                  <div className="flex-none ">
+                    <AddLanguageSection languages={profile.language} />
+                  </div>
+                  <div className="flex-none ">
+                    <WhatupNumbers
+                      countryCode={profile.countryCode}
+                      phoneNumber={profile.phoneNumber}
+                    />
+                  </div>
+                  <div className="flex-none ">
+                    <AvalableCountryForTravel availableCountries={profile.AvailableCountriesForTravel} />
+                  </div>
+                </div>
+                {showLeftArrow && (
+                  <Button
+                    variant="default"
+                    size="icon"
+                    className="absolute left-1 sm:left-0 top-1/2 -translate-y-1/2 transform rounded-full shadow-md z-10"
+                    onClick={() => scroll(-200)}
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                )}
+                {showRightArrow && (
+                  <Button
+                    variant="default"
+                    size="icon"
+                    className="absolute right-1 sm:right-0 top-1/2 -translate-y-1/2 transform rounded-full shadow-md z-10"
+                    onClick={() => scroll(200)}
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                )}
               </div>
-              <div className="flex-none ">
-                <VisaSection visaType={''} visaIssueBy={''} visaExpData={''} />
-              </div>
-              <div className="flex-none ">
-                <WorkStatusSection statusProp={profile.persionalDetails.availability} />
-              </div>
-              <div className="flex-none ">
-                <AddLanguageSection languages={profile.language} />
-              </div>
-              <div className="flex-none ">
-                <WhatupNumbers
-                  countryCode={profile.countryCode}
-                  phoneNumber={profile.phoneNumber}
-                />
-              </div>
-              <div className="flex-none ">
-                <AvalableCountryForTravel availableCountries={profile.AvailableCountriesForTravel} />
-              </div>
-            </div>
-            {showLeftArrow && (
-              <Button
-                variant="default"
-                size="icon"
-                className="absolute left-1 sm:left-0 top-1/2 -translate-y-1/2 transform rounded-full shadow-md z-10"
-                onClick={() => scroll(-200)}
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-            )}
-            {showRightArrow && (
-              <Button
-                variant="default"
-                size="icon"
-                className="absolute right-1 sm:right-0 top-1/2 -translate-y-1/2 transform rounded-full shadow-md z-10"
-                onClick={() => scroll(200)}
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
-            )}
-          </div>
 
-          <Dialog open={isReorderDialogOpen} onOpenChange={setIsReorderDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto gap-2 text-sm sm:text-base h-12 rounded-full bg-transparent">
-                <List className="h-5 w-5" />
-                Reorder sections
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md w-[90vw] sm:w-auto">
-              <DialogHeader>
-                <DialogTitle className="text-lg sm:text-xl font-bold">Reorder Sections</DialogTitle>
-              </DialogHeader>
-              <div className="mt-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Drag and drop to reorder the sections on your profile
-                </p>
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-2">
-                      {sectionOrder.map((section) => (
-                        <SortableItem key={section} id={section} />
+              <Dialog open={isReorderDialogOpen} onOpenChange={setIsReorderDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full sm:w-auto gap-2 text-sm sm:text-base h-12 rounded-full bg-transparent">
+                    <List className="h-5 w-5" />
+                    Reorder sections
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md w-[90vw] sm:w-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-lg sm:text-xl font-bold">Reorder Sections</DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Drag and drop to reorder the sections on your profile
+                    </p>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                      <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
+                        <div className="space-y-2">
+                          {sectionOrder.map((section) => (
+                            <SortableItem key={section} id={section} />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  </div>
+                  <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-3">
+                    <Button
+                      onClick={() => setIsReorderDialogOpen(false)}
+                      className="bg-coral-500 hover:bg-coral-600 w-full sm:w-auto"
+                    >
+                      Done
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <div className="lg:hidden">
+                <Button
+                  variant="outline"
+                  className="h-11 rounded-[10px] w-full border-[#31A7AC] text-black hover:bg-transparent px-4 flex-shrink-0 mb-3"
+                >
+                  Edit Highlights
+                </Button>
+                <div className="flex flex-col items-center gap-3 px-2">
+                  <div className="flex  items-center gap-3 w-full">
+                    <div className="flex gap-1 flex-nowrap">
+                      {letters.map((char, index) => (
+                        <span key={index} className={`text-lg font-semibold leading-none ${gradientText}`}>
+                          {char}
+                        </span>
                       ))}
                     </div>
-                  </SortableContext>
-                </DndContext>
-              </div>
-              <div className="mt-6 flex flex-col sm:flex-row sm:justify-end gap-3">
-                <Button
-                  onClick={() => setIsReorderDialogOpen(false)}
-                  className="bg-coral-500 hover:bg-coral-600 w-full sm:w-auto"
-                >
-                  Done
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <div className="lg:hidden">
-            <Button
-              variant="outline"
-              className="h-11 rounded-[10px] w-full border-[#31A7AC] text-black hover:bg-transparent px-4 flex-shrink-0 mb-3"
-            >
-              Edit Highlights
-            </Button>
-            <div className="flex flex-col items-center gap-3 px-2">
-              <div className="flex  items-center gap-3 w-full">
-                <div className="flex gap-1 flex-nowrap">
-                  {letters.map((char, index) => (
-                    <span key={index} className={`text-lg font-semibold leading-none ${gradientText}`}>
-                      {char}
-                    </span>
-                  ))}
-                </div>
-                <span className="flex-1 h-px bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC]" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex gap-4 overflow-x-auto pb-4 px-4">
-                {highlights.map((highlight) => (
-                  <div key={highlight.id} className="flex-shrink-0 w-[260px]">
-                    <HighlightCard highlight={highlight} />
+                    <span className="flex-1 h-px bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC]" />
                   </div>
-                ))}
+                </div>
+                <div className="mt-4">
+                  <div className="flex gap-4 overflow-x-auto pb-4 px-4">
+                    {highlights.map((highlight) => (
+                      <div key={highlight.id} className="flex-shrink-0 w-[260px]">
+                        <HighlightCard highlight={highlight} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
+              <div className="my-8" />
+              {sectionOrder.map((section, index) => (
+                <div key={section}>
+                  {sectionComponents[section]}
+                  {index < sectionOrder.length - 1 && <div className="my-8" />}
+                </div>
+              ))}
             </div>
-          </div>
-          <div className="my-8" />
-          {sectionOrder.map((section, index) => (
-            <div key={section}>
-              {sectionComponents[section]}
-              {index < sectionOrder.length - 1 && <div className="my-8" />}
-            </div>
-          ))}
+          ) : (
+            <SlateView />
+          )}
         </div>
       </main>
       <Highlights highlights={highlights} />
@@ -366,4 +373,5 @@ function SkillsSection({ Profile: profile }: { Profile: { skills: { id: string, 
     </div>
   )
 }
+
 
