@@ -5,7 +5,7 @@
 This document provides a comprehensive overview of the **UPDATED** backend architecture including all profile-related enhancements.
 
 **Last Updated:** January 2025  
-**Version:** 2.2 (Updated with Collab Feature)
+**Version:** 2.3 (Updated with Gigs Enhancement)
 
 ---
 
@@ -129,7 +129,7 @@ This document provides a comprehensive overview of the **UPDATED** backend archi
 
 ## 🗄️ Database Schema Summary
 
-### Core Tables (22 Total) ⭐ UPDATED v2.2
+### Core Tables (23 Total) ⭐ UPDATED v2.3
 
 #### PROFILE TABLES (10 Tables)
 
@@ -319,10 +319,10 @@ Skills associated with users.
 
 ---
 
-#### GIGS & APPLICATIONS TABLES (8 Tables)
+#### GIGS & APPLICATIONS TABLES (9 Tables) ⭐ ENHANCED v2.3
 
-##### 11. `gigs`
-Main table for job postings.
+##### 11. `gigs` ⭐ ENHANCED (Version 2.3)
+Main table for job postings with comprehensive gig management.
 
 **Key Fields:**
 - `id` (PK)
@@ -331,9 +331,28 @@ Main table for job postings.
 - `status` (active/closed/draft)
 - `created_by` (FK → auth.users)
 
+**New Fields (v2.3):** ⭐
+- `slug` (TEXT, UNIQUE) - URL-friendly identifier for routing
+- `crew_count` (INTEGER) - Number of crew needed (default 1)
+- `role` (TEXT) - GIG role (director, producer, cinematographer, etc.)
+- `type` (TEXT) - GIG type (contract, full-time, part-time)
+- `department` (TEXT) - Department or specialty area
+- `company` (TEXT) - Production company name (optional)
+- `is_tbc` (BOOLEAN) - "To Be Confirmed" scheduling flag
+- `request_quote` (BOOLEAN) - Whether to request quote instead of fixed rate
+- `expiry_date` (TIMESTAMPTZ) - Application deadline ("Apply before" date)
+- `supporting_file_label` (TEXT) - Label for reference file
+- `reference_url` (TEXT) - URL for reference link
+
 **Indexes:**
 - `idx_gigs_created_by` on `created_by`
 - `idx_gigs_status` on `status`
+- `idx_gigs_slug` on `slug` ⭐ NEW - For slug-based lookups
+- `idx_gigs_role` on `role` ⭐ NEW - Filter by role
+- `idx_gigs_type` on `type` ⭐ NEW - Filter by type
+- `idx_gigs_expiry_date` on `expiry_date` ⭐ NEW - Filter expired gigs
+- `idx_gigs_status_expiry` on `(status, expiry_date)` ⭐ NEW - Active gigs query
+- `idx_gigs_search` (GIN) on title + description ⭐ NEW - Full-text search
 
 ##### 12. `gig_dates`
 Multiple date ranges per gig.
@@ -365,16 +384,23 @@ User applications to gigs.
 - `idx_applications_gig_id` on `gig_id`
 - `idx_applications_applicant_user_id` on `applicant_user_id`
 
-##### 15. `crew_availability`
-User availability calendar.
+##### 15. `crew_availability` ⭐ ENHANCED (Version 2.3)
+User availability calendar with status tracking.
 
 **Key Fields:**
 - `user_id` (FK → auth.users)
-- `availability_date`, `is_available`
+- `availability_date`
+- `status` (TEXT) ⭐ CHANGED - 'available' | 'hold' | 'na' (was `is_available` BOOLEAN)
 - `gig_id` (optional FK → gigs)
 
 **Constraints:**
 - UNIQUE(user_id, availability_date)
+- CHECK(status IN ('available', 'hold', 'na'))
+
+**Indexes:**
+- `idx_crew_availability_status` ⭐ NEW - Filter by status
+- `idx_crew_availability_user_status` ⭐ NEW - User availability queries
+- `idx_crew_availability_gig_status` ⭐ NEW - Gig availability queries
 
 ##### 16. `crew_contacts`
 Contacts added to gigs by creators.
@@ -406,11 +432,32 @@ In-app notification system.
 **Indexes:**
 - `idx_notifications_user_id` on `user_id`
 
+##### 19. `gig_references` ⭐ NEW v2.3
+Supporting references (files and links) for gigs.
+
+**Key Fields:**
+- `id` (PK, UUID)
+- `gig_id` (FK → gigs) - Parent gig
+- `label` (TEXT) - Display name (e.g., "Document.pdf", "Reference deck")
+- `url` (TEXT) - Full URL to file or external link
+- `type` (TEXT) - 'file' | 'link'
+- `created_at` (TIMESTAMPTZ)
+
+**Constraints:**
+- CHECK(type IN ('file', 'link'))
+- ON DELETE CASCADE (references deleted when gig deleted)
+
+**Indexes:**
+- `idx_gig_references_gig_id` on `gig_id` - For join performance
+- `idx_gig_references_type` on `type` - Filter by file vs link
+
+**Note:** Multiple references per gig supported (one-to-many relationship)
+
 ---
 
 #### COLLAB TABLES (4 Tables) ⭐ NEW v2.2
 
-##### 19. `collab_posts`
+##### 20. `collab_posts`
 Main table for collaboration posts where users share project ideas and seek collaborators.
 
 **Key Fields:**
@@ -429,7 +476,7 @@ Main table for collaboration posts where users share project ideas and seek coll
 - `idx_collab_posts_created_at` on `created_at DESC`
 - `idx_collab_posts_slug` on `slug`
 
-##### 20. `collab_tags`
+##### 21. `collab_tags`
 Tags for categorizing collab posts (many-to-many).
 
 **Key Fields:**
@@ -445,7 +492,7 @@ Tags for categorizing collab posts (many-to-many).
 - `idx_collab_tags_collab_id` on `collab_id`
 - `idx_collab_tags_tag_name` on `tag_name`
 
-##### 21. `collab_interests`
+##### 22. `collab_interests`
 Users who expressed interest in collab posts.
 
 **Key Fields:**
@@ -461,7 +508,7 @@ Users who expressed interest in collab posts.
 - `idx_collab_interests_collab_id` on `collab_id`
 - `idx_collab_interests_user_id` on `user_id`
 
-##### 22. `collab_collaborators`
+##### 23. `collab_collaborators`
 Approved collaborators for collab projects.
 
 **Key Fields:**
@@ -1578,6 +1625,54 @@ The collab feature integrates seamlessly with:
 
 ---
 
+## 🆕 What's New in Version 2.3
+
+### Gigs Feature Enhancement ⭐ NEW
+- ✅ Comprehensive analysis of frontend gigs UI requirements
+- ✅ Added 11 new columns to `gigs` table for complete functionality
+- ✅ Enhanced `crew_availability` table with status enum (available/hold/na)
+- ✅ Created `gig_references` table for file and link references
+- ✅ Designed 14+ performance indexes including full-text search
+- ✅ Created 10 RLS policies for secure access control
+- ✅ Complete SQL scripts ready to execute (ALTER, CREATE, INDEXES, RLS)
+- ✅ Documented 8 API endpoints with request/response examples
+- ✅ Created comprehensive implementation guide (5 phases, 11-17 hours)
+- ⏳ Database migration ready (execute SQL files)
+- ⏳ API routes implementation pending
+- ⏳ Frontend-backend integration pending
+
+**Key Enhancements:**
+- **Slug-based routing:** SEO-friendly URLs for gigs (e.g., `/gigs/video-editors-shortfilm`)
+- **Enhanced gig creation:** Support for crew count, role, type, department, company fields
+- **Flexible scheduling:** TBC flag and expiry dates for applications
+- **Reference management:** Multiple file and link references per gig
+- **Quote requests:** Option to request quote instead of fixed rate
+- **Calendar integration:** Transform gig dates into calendar view format
+- **Availability tracking:** Detailed status (available/hold/na) for crew availability
+- **Full-text search:** Fast search on gig title and description
+
+**New Database Fields:**
+| Field | Purpose |
+|-------|---------|
+| `slug` | URL-friendly identifier for routing |
+| `crew_count` | Number of crew needed |
+| `role` | GIG role (director, editor, etc.) |
+| `type` | GIG type (contract, full-time, part-time) |
+| `department` | Department/specialty |
+| `company` | Production company |
+| `is_tbc` | "To Be Confirmed" flag |
+| `request_quote` | Request quote option |
+| `expiry_date` | Application deadline |
+| `supporting_file_label` | Reference file label |
+| `reference_url` | Reference link URL |
+
+**New Table:**
+- `gig_references` - Store multiple file/link references per gig
+
+**Documentation Files:** 6 comprehensive guides in `backend-command/gigs/`
+
+---
+
 ## 🆕 What's New in Version 2.2
 
 ### Collab/Collaboration Feature ⭐ NEW
@@ -1698,7 +1793,7 @@ Refer to the following documents for detailed information:
 ### Explore/Search Documentation (Version 2.1) ⭐
 14. **backend-command/explore/01_EXPLORE_BACKEND_IMPLEMENTATION_PLAN.md** - Complete implementation guide
 
-### Collab Feature Documentation (Version 2.2) ⭐ NEW
+### Collab Feature Documentation (Version 2.2) ⭐
 15. **backend-command/collab/README.md** - Overview and quick start
 16. **backend-command/collab/00_ANALYSIS.md** - Frontend analysis and requirements
 17. **backend-command/collab/01_CREATE_TABLES.sql** - Database table creation
@@ -1708,6 +1803,15 @@ Refer to the following documents for detailed information:
 21. **backend-command/collab/05_IMPLEMENTATION_PLAN.md** - Step-by-step guide
 22. **backend-command/collab/06_API_ENDPOINTS.md** - API documentation
 23. **backend-command/collab/07_QUICK_REFERENCE.md** - Quick reference guide
+
+### Gigs Enhancement Documentation (Version 2.3) ⭐ NEW
+24. **backend-command/gigs/README.md** - Overview and quick start (START HERE)
+25. **backend-command/gigs/00_FRONTEND_ANALYSIS.md** - Frontend analysis and gap analysis
+26. **backend-command/gigs/01_ALTER_STATEMENTS.sql** - ALTER gigs and crew_availability tables
+27. **backend-command/gigs/02_CREATE_TABLES.sql** - CREATE gig_references table
+28. **backend-command/gigs/03_INDEXES.sql** - Performance indexes (14+ indexes)
+29. **backend-command/gigs/04_RLS_POLICIES.sql** - Security policies (10 policies)
+30. **backend-command/gigs/05_IMPLEMENTATION_GUIDE.md** - Complete step-by-step implementation
 
 ---
 
