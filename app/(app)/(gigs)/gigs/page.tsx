@@ -15,22 +15,22 @@ export default function GigsPage() {
         <>
             <MainGigHeader />
             <div className="px-4 pb-10 overflow-x-auto">
-                <section className="mx-auto max-w-5xl mt-40 sm:mt-25">
+                <section className="mx-auto max-w-[739px]">
                     <form
                         onSubmit={(event) => event.preventDefault()}
-                        className="relative flex h-[52px] w-full items-center justify-center rounded-full border border-[#FA6E80] bg-white"
+                        className="relative flex h-[38px] sm:h-[48px] w-full items-center justify-center rounded-full border border-[#FA6E80] bg-white"
                         role="search"
                         aria-label="Search gigs"
                     >
                         <Input
                             type="search"
                             placeholder="Search gigs..."
-                            className="border-none bg-transparent pr-14 text-sm text-slate-700 focus-visible:ring-0"
+                            className="border-none bg-transparent pr-14 shadow-none text-sm text-slate-700 focus-visible:ring-0"
                             aria-label="Search gigs"
                         />
                         <button
                             type="submit"
-                            className="absolute right-3 top-1/2 flex h-[34px] w-[34px] -translate-y-1/2 items-center justify-center rounded-full bg-[#FA6E80] text-white transition hover:bg-[#f95569]"
+                            className="absolute right-1 top-1/2 flex h-[30px] w-[30px] sm:h-[34px] sm:w-[34px] -translate-y-1/2 items-center justify-center rounded-full bg-[#FA6E80] text-white transition hover:bg-[#f95569]"
                             aria-label="Submit search"
                         >
                             <Search className="h-[18px] w-[18px]" />
