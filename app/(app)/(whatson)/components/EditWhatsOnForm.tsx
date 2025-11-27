@@ -71,9 +71,9 @@ export function EditWhatsOnForm({ event }: EditWhatsOnFormProps) {
     };
 
     return (
-        <section className="relative mx-auto w-full max-w-5xl rounded-[32px] bg-white p-4 shadow-[0_30px_120px_rgba(15,23,42,0.15)] sm:p-6 lg:p-8">
+        <section className="relative mx-auto w-full max-w-[1075px] rounded-[32px] bg-white p-4  sm:p-6 lg:p-8">
             <form className="flex flex-col gap-8" onSubmit={(event) => event.preventDefault()}>
-                <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-6">
                     <div className="flex flex-col gap-4">
                         <div>
                             <label className="text-sm font-medium text-gray-500">Event title</label>
@@ -83,24 +83,23 @@ export function EditWhatsOnForm({ event }: EditWhatsOnFormProps) {
                             <Checkbox className="h-5 w-5" />
                             <span className="text-sm text-gray-700">Guest Can Select The Dates To Attend</span>
                         </div>
-                        <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
-                            <div>
-                                <label className="text-sm font-medium text-gray-500">Venue</label>
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                                    <div className="flex w-full items-center gap-2 rounded-2xl border border-black/20 bg-black/5 px-4 py-3">
-                                        <LocationEdit className="h-4 w-4" />
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                <label className="text-sm font-medium text-gray-500 sm:text-base sm:min-w-[80px]">Venue</label>
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-1">
+                                    <div className="flex items-center gap-2 rounded-2xl border border-black/20 bg-black/5 px-4 py-3 w-full sm:flex-1">
+                                        <LocationEdit className="h-4 w-4 flex-shrink-0" />
                                         <input value={venue} onChange={(event) => setVenue(event.target.value)} className="w-full bg-transparent text-sm text-black focus:border-[#31A7AC] focus:outline-none" placeholder="Enter venue" />
                                     </div>
                                     <Button
                                         type="button"
-                                        className={`h-[45px] rounded-2xl border text-sm font-semibold ${isOnline ? "bg-[#FA596E] text-white" : "bg-transparent text-black"}`}
+                                        className={`h-[45px] w-full sm:w-[120px] rounded-2xl border text-sm font-semibold ${isOnline ? "bg-[#FA596E] text-white" : "bg-transparent text-black"}`}
                                         onClick={() => setIsOnline(!isOnline)}
                                     >
                                         Online
                                     </Button>
                                 </div>
                             </div>
-
                         </div>
                         <div className="flex w-full flex-col gap-4">
                             <div className="flex flex-col gap-4 rounded-lg lg:flex-row">
@@ -123,7 +122,7 @@ export function EditWhatsOnForm({ event }: EditWhatsOnFormProps) {
                                                         <PopoverTrigger asChild>
                                                             <button
                                                                 type="button"
-                                                                className="flex-1 w-[200px] rounded-xl border border-gray-200 px-2 py-1 text-left text-xs text-gray-700 focus:border-[#31A7AC] focus:outline-none"
+                                                                className="flex-1 sm:w-[200px] h-[27px] rounded-[15px]  px-2 py-1 border border-gray-300 text-left text-xs text-gray-700 focus:border-[#31A7AC] focus:outline-none"
                                                             >
                                                                 {slot.dateLabel || "Select date"}
                                                             </button>
@@ -190,9 +189,9 @@ export function EditWhatsOnForm({ event }: EditWhatsOnFormProps) {
                                     </div>
                                 </div>
                                 <div className="mt-2 flex w-full flex-col gap-4 rounded-lg lg:mt-6">
-                                    <div className="flex items-center gap-2 rounded-2xl border border-gray-300 px-3 py-2">
+                                    <div className="flex items-center gap-2  px-3 py-2">
                                         <Label className="text-sm font-medium text-gray-500">Max Spots Per Person</Label>
-                                        <Input type="number" min={1} defaultValue={1} disabled className="max-w-[120px] border border-gray-300" />
+                                        <Input type="number" min={1} defaultValue={1} disabled className="max-w-[120px] border border-gray-300 bg-[#828282]" />
                                     </div>
                                     <div>
                                         <div className="mb-2 flex items-center gap-2 rounded-2xl border border-gray-300 px-3">
@@ -252,7 +251,7 @@ export function EditWhatsOnForm({ event }: EditWhatsOnFormProps) {
                         </div>
                     </div>
                     <div className="flex flex-col gap-4">
-                        <div className="rounded-[30px] border border-dashed border-gray-300 bg-black/10">
+                        <div className="rounded-[30px] bg-black/10">
                             <div className="relative h-[220px] w-full overflow-hidden rounded-[26px] sm:h-[320px]">
                                 <input
                                     id="poster-upload"
@@ -264,14 +263,14 @@ export function EditWhatsOnForm({ event }: EditWhatsOnFormProps) {
                                 />
 
                                 {posterPreview ? (
-                                    <div className="group relative h-full w-full">
+                                    <div className="group relative h-[4600px] sm:h-[499px] w-[408px] ">
                                         <Image src={posterPreview} alt={event.title} fill sizes="(min-width: 1024px) 320px, 100vw" className="object-cover" />
-                                        <div className="absolute inset-0 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100">
-                                            <div className="absolute inset-0 bg-black/50" />
-                                            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center text-white">
+                                        <div className="absolute inset-0 opacity-0 transition-opacity duration-200 bg-[#656565] ease-out group-hover:opacity-100">
+                                            {/* <div className="absolute inset-0 bg-black/50" /> */}
+                                            <div className="relative z-10 flex h-full w-full  flex-col items-center justify-center gap-3 px-4 text-center text-white">
                                                 <p className="text-2xl font-semibold">Replace Banner Image</p>
                                                 <p className="text-sm opacity-90">Optimal dimensions 3000 x 750px</p>
-                                                <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+                                                <div className="mt-2 flex flex-wrap  items-center justify-center gap-3">
                                                     <label
                                                         htmlFor="poster-upload"
                                                         className="cursor-pointer rounded-full bg-[#FF6F8F] px-6 py-2 text-sm font-semibold text-white shadow"
@@ -292,10 +291,10 @@ export function EditWhatsOnForm({ event }: EditWhatsOnFormProps) {
                                 ) : (
                                     <label
                                         htmlFor="poster-upload"
-                                        className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-3 bg-white"
+                                        className="flex h-full w-full cursor-pointer flex-col items-center justify-center gap-1 bg-[#656565]"
                                     >
-                                        <p className="text-2xl font-semibold text-gray-900">Replace Banner Image</p>
-                                        <p className="text-sm text-gray-500">Optimal dimensions 3000 x 750px</p>
+                                        <p className="text-2xl font-semibold text-gray-100">Replace Banner Image</p>
+                                        <p className="text-sm text-gray-100">Optimal dimensions 3000 x 750px</p>
                                         <span className="mt-2 rounded-full bg-[#FF6F8F] px-6 py-2 text-sm font-semibold text-white">
                                             Add Image
                                         </span>
