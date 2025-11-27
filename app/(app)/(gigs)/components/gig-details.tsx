@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { addDays, endOfMonth, endOfWeek, format, getDate, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
@@ -32,47 +35,63 @@ const buildMonthMatrix = (year: number, month: number) => {
 };
 
 export default function GigDetails(gig: GigsDataType[0]) {
+  const monthGroups = useMemo(() => {
+    const groups: Array<typeof gig.calendarMonths> = [];
+    for (let index = 0; index < gig.calendarMonths.length; index += 3) {
+      groups.push(gig.calendarMonths.slice(index, index + 3));
+    }
+    return groups;
+  }, [gig.calendarMonths]);
+
+  const [activeGroupIndex, setActiveGroupIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveGroupIndex(0);
+  }, [monthGroups.length]);
+
+  const handleDotClick = (index: number) => {
+    setActiveGroupIndex(index);
+  };
+
+  const visibleMonths = monthGroups[activeGroupIndex] ?? [];
+
   return (
     <section className="w-full max-w-5xl p-8">
-      <Link href="/gigs" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900">
+      <Link href="/gigs" className="inline-flex items-center gap-2 text-sm font-[400] text-slate-500 hover:text-slate-900">
         <ArrowLeft className="h-4 w-4" /> back to gig directory
       </Link>
 
       <div className="mt-6 flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-4">
-          <Image src={gig.postedBy.avatar} alt={gig.postedBy.name} width={56} height={56} className="rounded-full" />
+          <Image src={gig.postedBy.avatar} alt={gig.postedBy.name} width={24} height={24} className="rounded-full" />
           <div>
-            <p className="text-lg font-medium text-slate-900">{gig.postedBy.name}</p>
-            <p className="text-sm text-slate-500">Posted on {gig.postedOn}</p>
+            <p className="text-[16px] font-[400] text-slate-900">{gig.postedBy.name}</p>
+            <p className="text-[9px] text-[#444444]">Posted on {gig.postedOn}</p>
           </div>
-          <div className="ml-auto text-sm font-medium text-[#FA6E80]">Apply before {gig.applyBefore}</div>
+          <div className="ml-auto text-sm font-[500] text-[#FA6E80]">Apply before {gig.applyBefore}</div>
         </div>
 
         <div className="space-y-3">
+
+          <span className="text-[18px] font-[400] text-[#000000]">{gig.title}</span>
           <div className="flex flex-row gap-2 justify-start items-center">
             <div className="text-sm uppercase tracking-wide text-slate-400">Gig Rate :</div>
-            <div className="text-xl font-medium text-[#FA6E80]">{gig.budgetLabel}</div>
+            <div className="text-[16px] font-[400] text-[#FA6E80]">AED {gig.budgetLabel}</div>
           </div>
-          <span className="text-3xl font-normal text-slate-900">{gig.title}</span>
-          <p className="text-base text-slate-600">{gig.description}</p>
+          <p className="text-[14.9px] text-[#444444]">{gig.description}</p>
           <p className="text-base text-slate-700">
-            <span className="font-medium">Qualifying criteria:</span> {gig.qualifyingCriteria}
+            <span className="font-[600]">Qualifying criteria:</span> {gig.qualifyingCriteria}
           </p>
         </div>
 
         <div className="flex flex-col gap-3 text-sm text-slate-700">
           <div className="flex items-start gap-3">
-            <div className="rounded-full bg-[#2AA9A7]/10 p-2 text-[#2AA9A7]">
+            <div className="">
               <MapPin className="h-4 w-4" />
             </div>
             <p>{gig.location}</p>
           </div>
-          <div className="flex items-start gap-3">
-            <div className="rounded-full bg-[#2AA9A7]/10 p-2 text-[#2AA9A7]">
-              <Paperclip className="h-4 w-4" />
-            </div>
-            <p>{gig.supportingFileLabel}</p>
-          </div>
+
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -82,25 +101,28 @@ export default function GigDetails(gig: GigsDataType[0]) {
       </div>
 
       <div className="mt-8 space-y-4">
-        <div className="flex items-center gap-2 text-lg font-medium text-slate-900">
+        <div className="flex items-center gap-2 text-lg font-[400] text-slate-900">
           <Calendar className="h-5 w-5 text-[#FA6E80]" />
           Gigs Date
         </div>
-        <div className="flex flex-row gap-4  overflow-x-auto">
-          {gig.calendarMonths.map((month) => {
+        <div className="flex flex-row flex-wrap gap-4">
+          {visibleMonths.map((month, index) => {
             const monthDate = new Date(month.year, month.month, 1);
             const matrix = buildMonthMatrix(month.year, month.month);
             const highlighted = new Set(month.highlightedDays);
 
             return (
-              <div key={`${gig.id}-${month.month}-${month.year}`} className="rounded-[22px] border border-[#F2F0ED] bg-white p-4  min-w-[280px]">
+              <div
+                key={`${gig.id}-${month.month}-${month.year}`}
+                className="rounded-[22px] border border-[#F2F0ED] bg-white p-4 min-w-[280px]"
+              >
                 <div className="mb-3 flex items-center justify-between text-base font-semibold text-[#FF4B82]">
-                  <span>{format(monthDate, "MMM, yyyy")}</span>
+                  <span className="text-[16px] font-[400]">{format(monthDate, "MMM, yyyy")}</span>
                   <Calendar className="h-4 w-4 text-[#FF4B82]" />
                 </div>
                 <div className="grid grid-cols-7 gap-[6px] text-[11px] font-semibold text-[#FF4B82]">
                   {WEEKDAY_LABELS.map((label) => (
-                    <span key={`${gig.id}-${month.month}-${label}`} className="text-center">
+                    <span key={`${gig.id}-${month.month}-${label}`} className="text-center font-[400] text-[16px]">
                       {label}
                     </span>
                   ))}
@@ -117,9 +139,9 @@ export default function GigDetails(gig: GigsDataType[0]) {
                         const baseColor = currentMonth ? "text-[#22A5A8]" : "text-slate-300";
                         const highlightBgClass = isHighlighted
                           ? [
-                            "absolute inset-y-0 bg-[#22A5A8]",
-                            prevHighlighted ? "-left-1" : "left-0 rounded-l-full",
-                            nextHighlighted ? "-right-1" : "right-0 rounded-r-full",
+                            "absolute inset-y-0 bg-[#22A5A8] h-[28.27px]",
+                            prevHighlighted ? "-left-1" : "left-0 rounded-l-[43px]",
+                            nextHighlighted ? "-right-1" : "right-0 rounded-r-[43px]",
                           ].join(" ")
                           : "";
 
@@ -139,15 +161,44 @@ export default function GigDetails(gig: GigsDataType[0]) {
             );
           })}
         </div>
+        {monthGroups.length > 1 && (
+          <div className="mt-4 flex items-center justify-start gap-3">
+            {monthGroups.map((group, index) => {
+              const firstMonth = group[0];
+              const lastMonth = group[group.length - 1];
+              const ariaLabel = firstMonth
+                ? `Show calendars ${format(new Date(firstMonth.year, firstMonth.month, 1), "MMM yyyy")}${lastMonth && group.length > 1
+                  ? ` - ${format(new Date(lastMonth.year, lastMonth.month, 1), "MMM yyyy")}`
+                  : ""
+                }`
+                : `Show calendar group ${index + 1}`;
+              return (
+                <button
+                  key={`${gig.id}-dot-group-${index}`}
+                  type="button"
+                  onClick={() => handleDotClick(index)}
+                  aria-label={ariaLabel}
+                  aria-current={activeGroupIndex === index}
+                  className="p-1"
+                >
+                  <span
+                    className={`inline-block h-[20px] w-[20px] rounded-full transition-colors ${activeGroupIndex === index ? "bg-[#31A7AC] h-[22px] w-[22px]" : "bg-black"
+                      }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="mt-10 space-y-4">
-        <h2 className="text-lg font-medium text-slate-900">References</h2>
+        <h2 className="text-lg font-[400] text-slate-900">References</h2>
         <div className="flex flex-col gap-3">
           {gig.references.map((reference, index) => {
             const Icon = reference.type === "file" ? FileText : Link2;
             const content = (
-              <div className="flex items-center gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+              <div className="flex items-center gap-3 rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-[400] text-slate-700">
                 <Icon className="h-4 w-4 text-[#2AA9A7]" />
                 <span className="truncate">{reference.label}</span>
               </div>
