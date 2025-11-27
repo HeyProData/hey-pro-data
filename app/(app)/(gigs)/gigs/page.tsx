@@ -1,7 +1,7 @@
 'use client'
 
 import Image from "next/image";
-import { Calendar, MapPin, Paperclip, Search } from "lucide-react";
+import { Calendar, FileText, MapPin, Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { gigsData } from "@/data/gigs";
@@ -38,68 +38,70 @@ export default function GigsPage() {
                     </form>
                 </section>
 
-                <section className="mx-auto mt-10 max-w-5xl space-y-6">
+                <section className="mx-auto mt-10 w-full max-w-[729px] px-1 sm:px-0">
                     {gigsData.map((gig) => (
                         <Link
                             href={`/gigs/${gig.slug}`}
                             key={gig.id}
-                            className="block p-6 transition"
+                            className="block p-[17px] transition mb-5"
                         >
                             <div className="flex flex-col gap-6 lg:flex-row">
-                                <div className="flex-1">
+                                <div className="flex-1 w-full">
                                     <div className="flex items-center gap-4">
-                                        <Image src={gig.postedBy.avatar} alt={gig.postedBy.name} width={54} height={54} className="rounded-full" />
+                                        <Image src={gig.postedBy.avatar} alt={gig.postedBy.name} width={24} height={24} className="rounded-full" />
                                         <div>
-                                            <p className="text-base font-medium text-slate-900">{gig.postedBy.name}</p>
-                                            <p className="text-sm text-slate-500">Posted on {gig.postedOn}</p>
+                                            <p className="text-[12px] font-[400] text-slate-900">{gig.postedBy.name}</p>
+                                            <p className="text-[9px] font-[400] text-[#444444]">Posted on {gig.postedOn}</p>
                                         </div>
                                     </div>
-                                    <h3 className="mt-4 text-2xl font-medium text-slate-900">{gig.title}</h3>
-                                    <p className="mt-3 text-base text-slate-600">{gig.description}</p>
-                                    <p className="mt-4 text-base text-slate-700">
-                                        <span className="font-medium">Qualifying criteria: </span>
+                                    <h3 className="mt-4 text-[18px] font-[400] text-[#444444]">{gig.title}</h3>
+                                    <p className="mt-3 text-[14px] font-[400] text-[#444444]">{gig.description}</p>
+                                    <p className="mt-4 text-[14px] font-[400] text-[#444444]">
+                                        <span className="font-[600]">Qualifying criteria: </span>
                                         {gig.qualifyingCriteria}
                                     </p>
                                 </div>
 
-                                <div className="lg:w-px lg:bg-slate-200" aria-hidden />
+                                <div className="hidden lg:block lg:w-px max-h-[271px] mr-4 lg:bg-slate-200" aria-hidden />
 
-                                <div className="flex flex-col gap-4 lg:w-[260px]">
-                                    <div className="flex flex-col items-start gap-1 text-right lg:items-end">
-                                        <span className="text-xs font-medium uppercase tracking-wide text-[#FA6E80]">Apply before {gig.applyBefore}</span>
-                                        <p className="text-lg font-medium text-slate-900">{gig.budgetLabel}</p>
+                                <div className="flex w-full flex-wrap gap-4 sm:flex-col lg:w-[260px]">
+                                    <div className="flex-col hidden sm:flex items-start gap-1 text-right lg:items-end">
+                                        <span className="text-xs font-[400]  tracking-wide text-[#FA6E80]">Apply before {gig.applyBefore}</span>
+
                                     </div>
-
-                                    <div className="flex items-start gap-3">
-                                        <div className="rounded-full bg-[#FA6E80]/10 p-2 text-[#FA6E80]">
-                                            <Calendar className="h-4 w-4" />
-                                        </div>
-                                        <div className="space-y-1 text-sm text-slate-700">
-                                            {gig.dateWindows.map((window) => (
-                                                <p key={`${gig.id}-${window.label}`}>
-                                                    <span className="font-medium text-slate-900">{window.label}</span>
-                                                    <span className="text-slate-500"> | {window.range}</span>
-                                                </p>
-                                            ))}
+                                    <div>
+                                        <p className="text-[14px] font-[400] text-[#444444] hidden sm:flex gap-1.5"><span className="text-[14px] font-[600]">AED </span> {gig.budgetLabel}</p>
+                                        <div className="flex items-center justify-start gap-3">
+                                            <div className="">
+                                                <Calendar className="h-4 w-4" />
+                                            </div>
+                                            <div className=" text-sm font-[400] text-[#444444]">
+                                                {gig.dateWindows.map((window) => (
+                                                    <p key={`${gig.id}-${window.label}`}>
+                                                        <span className="font-[400] text-[14.19px] text-[#444444]">{window.label}</span>
+                                                        <span className="text-[#444444] font-[400] text-sm"> | {window.range}</span>
+                                                    </p>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div className="flex items-start gap-3 text-sm text-slate-700">
-                                        <div className="rounded-full bg-[#FA6E80]/10 p-2 text-[#FA6E80]">
+                                        <div className="">
                                             <MapPin className="h-4 w-4" />
                                         </div>
-                                        <p className="leading-5">{gig.location}</p>
+                                        <p className="font-[400] text-[12px] text-[#444444]">{gig.location}</p>
                                     </div>
 
                                     <div className="flex items-start gap-3 text-sm text-slate-700">
-                                        <div className="rounded-full bg-[#FA6E80]/10 p-2 text-[#FA6E80]">
-                                            <Paperclip className="h-4 w-4" />
+                                        <div className="">
+                                            <FileText className="h-4 w-4" />
                                         </div>
-                                        <p>{gig.supportingFileLabel}</p>
+                                        <p className="font-[400] text-[12px] text-[#444444]">{gig.supportingFileLabel}</p>
                                     </div>
                                 </div>
                             </div>
-                            <Separator className="my-4" />
+                            <Separator className="mt-8" />
                         </Link>
 
                     ))}
