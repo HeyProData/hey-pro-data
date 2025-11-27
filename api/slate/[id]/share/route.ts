@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateAuthToken, successResponse, errorResponse } from '@/lib/supabase/server';
+import { createServerClient, validateAuthToken, successResponse, errorResponse } from '@/lib/supabase/server';
 
 /**
  * POST /api/slate/[id]/share
@@ -21,12 +21,64 @@ export async function POST(
     }
 
     const postId = params.id;
+    const supabase = createServerClient();
 
-    // TODO: Insert into slate_shares with UNIQUE constraint
-    // Update slate_posts.shares_count
+    // Check if post exists
+    const { data: post, error: postError } = await supabase
+      .from('slate_posts')
+      .select('id')
+      .eq('id', postId)
+      .single();
+
+    if (postError) {
+      if (postError.code === 'PGRST116') {
+        return NextResponse.json(
+          errorResponse('Post not found'),
+          { status: 404 }
+        );
+      }
+      return NextResponse.json(
+        errorResponse('Failed to fetch post', postError.message),
+        { status: 500 }
+      );
+    }
+
+    // Insert share (UNIQUE constraint will prevent duplicates)
+    const { error: shareError } = await supabase
+      .from('slate_shares')
+      .insert({
+        post_id: postId,
+        user_id: user.id,
+      });
+
+    if (shareError) {
+      if (shareError.code === '23505') {
+        // Unique violation - already shared
+        return NextResponse.json(
+          errorResponse('Post already shared'),
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        errorResponse('Failed to share post', shareError.message),
+        { status: 500 }
+      );
+    }
+
+    // Get updated share count (trigger automatically updated it)
+    const { data: updatedPost } = await supabase
+      .from('slate_posts')
+      .select('shares_count')
+      .eq('id', postId)
+      .single();
 
     return NextResponse.json(
-      successResponse(null, 'Post shared'),
+      successResponse(
+        {
+          shares_count: updatedPost?.shares_count || 0,
+        },
+        'Post shared'
+      ),
       { status: 201 }
     );
   } catch (error: any) {
@@ -57,12 +109,36 @@ export async function DELETE(
     }
 
     const postId = params.id;
+    const supabase = createServerClient();
 
-    // TODO: Delete from slate_shares
-    // Update slate_posts.shares_count
+    // Delete share
+    const { error: deleteError } = await supabase
+      .from('slate_shares')
+      .delete()
+      .eq('post_id', postId)
+      .eq('user_id', user.id);
+
+    if (deleteError) {
+      return NextResponse.json(
+        errorResponse('Failed to unshare post', deleteError.message),
+        { status: 500 }
+      );
+    }
+
+    // Get updated share count (trigger automatically updated it)
+    const { data: updatedPost } = await supabase
+      .from('slate_posts')
+      .select('shares_count')
+      .eq('id', postId)
+      .single();
 
     return NextResponse.json(
-      successResponse(null, 'Post unshared'),
+      successResponse(
+        {
+          shares_count: updatedPost?.shares_count || 0,
+        },
+        'Post unshared'
+      ),
       { status: 200 }
     );
   } catch (error: any) {
