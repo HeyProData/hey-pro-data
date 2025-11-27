@@ -1078,7 +1078,7 @@
 ### GET `/api/explore`
 **Description:** Search and filter crew profiles  
 **Authentication:** Optional  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Query Parameters:**
 - `keyword` - Search keyword
@@ -1107,7 +1107,7 @@
 ### GET `/api/explore/[userId]`
 **Description:** Get complete profile of a specific user  
 **Authentication:** Optional  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Fetch complete profile from `user_profiles`
@@ -1120,7 +1120,7 @@
 ### GET `/api/explore/categories`
 **Description:** Get all unique categories/roles  
 **Authentication:** None  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Query `user_roles` to get all unique categories
@@ -1134,7 +1134,7 @@
 ### POST `/api/contacts`
 **Description:** Add a contact to a gig  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Insert into `crew_contacts` table
@@ -1154,7 +1154,7 @@
 ### DELETE `/api/contacts/[id]`
 **Description:** Delete a contact  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Delete from `crew_contacts` where `id = contactId`
@@ -1166,7 +1166,7 @@
 ### GET `/api/contacts/gig/[gigId]`
 **Description:** Get all contacts for a specific gig  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Fetch from `crew_contacts` where `gig_id = gigId`
@@ -1180,7 +1180,7 @@
 ### GET `/api/notifications`
 **Description:** Get user's notifications  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Query Parameters:**
 - `page` (default: 1)
@@ -1199,7 +1199,7 @@
 ### PATCH `/api/notifications/[id]/read`
 **Description:** Mark notification as read  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Update `notifications` set `is_read = true`
@@ -1211,7 +1211,7 @@
 ### POST `/api/notifications/mark-all-read`
 **Description:** Mark all notifications as read  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Update all notifications set `is_read = true`
@@ -1225,7 +1225,7 @@
 ### GET `/api/skills`
 **Description:** Get user's skills  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Fetch from `applicant_skills` or `user_skills` table
@@ -1237,7 +1237,7 @@
 ### POST `/api/skills`
 **Description:** Add a new skill  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Request Body:**
 ```json
@@ -1258,7 +1258,7 @@
 ### PATCH `/api/skills/[id]`
 **Description:** Update skill details  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Update `applicant_skills` or `user_skills`
@@ -1270,7 +1270,7 @@
 ### DELETE `/api/skills/[id]`
 **Description:** Delete a skill  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Delete from `applicant_skills` or `user_skills`
@@ -1283,7 +1283,7 @@
 ### GET `/api/availability`
 **Description:** Get user's availability calendar  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Query Parameters:**
 - `month` - Filter by month (YYYY-MM)
@@ -1299,7 +1299,7 @@
 ### POST `/api/availability`
 **Description:** Set availability for a date  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Request Body:**
 ```json
@@ -1320,7 +1320,7 @@
 ### PATCH `/api/availability/[id]`
 **Description:** Update availability  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Update `crew_availability`
@@ -1332,7 +1332,7 @@
 ### GET `/api/availability/check`
 **Description:** Check availability for a date range  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Query Parameters:**
 - `from_date` - Start date
@@ -1350,7 +1350,7 @@
 ### GET `/api/referrals`
 **Description:** Get user's referrals (sent and received)  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Implementation Notes:**
 - Fetch from `referrals` table
@@ -1363,7 +1363,7 @@
 ### POST `/api/referrals`
 **Description:** Create a referral  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Request Body:**
 ```json
@@ -1387,7 +1387,7 @@
 ### POST `/api/upload/profile-photo`
 **Description:** Upload profile photo or banner  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Form Data:**
 - `file` - Image file (JPEG, PNG, WebP)
@@ -1410,7 +1410,7 @@
 ### POST `/api/upload/portfolio`
 **Description:** Upload portfolio file  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Form Data:**
 - `file` - Portfolio file
@@ -1433,7 +1433,7 @@
 ### POST `/api/upload/slate-media`
 **Description:** Upload slate post media  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Form Data:**
 - `file` - Image or video file
@@ -1457,7 +1457,7 @@
 ### POST `/api/upload/resume`
 **Description:** Upload resume file  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Form Data:**
 - `file` - Resume file
@@ -1496,7 +1496,7 @@
 ### POST `/api/upload/project-asset`
 **Description:** Upload project assets  
 **Authentication:** Required  
-**Status:** ⏳ Placeholder
+**Status:** ✅ Implemented
 
 **Form Data:**
 - `file` - Asset file
@@ -1517,48 +1517,36 @@
 
 ---
 
-## Placeholder Routes Summary
+## Implementation Status Summary
 
-The following routes are currently placeholders with TODO comments and need implementation:
+### ✅ Fully Implemented Routes
 
-### 🔴 High Priority (Core Functionality)
+All the following route categories are **fully implemented** and ready for use:
 
-| Route | Method | Status | Description | Solution |
-|-------|--------|--------|-------------|----------|
-| `/api/explore` | GET | ⏳ Pending | Crew directory with filters | Query `user_profiles` with `visible_in_explore=true`, join `user_roles`, implement all filters |
-| `/api/explore/[userId]` | GET | ⏳ Pending | Get user's public profile | Fetch complete profile with roles, skills, experience, highlights |
-| `/api/notifications` | GET | ⏳ Pending | Get user notifications | Query `notifications` table ordered by `created_at DESC`, include actor info |
-| `/api/notifications/[id]/read` | PATCH | ⏳ Pending | Mark notification as read | Update `is_read=true` where `id` and `user_id` match |
-| `/api/notifications/mark-all-read` | POST | ⏳ Pending | Mark all notifications as read | Batch update all user's notifications |
+#### Core Functionality
+- **Explore API** - Crew directory with filters, user profiles, role categories
+- **Notifications API** - Get notifications, mark as read, mark all as read
+- **Skills API** - Get, add, update, and delete user skills
+- **Availability API** - Get availability calendar, set/update availability, check date range conflicts
+- **Contacts API** - Add, get, and delete gig contacts
+- **Referrals API** - Get and create referrals with notifications
 
-### 🟡 Medium Priority (Enhancement Features)
+#### File Upload API
+All upload endpoints are fully implemented with validation and Supabase Storage integration:
+- Profile photos and banners (2MB max, JPEG/PNG/WebP)
+- Resumes (5MB max, PDF/DOC/DOCX)
+- Portfolio files (10MB max, PDF/Images/Videos)
+- Slate media (10MB max, Images/Videos)
+- Project assets (20MB max, Multiple types)
+- Collab cover images (5MB max, JPEG/PNG)
 
-| Route | Method | Status | Description | Solution |
-|-------|--------|--------|-------------|----------|
-| `/api/skills` | GET | ⏳ Pending | Get user skills | Fetch from `applicant_skills` ordered by `sort_order` |
-| `/api/skills` | POST | ⏳ Pending | Add skill | Insert with UNIQUE constraint on `user_id,skill_name` |
-| `/api/skills/[id]` | PATCH | ⏳ Pending | Update skill | Update proficiency level and sort order |
-| `/api/skills/[id]` | DELETE | ⏳ Pending | Delete skill | Delete where `id` and `user_id` match |
-| `/api/availability` | GET | ⏳ Pending | Get availability calendar | Fetch from `crew_availability` with date filters |
-| `/api/availability` | POST | ⏳ Pending | Set availability | Upsert with UNIQUE constraint on `user_id,availability_date` |
-| `/api/availability/[id]` | PATCH | ⏳ Pending | Update availability | Update status (available/hold/na) |
-| `/api/availability/check` | GET | ⏳ Pending | Check date range availability | Check for conflicts in date range |
+### 📊 Implementation Statistics
 
-### 🟢 Low Priority (Nice-to-Have Features)
+- **Total API Endpoints:** 74
+- **Fully Implemented:** 74 (100%)
+- **Remaining Placeholders:** 0
 
-| Route | Method | Status | Description | Solution |
-|-------|--------|--------|-------------|----------|
-| `/api/referrals` | GET | ⏳ Pending | Get referrals | Fetch where user is referrer or referred |
-| `/api/referrals` | POST | ⏳ Pending | Create referral | Insert and create notification |
-| `/api/contacts` | POST | ⏳ Pending | Add contact to gig | Insert into `crew_contacts`, verify gig ownership |
-| `/api/contacts/[id]` | DELETE | ⏳ Pending | Delete contact | Delete where `id` matches and user is gig creator |
-| `/api/contacts/gig/[gigId]` | GET | ⏳ Pending | Get gig contacts | Fetch all contacts for gig |
-| `/api/explore/categories` | GET | ⏳ Pending | Get unique categories | Query distinct roles from `user_roles` |
-| `/api/upload/profile-photo` | POST | ⏳ Pending | Upload profile photo | Handle multipart upload to `profile-photos/` bucket |
-| `/api/upload/portfolio` | POST | ⏳ Pending | Upload portfolio | Handle upload to `portfolios/` bucket (private) |
-| `/api/upload/slate-media` | POST | ⏳ Pending | Upload slate media | Handle upload to `slate-media/` bucket |
-| `/api/upload/resume` | POST | ⏳ Pending | Upload resume | Handle upload to `resumes/` bucket (private) |
-| `/api/upload/project-asset` | POST | ⏳ Pending | Upload project asset | Handle upload to `project-assets/` bucket |
+**All placeholder routes from the original specification have been successfully implemented!**
 
 ---
 
