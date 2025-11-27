@@ -6,17 +6,15 @@ import {
     Dialog,
     DialogClose,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { RecommendationUser, recommendationUsers } from "@/data/recommendUsers"
-import { UserPlus, X } from "lucide-react"
+import { MapPin, Search, ThumbsUp, UserPlus, X } from "lucide-react"
 import Image from "next/image"
 
 export function SendRecommendationDialog() {
@@ -37,17 +35,13 @@ export function SendRecommendationDialog() {
         })
     }, [searchTerm])
 
-    const handleSelectUser = (user: RecommendationUser) => {
+    const handleToggleUser = (user: RecommendationUser) => {
         setSelectedUsers((prev) => {
             if (prev.some((existing) => existing.id === user.id)) {
-                return prev
+                return prev.filter((existing) => existing.id !== user.id)
             }
             return [...prev, user]
         })
-    }
-
-    const handleRemoveUser = (id: string) => {
-        setSelectedUsers((prev) => prev.filter((user) => user.id !== id))
     }
 
     const handleSend = () => {
@@ -63,123 +57,103 @@ export function SendRecommendationDialog() {
                         Recommend
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[540px]">
-                    <DialogHeader>
-                        <DialogTitle>Select people to recommend</DialogTitle>
-                        <DialogDescription>
-                            Search the network, tap a name to add them to your
-                            recommendation list, and remove anyone before sending.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="user-search">Search people</Label>
-                            <Input
-                                id="user-search"
-                                placeholder="Type a name or handle"
-                                value={searchTerm}
-                                onChange={(event) => setSearchTerm(event.target.value)}
-                            />
-                        </div>
+                <DialogContent className="w-[582px] ] border-0 bg-[#F8F8F8] p-0 sm:rounded-[20px]">
+                    <div className="relative flex  flex-col gap-6 p-6">
+                        <DialogHeader className="items-start gap-1 border-b border-[#C8C8C8] pb-5">
+                            <DialogTitle className="text-[18px] font-normal text-black">
+                                Make someone’s day!
+                            </DialogTitle>
+                            <p className="text-[16px] text-black">
+                                Invite someone for this Gig
+                            </p>
+                        </DialogHeader>
 
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium">All users</p>
-                                <span className="text-xs uppercase text-muted-foreground">
-                                    {filteredUsers.length} found
-                                </span>
+                        <div className="space-y-6 ">
+                            <div className="relative">
+                                <Input
+                                    id="user-search"
+                                    placeholder="Start typing to recommend for this role"
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    className="h-12 rounded-full border border-[#FA6E80] bg-white pr-14 text-[14px] text-[#646464] placeholder:text-[#646464]"
+                                />
+                                <button
+                                    type="button"
+                                    className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-[#FA6E80]"
+                                    aria-label="Search"
+                                >
+                                    <Search className="h-4 w-4 text-white" />
+                                </button>
                             </div>
-                            <ScrollArea className="max-h-64 rounded-[14px] border border-[#E4E7EC] bg-white">
-                                {filteredUsers.length > 0 ? (
-                                    <ul className="divide-y divide-[#F4F7F7] h-50">
-                                        {filteredUsers.map((user) => (
-                                            <li key={user.id}>
-                                                <button
-                                                    type="button"
-                                                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition hover:bg-[#F4F7F7]"
-                                                    onClick={() => handleSelectUser(user)}
+
+                            <div className="space-y-4">
+                                <p className="text-sm font-medium text-black">Previously recommended</p>
+                                <ScrollArea className="h-72 pr-2">
+                                    <div className="space-y-4">
+                                        {filteredUsers.map((user) => {
+                                            const isSelected = selectedUsers.some((existing) => existing.id === user.id)
+
+                                            return (
+                                                <div
+                                                    key={user.id}
+                                                    className="flex items-center justify-between rounded-[12px] bg-white px-4 py-3"
                                                 >
-                                                    <div>
+                                                    <div className="flex items-center gap-4">
                                                         <Image
                                                             src={user.avatar || "/default-avatar.png"}
                                                             alt={user.name}
-                                                            width={40}
-                                                            height={40}
-                                                            className="rounded-full"
+                                                            width={49}
+                                                            height={49}
+                                                            className="h-[49px] w-[49px] rounded-full object-cover"
                                                         />
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className="text-base font-medium text-[#444444]">{user.name}</p>
+                                                            <div className="flex items-center gap-2 text-sm text-[#444444]">
+                                                                <MapPin className="h-4 w-4" />
+                                                                <span>{user.location}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1 leading-tight">
-                                                        <p className="text-sm font-semibold text-[#101828]">
-                                                            {user.name}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">{user.role}</p>
-                                                    </div>
-                                                    <span className="text-xs font-medium text-[#2AA9A7]">
-                                                        {user.handle}
-                                                    </span>
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <p className="px-4 py-6 text-sm text-muted-foreground">
-                                        No users match your search.
-                                    </p>
-                                )}
-                            </ScrollArea>
-                        </div>
-
-                        <div className="space-y-3">
-                            <p className="text-sm font-medium">Selected users</p>
-                            {selectedUsers.length > 0 ? (
-                                <div className="flex flex-wrap gap-3">
-                                    {selectedUsers.map((user) => (
-                                        <div
-                                            key={user.id}
-                                            className="flex items-center gap-2 rounded-full border border-[#E4E7EC] bg-[#F4F7F7] px-3 py-1"
-                                        >
-                                            <div className="leading-tight flex items-center gap-2">
-                                                <Image
-                                                    src={user.avatar || "/default-avatar.png"}
-                                                    alt={user.name}
-                                                    width={40}
-                                                    height={40}
-                                                    className="rounded-full"
-                                                />
-                                                <div>
-                                                    <p className="text-sm font-semibold text-[#101828]">{user.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{user.role}</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleToggleUser(user)}
+                                                        className={`flex h-[34px] w-[34px] items-center justify-center rounded-md border text-white transition ${isSelected ? "border-[#FCAF45] bg-[#FCAF45]" : "border-[#444444] bg-[#444444]"
+                                                            }`}
+                                                        aria-label={`Toggle recommendation for ${user.name}`}
+                                                    >
+                                                        <ThumbsUp className="h-4 w-4" />
+                                                    </button>
                                                 </div>
-
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveUser(user.id)}
-                                                className="text-[#475467] transition hover:text-red-500"
-                                                aria-label={`Remove ${user.name}`}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    No one selected yet. Choose people from the list above.
-                                </p>
-                            )}
+                                            )
+                                        })}
+                                    </div>
+                                </ScrollArea>
+                            </div>
                         </div>
                     </div>
-                    <DialogFooter>
+
+                    <DialogFooter className="flex flex-row w-full items-center justify-between border-t border-[#C8C8C8] px-6 py-4">
                         <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-[47px] rounded-[10px] border-[#828282] px-6 font-semibold text-[#828282]"
+                            >
+                                Cancel
+                            </Button>
                         </DialogClose>
                         <DialogClose asChild>
-                            <Button type="button" disabled={selectedUsers.length === 0} onClick={handleSend}>
-                                Send recommendation
+                            <Button
+                                type="button"
+                                disabled={selectedUsers.length === 0}
+                                onClick={handleSend}
+                                className="h-[47px] rounded-[10px] bg-[#31A7AC] px-6 font-semibold text-white disabled:opacity-50"
+                            >
+                                Recommend
                             </Button>
                         </DialogClose>
                     </DialogFooter>
+
                 </DialogContent>
             </div>
         </Dialog>
