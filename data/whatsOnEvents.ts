@@ -29,6 +29,7 @@ export type WhatsOnEvent = {
     tags: string[];
     thumbnail: string;
     heroImage: string;
+    recommendedpopels?: string[]; // Array of event IDs
 };
 
 const baseDescription = [
@@ -86,6 +87,7 @@ const createEvent = (id: string, title: string, location: string, isPaid: boolea
     tags: baseTags,
     thumbnail: "/whats-on.png",
     heroImage: "/whats-on.png",
+    recommendedpopels: ["/image (1).png", "/image (2).png", "/image (3).png"],
 });
 
 export const whatsOnEvents: WhatsOnEvent[] = [
