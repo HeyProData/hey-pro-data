@@ -76,26 +76,38 @@ export function AvailabilityTab({ selectedGigIds }: AvailabilityTabProps) {
                     <section key={gig.id} className="space-y-4 bg-transparent">
                         <header className="space-y-3">
                             <p className="text-lg font-semibold text-gray-900">{gig.title}</p>
-                            <div className="flex flex-wrap gap-2">
-                                {monthBadges.map((label) => (
-                                    <span
-                                        key={label}
-                                        className="rounded-full bg-[#FFE9ED] px-4 py-1 text-sm font-medium text-[#FA6E80]"
-                                    >
-                                        {label}
-                                    </span>
-                                ))}
+                            <div className="flex flex-row gap-2">
+
+                            </div>
+                            <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-[#EFEFEF] bg-white px-4 py-3 text-sm text-gray-900">
+                                {gig.dateWindows.map((window) => {
+                                    const [month, year] = window.label.split(" ");
+                                    return (
+                                        <div key={`${gig.id}-${window.label}`} className="flex items-center gap-3">
+                                            <span className="text-base font-semibold text-[#3B3B3B]">{year}</span>
+                                            <span className="rounded-full bg-[#FA6E80] px-4 py-1 text-sm font-medium text-white">{month}</span>
+                                            <span className="text-sm text-[#3B3B3B]">{window.range}</span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                             <p className="text-sm text-gray-600">
                                 Showing availability for every requested day; days without data default to N/A.
                             </p>
                         </header>
                         <div className="overflow-x-auto">
-                            <table className="min-w-full text-sm">
+                            <table className="min-w-full border-separate border-spacing-x-[2px] border-spacing-y-[10px] text-sm">
                                 <thead>
                                     <tr className="bg-gray-50 text-gray-600">
-                                        <th className="sticky left-0 bg-gray-50 px-4 py-2 text-left font-medium text-gray-700">
-                                            Name
+                                        <th className="sticky left-0 bg-gray-50 px-1 py-2 text-left font-medium text-gray-700 flex flex-row  justify-center items-center">
+                                            {monthBadges.map((label) => (
+                                                <span
+                                                    key={label}
+                                                    className=" px-1 py-1 text-[14px] font-[400] text-[#FA6E80] "
+                                                >
+                                                    {label}
+                                                </span>
+                                            ))}
                                         </th>
                                         {timeline.map((entry) => (
                                             <th
@@ -135,14 +147,14 @@ export function AvailabilityTab({ selectedGigIds }: AvailabilityTabProps) {
                                                 const state = getAvailabilityState(person.id, dayKey);
                                                 if (state === "na") {
                                                     return (
-                                                        <td key={entry.key} className="border px-2 py-1 text-center text-xs text-gray-400">
+                                                        <td key={entry.key} className="border h-[41px] w-[38px] px-2 py-1 text-center text-xs text-gray-400">
                                                             N/A
                                                         </td>
                                                     );
                                                 }
                                                 if (state === "hold") {
                                                     return (
-                                                        <td key={entry.key} className="border bg-[#6A89BE] px-2 py-1 text-center">
+                                                        <td key={entry.key} className="border h-[41px] w-[38px] bg-[#6A89BE] px-2 py-1 text-center">
                                                             <span className="inline-flex h-5 w-5 items-center justify-center rounded-md text-xs font-semibold text-black">
                                                                 C
                                                             </span>
@@ -150,7 +162,7 @@ export function AvailabilityTab({ selectedGigIds }: AvailabilityTabProps) {
                                                     );
                                                 }
                                                 return (
-                                                    <td key={entry.key} className="border bg-[#FCAF45] px-2 py-1 text-center">
+                                                    <td key={entry.key} className="border h-[41px] w-[38px] bg-[#FCAF45] px-2 py-1 text-center">
                                                         <span className="inline-flex h-5 w-5 items-center justify-center text-xs font-semibold text-black">
                                                             P1
                                                         </span>
