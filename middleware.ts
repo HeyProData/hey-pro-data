@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 
 export const config = {
   matcher: [
@@ -9,7 +9,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
-     * - api routes (handled separately)
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
@@ -50,43 +49,47 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for Supabase auth token in cookies
-  // Supabase stores session in cookies with format: sb-<project-ref>-auth-token
-  const supabaseAuthCookie = request.cookies.getAll().find(
-    cookie => cookie.name.includes('auth-token') || cookie.name.includes('supabase')
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  // Create Supabase client for middleware
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+          });
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
   );
 
-  // Also check for legacy accessToken cookie
-  const legacyToken = request.cookies.get('accessToken')?.value;
-
-  // Try to get session from Supabase auth cookie
-  let isAuthenticated = false;
+  // Get the session - this will also refresh the token if needed
+  const { data: { session } } = await supabase.auth.getSession();
   
-  if (supabaseAuthCookie?.value) {
-    try {
-      // Parse the auth cookie to check if session is valid
-      const authData = JSON.parse(supabaseAuthCookie.value);
-      if (authData?.access_token && authData?.expires_at) {
-        // Check if token is not expired
-        const expiresAt = authData.expires_at * 1000; // Convert to milliseconds
-        isAuthenticated = Date.now() < expiresAt;
-      }
-    } catch (e) {
-      // Cookie parsing failed, try alternative check
-      isAuthenticated = false;
-    }
-  }
-
-  // Fallback to legacy token check
-  if (!isAuthenticated && legacyToken) {
-    isAuthenticated = true;
-  }
-
+  const isAuthenticated = !!session;
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-  // Redirect authenticated users away from auth pages
+  // Redirect authenticated users away from auth pages (login/signup)
   if (isAuthenticated && isAuthRoute) {
     return NextResponse.redirect(new URL('/home', request.url));
   }
@@ -98,5 +101,5 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
