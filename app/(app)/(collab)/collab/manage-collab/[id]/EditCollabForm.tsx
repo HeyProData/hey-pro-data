@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table"
 import type { CollabPost } from "@/data/collabPosts";
 
-const inputBase = "w-full rounded-[18px] border border-[#0FC6D1]/50 bg-white/40 px-5 py-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-[#0FC6D1] focus:outline-none";
+const inputBase = "w-full rounded-[18px] border border-[#444444] bg-white/40 px-5 py-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-[#444444] focus:outline-none";
 
 type EditCollabFormProps = {
     collab: CollabPost;
@@ -21,7 +21,7 @@ type EditCollabFormProps = {
 
 
 const TagPill = ({ label, onRemove }: { label: string; onRemove: () => void }) => (
-    <span className="inline-flex items-center gap-2 rounded-full border border-[#0FC6D1] px-4 py-1 text-xs font-medium text-[#0FC6D1]">
+    <span className="inline-flex items-center gap-2 rounded-full border border-[#444444] px-4 py-1 text-xs font-medium text-[#0FC6D1]">
         {label}
         <button type="button" onClick={onRemove} aria-label={`Remove ${label}`} className="text-[#0FC6D1]">
             <X className="h-3 w-3" />
@@ -94,11 +94,11 @@ export function EditCollabForm({ collab }: EditCollabFormProps) {
     };
 
     return (
-        <section className="rounded-[36px] border border-[#F2F4F7] bg-white p-4 sm:p-6 shadow-[0_25px_120px_rgba(0,0,0,0.06)]">
+        <section className="rounded-[36px] bg-white p-1 sm:p-6 shadow-[0_25px_120px_rgba(0,0,0,0.06)]">
             <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6 lg:flex-row">
                 <div className="w-full flex-shrink-0 space-y-6 lg:max-w-[360px]">
-                    <div className="rounded-[30px] p-4 text-center text-sm text-gray-500">
-                        <div className="relative mx-auto h-[280px] w-full max-w-[360px] overflow-hidden rounded-[24px] bg-white sm:h-[360px]">
+                    <div className="rounded-[30px] text-center text-sm text-gray-500">
+                        <div className="relative mx-auto flex w-[353px] overflow-hidden rounded-[10px] bg-white sm:w-[348px] h-[410px]">
                             <input
                                 type="file"
                                 accept="image/png,image/jpeg,image/jpg"
@@ -106,7 +106,7 @@ export function EditCollabForm({ collab }: EditCollabFormProps) {
                                 onChange={handlePosterChange}
                             />
                             {posterPreview ? (
-                                <Image src={posterPreview} alt={title || "Poster preview"} fill className="object-cover" sizes="360px" unoptimized />
+                                <Image src={posterPreview} alt={title || "Poster preview"} fill className="object-cover rounded-[10px]" sizes="360px" unoptimized />
                             ) : (
                                 <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-400">
                                     <Plus className="h-5 w-5" />
@@ -116,31 +116,13 @@ export function EditCollabForm({ collab }: EditCollabFormProps) {
                         </div>
                         <p className="mt-3 text-xs text-gray-500">16:9 recommended • PNG / JPG up to 5MB</p>
                     </div>
-                    <div className="space-y-3 rounded-[24px] border border-[#F2F4F7] bg-white p-5 text-sm text-gray-600">
-                        <div className="text-xs uppercase tracking-wide text-gray-400">Status</div>
-                        <dl className="grid grid-cols-2 gap-3 text-xs text-gray-500">
-                            <div>
-                                <dt className="text-gray-400">Posted on</dt>
-                                <dd className="font-medium text-gray-800">{collab.postedOn}</dd>
-                            </div>
-                            <div>
-                                <dt className="text-gray-400">Author</dt>
-                                <dd className="font-medium text-gray-800">{collab.author}</dd>
-                            </div>
-                        </dl>
-                    </div>
+
                 </div>
                 <div className="flex-1 space-y-5">
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-800" htmlFor="collabTitle">
-                            Collab title
-                        </label>
                         <input id="collabTitle" className={inputBase} value={title} onChange={(event) => setTitle(event.target.value)} />
                     </div>
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-800" htmlFor="collabSummary">
-                            Collab summary
-                        </label>
                         <textarea
                             id="collabSummary"
                             className={`${inputBase} min-h-[140px] resize-none rounded-[24px]`}
@@ -150,8 +132,7 @@ export function EditCollabForm({ collab }: EditCollabFormProps) {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-800">Collab tags</label>
-                        <div className="flex gap-3 rounded-[18px] border border-[#0FC6D1] px-3 py-2">
+                        <div className="flex gap-3 rounded-[18px] border border-[#444444] px-3 py-2">
                             <input
                                 className="flex-1 border-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
                                 placeholder="Add tags and press enter"
@@ -197,7 +178,7 @@ export function EditCollabForm({ collab }: EditCollabFormProps) {
                 </div>
             </form>
             <div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col-reverse mt-5 sm:mt-0 gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <span className="font-semibold text-2xl">Collaborators</span>
                     <button className="ml-0 w-full rounded-[10px] border border-transparent bg-[#31A7AC] px-4 py-2 text-white transition hover:opacity-90 sm:ml-2 sm:w-auto">Close Collab</button>
                 </div>

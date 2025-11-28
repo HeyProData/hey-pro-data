@@ -35,7 +35,7 @@ const collabPosts: CollabPost[] = [
         interestAvatars: ["/image (1).png", "/image (2).png", "/image (3).png"],
         postedOn: "15 Oct, 2025",
         author: "Michael Molar",
-        avatar: "/assets/whatson/host-avatar.svg",
+        avatar: "/image (2).png",
         cover: "/bg.jpg",
     },
     {
@@ -50,7 +50,7 @@ const collabPosts: CollabPost[] = [
         interestAvatars: ["/image (1).png", "/image (2).png", "/image (3).png"],
         postedOn: "12 Oct, 2025",
         author: "Michael Molar",
-        avatar: "/assets/whatson/host-avatar.svg",
+        avatar: "/image (2).png",
         cover: "/bg.jpg",
     },
 ];

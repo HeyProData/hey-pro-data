@@ -27,14 +27,9 @@ const ManageCollabHeader = () => {
                 <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">
                     Manage Collab
                 </span>
-                <Link
-                    href="/collab/manage-collab"
-                    className="inline-flex w-[192px] h-[44px] items-center justify-center rounded-[12px] border border-transparent bg-[#31A7AC] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 sm:w-auto"
-                >
-                    Manage Collab
-                </Link>
+
             </div>
-            <SearchBar />
+            {/* <SearchBar /> */}
         </div>
     )
 }
