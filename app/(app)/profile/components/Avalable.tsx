@@ -41,40 +41,48 @@ export default function AvalableDilog({ initialProfile, triggerClassName }: Edit
         setOpen(false)
     }
 
-
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button
                     variant="ghost"
-                    className={cn("flex items-center gap-2 border border-none text-[#31A7AC]", triggerClassName)}
+                    className={cn(
+                        "flex items-center gap-2 border border-none text-white",
+                        availability
+                            ? "bg-[#34A353]"
+                            : availability === "Unavailable"
+                                ? "bg-slate-800"
+                                : "bg-[#31A7AC]",
+                        triggerClassName
+                    )}
                 >
                     {availability}
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
-                <DialogHeader className="mt-20">
+                <DialogHeader className="">
                     <DialogTitle>Availability</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-2 h-40 -mt-30">
-                    <Select value={draftAvailability} onValueChange={setDraftAvailability}>
-                        <SelectTrigger className="w-full rounded-full border-none bg-[#34A353] text-white">
+                <div className="space-y-2">
+                    <Select value={draftAvailability} onValueChange={setDraftAvailability} >
+                        <SelectTrigger className={cn("w-full bg-[#34A353] rounded-full px-5 border-none text-white",
+                            draftAvailability === "Busy" ? "bg-[#444444]" : draftAvailability === "Unavailable" ? "bg-[#31A7AC]" : "bg-[#34A353]")}>
                             <SelectValue placeholder="Select availability" />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl">
-                            <SelectItem value="Available">Available</SelectItem>
-                            <SelectItem value="Busy">Busy</SelectItem>
-                            <SelectItem value="Unavailable">Unavailable</SelectItem>
+                            <SelectItem value="Available" className="bg-[#34A353]  rounded-t-[16px] text-white font-[600]">Available</SelectItem>
+                            <SelectItem value="Busy" className="bg-[#444444] text-white font-[600] ">Busy</SelectItem>
+                            <SelectItem value="Unavailable" className="bg-[#31A7AC]  rounded-b-[16px] text-white font-[600]">Select From Calender</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
-                <DialogFooter className=" flex flex-row justify-start items-start -mt-60">
+                <DialogFooter className=" flex flex-row justify-start  items-start">
                     <DialogClose asChild>
-                        <Button type="button" className="h-[44px] w-[128px] rounded-[15px] border-[#31A7AC]" variant="outline">
+                        <Button type="button" className="h-11 w-32 rounded-[15px] border-[#31A7AC]" variant="outline">
                             <span className="text-[#31A7AC]">Cancel</span>
                         </Button>
                     </DialogClose>
-                    <Button type="button" className="h-[44px] rounded[15px] bg-[#31A7AC]" onClick={handleSave}>
+                    <Button type="button" className="h-11 rounded-[15px] bg-[#31A7AC]" onClick={handleSave}>
                         Save roles
                     </Button>
                 </DialogFooter>
