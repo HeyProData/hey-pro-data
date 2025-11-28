@@ -108,7 +108,7 @@ export default function ShortProfile({ Profile }: { Profile: ProfileDataTypes })
 
             </div>
             <div className="absolute top-[129px] left-[48px]  sm:top-[199px] sm:left-[88px] ">
-                <span className="inline-flex justify-center items-center rounded-[10px] bg-white px-4 py-1 text-xs font-semibold text-[#FA6E80] w-[41px] h-[25px]">
+                <span className="inline-flex justify-center items-center rounded-[10px] bg-white px-4 py-1 text-[10px] shadow font-[500] text-[#FA6E80] w-[41px] h-[25px]">
                     {Profile.profileCompletion}%
                 </span>
             </div>
@@ -126,7 +126,7 @@ export default function ShortProfile({ Profile }: { Profile: ProfileDataTypes })
                 />
             </div>
             <div className="absolute inset-x-0 top-[160px] max-w-[367.8px] left-[200px] hidden justify-center font-[400] text-[11px] sm:flex ">
-                <div className="flex items-center gap-2 bg-white px-4 py-2 text-[#393939] ">
+                <div className="flex items-center gap-2  px-4 py-2 text-[#393939] ">
                     <MapPin className="h-3.5 w-3.5 text-[#393939]" />
                     <span className="whitespace-nowrap">{locationDescriptor}</span>
                 </div>
