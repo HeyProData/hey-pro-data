@@ -14,14 +14,14 @@ export default function DataTable({ rsvpEntries }: {
 }) {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between px-5">
                 <h3 className="text-lg font-semibold text-gray-800">RSVP ({rsvpEntries.length}/20)</h3>
                 <button type="button" className="inline-flex items-center gap-2 rounded-[18px] bg-[#31A7AC] px-4 py-2 text-sm font-semibold text-white">
                     <Download className="h-4 w-4" />
                     Export Data
                 </button>
             </div>
-            <div className="rounded-[28px] border border-black/10 bg-white p-4">
+            <div className=" border-black/10 bg-white p-4">
                 <Table>
                     <TableHeader>
                         <TableRow>
