@@ -179,7 +179,7 @@ Stores user profile information linked to authentication.
 
 **Key Fields:**
 - `user_id` (PK, FK → auth.users)
-- `firstname`, `surname`
+- `first_name`, `surname`
 - `alias_first_name`, `alias_surname`
 - `phone`, `bio`
 - `email` ⭐ NEW - Contact email
