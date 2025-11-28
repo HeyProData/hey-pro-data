@@ -6,6 +6,10 @@ import { useRouter } from 'next/navigation';
 import { supabase, setStoragePreference } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
+/**
+ * Sign Up page - As per AUTH_FLOW_TYPESCRIPT_GUIDE.md
+ * Handles new user registration
+ */
 export default function SignUpPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -14,43 +18,41 @@ export default function SignUpPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const token = session?.access_token;
-          
-          if (!token) return;
-          
-          // Check if profile exists
-          const profileResponse = await fetch('/api/profile', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-
-          const profileData = await profileResponse.json();
-
-          if (profileData.success && profileData.data) {
-            router.replace('/home');
-          } else {
-            router.replace('/form');
-          }
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      }
-    };
-    checkUser();
-  }, [router]);
-
   const [passwordValidation, setPasswordValidation] = useState({
     minLength: false,
     hasUppercase: false,
     hasNumber: false,
     hasSpecialChar: false
   });
+
+  // On page load: Check if already logged in
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) return;
+        
+        // Already logged in, check profile
+        const token = session.access_token;
+        const response = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          router.replace('/home');
+        } else {
+          router.replace('/form');
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      }
+    };
+    
+    checkExistingSession();
+  }, [router]);
 
   const validatePassword = (password: string) => {
     setPasswordValidation({
@@ -76,8 +78,10 @@ export default function SignUpPage() {
     );
   };
 
+  // On form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!isPasswordValid()) {
       setError('Please ensure your password meets all requirements');
       return;
@@ -87,12 +91,12 @@ export default function SignUpPage() {
     setError('');
 
     try {
-      // Normalize email to lowercase
-      const normalizedEmail = formData.email.toLowerCase().trim();
+      // Step 1: Normalize email
+      const email = formData.email.toLowerCase().trim();
 
-      // Sign up with email and password - this will send OTP code to email
+      // Step 2: Sign up with Supabase
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: normalizedEmail,
+        email,
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/callback`
@@ -119,13 +123,13 @@ export default function SignUpPage() {
         return;
       }
 
-      // Check if email confirmation is required
+      // Step 3: Handle two scenarios
       if (data.user && !data.session) {
-        // Email confirmation required - redirect to OTP page
+        // Email confirmation required
         toast.success('Verification code sent to your email!');
-        router.push(`/otp?email=${encodeURIComponent(normalizedEmail)}`);
+        router.push(`/otp?email=${encodeURIComponent(email)}`);
       } else if (data.session) {
-        // Auto-confirmed (disabled email confirmation) - go directly to form
+        // Auto-confirmed, redirect to profile form
         router.push('/form');
       }
     } catch (err) {
@@ -134,7 +138,12 @@ export default function SignUpPage() {
     }
   };
 
-  const handleGoogleSignUp = async () => {
+  // OAuth sign up
+  const handleOAuthSignUp = async (provider: 'google' | 'apple') => {
+    if (provider === 'apple') {
+      return; // Apple login not implemented
+    }
+
     setLoading(true);
     setError('');
 
@@ -143,7 +152,7 @@ export default function SignUpPage() {
       setStoragePreference(true);
       
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider,
         options: {
           redirectTo: `${window.location.origin}/callback`
         }
@@ -229,7 +238,7 @@ export default function SignUpPage() {
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button 
-              onClick={handleGoogleSignUp}
+              onClick={() => handleOAuthSignUp('google')}
               disabled={loading}
               className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >

@@ -212,7 +212,7 @@ function OTPContent() {
           Verify Your Email
         </h2>
         <p className="text-gray-600 text-center mb-8">
-          We've sent a 6-digit code to<br />
+          We&apos;ve sent a 6-digit code to<br />
           <span className="font-semibold">{email}</span>
         </p>
 
@@ -284,7 +284,7 @@ function OTPContent() {
               disabled={loading}
               className="text-[#FA6E80] hover:underline text-sm font-medium disabled:opacity-50 transition-all"
             >
-              Didn't receive the code? Resend
+              Didn&apos;t receive the code? Resend
             </button>
           )}
         </div>

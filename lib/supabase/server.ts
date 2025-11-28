@@ -59,7 +59,7 @@ export const getUserFromRequest = async (request: Request): Promise<User | null>
 /**
  * Standard success response format
  */
-export const successResponse = (data: any, message?: string) => {
+export const successResponse = (data: unknown, message?: string) => {
   return {
     success: true,
     message: message || 'Success',
@@ -70,7 +70,7 @@ export const successResponse = (data: any, message?: string) => {
 /**
  * Standard error response format
  */
-export const errorResponse = (error: string, details?: any) => {
+export const errorResponse = (error: string, details?: unknown) => {
   return {
     success: false,
     error,

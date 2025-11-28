@@ -1,10 +1,14 @@
 'use client';
 
-import { supabase } from '@/lib/supabase/client';
+import { supabase, setStoragePreference } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
+/**
+ * OAuth Callback page - Handles OAuth redirects
+ * As per AUTH_FLOW_TYPESCRIPT_GUIDE.md
+ */
 export default function AuthCallback() {
   const router = useRouter();
   const [error, setError] = useState('');
@@ -13,7 +17,7 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Exchange code for session
+        // Step 1: Get session from URL (OAuth callback)
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session) {
@@ -23,7 +27,10 @@ export default function AuthCallback() {
           return;
         }
 
-        // Check profile and redirect
+        // Step 2: OAuth users stay logged in
+        setStoragePreference(true);
+
+        // Step 3: Check profile and redirect
         await checkProfileAndRedirect(session.access_token);
 
       } catch (err) {
@@ -46,15 +53,16 @@ export default function AuthCallback() {
 
       setIsRedirecting(true);
 
-      if (data.success && data.data) {
-        // Profile exists
-        router.push('/home');
-      } else {
-        // No profile
+      // Non-blocking error handling
+      if (!data.success || !data.data) {
+        // No profile, redirect to form
         router.push('/form');
+      } else {
+        // Profile exists, redirect to home
+        router.push('/home');
       }
     } catch (err) {
-      // Profile check errors are non-blocking
+      // Profile check errors treated as "no profile"
       console.log('[Callback] Profile check error (non-blocking):', err);
       setIsRedirecting(true);
       router.push('/form');

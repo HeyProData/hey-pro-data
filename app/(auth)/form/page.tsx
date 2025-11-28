@@ -6,6 +6,10 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
+/**
+ * Profile Creation Form page - As per AUTH_FLOW_TYPESCRIPT_GUIDE.md
+ * Protected route for authenticated users without profiles
+ */
 export default function FormPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -18,36 +22,44 @@ export default function FormPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
 
+  // On mount: Check authentication and profile
   useEffect(() => {
-    // Check if user is authenticated
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+    const checkAuthAndProfile = async () => {
+      try {
+        // Step 1: Check authentication
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          // Not authenticated, redirect to login
+          router.push('/login');
+          return;
+        }
+
+        setCurrentUser(session.user);
+        
+        // Step 2: Check if profile already exists
+        const token = session.access_token;
+        
+        const response = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          // Profile already exists, redirect to home
+          router.push('/home');
+        }
+        // Otherwise, show form
+      } catch (error) {
+        console.error('Form page auth check error:', error);
         router.push('/login');
-        return;
-      }
-
-      setCurrentUser(session.user);
-
-      // Check if profile already exists
-      const token = session?.access_token;
-      if (!token) return;
-
-      const profileResponse = await fetch('/api/profile', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const profileData = await profileResponse.json();
-
-      // If profile exists, redirect to home
-      if (profileData.success && profileData.data) {
-        router.push('/home');
       }
     };
-    checkAuth();
+    
+    checkAuthAndProfile();
   }, [router]);
 
   // List of countries with priority to UAE and Middle East
@@ -87,22 +99,16 @@ export default function FormPage() {
     setError('');
 
     try {
-      if (!currentUser) {
-        setError('User not authenticated');
-        setLoading(false);
-        return;
-      }
-
+      // Step 1: Get access token
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
       if (!token) {
-        setError('Not authenticated');
         router.push('/login');
         return;
       }
 
-      // Create/update profile via API
+      // Step 2: Submit to API
       const response = await fetch('/api/profile', {
         method: 'PATCH',
         headers: {
@@ -121,17 +127,16 @@ export default function FormPage() {
 
       const data = await response.json();
 
-      if (!data.success) {
+      // Step 3: Handle response
+      if (data.success) {
+        toast.success('Profile created successfully!');
+        router.push('/home');
+      } else {
         setError(data.error || 'Failed to create profile');
-        setLoading(false);
-        return;
       }
-
-      toast.success('Profile created successfully!');
-      // Profile created successfully, redirect to home
-      router.push('/home');
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
+    } finally {
       setLoading(false);
     }
   };

@@ -6,6 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase, setStoragePreference } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
+/**
+ * Login page - As per AUTH_FLOW_TYPESCRIPT_GUIDE.md
+ * Handles email/password and OAuth authentication
+ */
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -17,30 +21,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // On page load: Check if already logged in
   useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
+    const checkExistingSession = async () => {
       try {
+        // Get existing session
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Get session token
-          const token = session?.access_token;
-          
-          if (!token) return;
-          
-          // Check if profile exists and is complete
-          const profileResponse = await fetch('/api/profile', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-
-          const profileData = await profileResponse.json();
-
-          if (profileData.success && profileData.data) {
-            router.replace('/home');
-          } else {
-            router.replace('/form');
-          }
-          return;
+        
+        if (!session) return;  // Not logged in, show login form
+        
+        // User already authenticated, check profile
+        const token = session.access_token;
+        
+        const response = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        // Route based on profile
+        if (data.success && data.data) {
+          router.replace('/home');
+        } else {
+          router.replace('/form');
         }
       } catch (error) {
         console.error('Error checking session:', error);
@@ -52,23 +55,26 @@ export default function LoginPage() {
         setError('Authentication failed. Please try again.');
       }
     };
-    checkUser();
+    
+    checkExistingSession();
   }, [router, searchParams]);
 
+  // On form submit: Email/Password login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      // Set storage preference BEFORE login
+      // Step 1: Set storage preference BEFORE login
       setStoragePreference(formData.keepLoggedIn);
 
-      // Normalize email to lowercase
-      const normalizedEmail = formData.email.toLowerCase().trim();
+      // Step 2: Normalize email to lowercase
+      const email = formData.email.toLowerCase().trim();
 
+      // Step 3: Sign in with Supabase
       const { data, error: loginError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
+        email,
         password: formData.password
       });
 
@@ -85,29 +91,28 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.user) {
-        // Get session token
-        const token = data.session?.access_token;
+      // Step 4: Get access token
+      const token = data.session?.access_token;
 
-        if (!token) {
-          setError('Authentication failed');
-          setLoading(false);
-          return;
-        }
+      if (!token) {
+        setError('Authentication failed');
+        setLoading(false);
+        return;
+      }
 
-        // Check if profile exists and is complete
-        const profileResponse = await fetch('/api/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+      // Step 5: Check profile via API
+      const response = await fetch('/api/profile', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-        const profileData = await profileResponse.json();
+      const profileData = await response.json();
 
-        if (profileData.success && profileData.data) {
-          toast.success('Login successful!');
-          router.push('/home');
-        } else {
-          router.push('/form');
-        }
+      // Step 6: Route based on profile
+      if (profileData.success && profileData.data) {
+        toast.success('Login successful!');
+        router.push('/home');
+      } else {
+        router.push('/form');
       }
     } catch (err) {
       setError('An unexpected error occurred. Please try again.');
@@ -115,16 +120,22 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  // OAuth login
+  const handleOAuthLogin = async (provider: 'google' | 'apple') => {
+    if (provider === 'apple') {
+      return; // Apple login not implemented
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      // Google OAuth defaults to "keep me logged in"
+      // Always keep OAuth users logged in
       setStoragePreference(true);
       
+      // Initiate OAuth flow
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider,
         options: {
           redirectTo: `${window.location.origin}/callback`
         }
@@ -134,6 +145,7 @@ export default function LoginPage() {
         setError(error.message);
         setLoading(false);
       }
+      // OAuth redirects to callback page
     } catch (err) {
       setError('Failed to sign in with Google. Please try again.');
       setLoading(false);
@@ -225,7 +237,7 @@ export default function LoginPage() {
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <button 
-              onClick={handleGoogleSignIn}
+              onClick={() => handleOAuthLogin('google')}
               disabled={loading}
               className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -242,7 +254,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center text-sm">
-            Don't have an account? <Link href="/signup" className="text-[#0066ff] hover:underline">Sign up</Link>
+            Don&apos;t have an account? <Link href="/signup" className="text-[#0066ff] hover:underline">Sign up</Link>
           </div>
         </div>
       </div>
