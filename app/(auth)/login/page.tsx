@@ -1,287 +1,251 @@
-"use client";
+'use client';
 
-import React, { useState, FormEvent, ChangeEvent } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Apple, Google } from "@/components/icons";
-import Link from "next/link";
-import { supabase, setStoragePreference } from "@/lib/supabase/client";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { supabase, setStoragePreference } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
-interface Errors {
-  email?: string;
-  password?: string;
-}
-
-const Login: React.FC = () => {
+export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    keepLoggedIn: false
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [keepLoggedIn, setKeepLoggedIn] = useState<boolean>(false);
-  const [errors, setErrors] = useState<Errors>({});
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // Get session token
+          const token = session?.access_token;
+          
+          if (!token) return;
+          
+          // Check if profile exists and is complete
+          const profileResponse = await fetch('/api/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
 
-  const validateForm = (): boolean => {
-    const newErrors: Errors = {};
-    if (!email.trim()) {
-      newErrors.email = "Please fill this field";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email";
-    }
+          const profileData = await profileResponse.json();
 
-    if (!password.trim()) {
-      newErrors.password = "Please fill this field";
-    }
+          if (profileData.success && profileData.data) {
+            router.replace('/home');
+          } else {
+            router.replace('/form');
+          }
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+      // Check for error in URL
+      const errorParam = searchParams.get('error');
+      if (errorParam === 'authentication_failed') {
+        setError('Authentication failed. Please try again.');
+      }
+    };
+    checkUser();
+  }, [router, searchParams]);
 
-  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    setLoading(true);
+    setError('');
 
-    setIsLoading(true);
     try {
-      const normalizedEmail = email.toLowerCase().trim();
+      // Set storage preference BEFORE login
+      setStoragePreference(formData.keepLoggedIn);
 
-      // Set storage preference based on "Keep me logged in" checkbox
-      setStoragePreference(keepLoggedIn);
+      // Normalize email to lowercase
+      const normalizedEmail = formData.email.toLowerCase().trim();
 
-      // Sign in with Supabase
       const { data, error: loginError } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
-        password: password,
+        password: formData.password
       });
 
       if (loginError) {
-        toast.error("Invalid email or password");
-        console.error("Login error:", loginError);
+        // Provide user-friendly error messages
+        if (loginError.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Please try again.');
+        } else if (loginError.message.includes('Email not confirmed')) {
+          setError('Please verify your email before logging in. Check your inbox for the verification code.');
+        } else {
+          setError(loginError.message);
+        }
+        setLoading(false);
         return;
       }
 
-      // Get session token
-      const token = data.session?.access_token;
+      if (data.user) {
+        // Get session token
+        const token = data.session?.access_token;
 
-      if (!token) {
-        toast.error("Authentication failed");
-        return;
+        if (!token) {
+          setError('Authentication failed');
+          setLoading(false);
+          return;
+        }
+
+        // Check if profile exists and is complete
+        const profileResponse = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const profileData = await profileResponse.json();
+
+        if (profileData.success && profileData.data) {
+          toast.success('Login successful!');
+          router.push('/home');
+        } else {
+          router.push('/form');
+        }
       }
-
-      // Check if profile exists and is complete
-      const profileResponse = await fetch('/api/profile', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const profileData = await profileResponse.json();
-
-      if (profileData.success && profileData.data) {
-        // Profile exists and is complete
-        toast.success("Login successful!");
-        router.push('/home');
-      } else {
-        // No profile or incomplete profile - redirect to profile form
-        router.push('/form');
-      }
-
-    } catch (error) {
-      toast.error("Login failed");
-      console.error("Login error:", error);
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
     }
   };
 
-  const handleGoogleAuth = async () => {
-    try {
-      // Set storage preference to keep logged in for OAuth
-      setStoragePreference(true);
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError('');
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+    try {
+      // Google OAuth defaults to "keep me logged in"
+      setStoragePreference(true);
+      
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
+          redirectTo: `${window.location.origin}/callback`
         }
       });
 
       if (error) {
-        toast.error("Google authentication failed");
-        console.error('OAuth error:', error);
+        setError(error.message);
+        setLoading(false);
       }
     } catch (err) {
-      toast.error("Google login failed");
-      console.error('Google login error:', err);
+      setError('Failed to sign in with Google. Please try again.');
+      setLoading(false);
     }
   };
 
-  const handleAppleAuth = () => {
-    toast.info("Apple authentication will be available soon");
-  };
-
   return (
-    <div className="min-h-screen flex bg-white overflow-hidden">
-      {/* Left side - Gradient Background */}
-      <div className="hidden md:flex md:w-1/2 items-center justify-end pl-8 pr-0 py-8">
-        <div
-          className="w-full h-full max-w-[450px] max-h-[721px] rounded-[68px]"
-          style={{
-            background:
-              "conic-gradient(from 180deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)",
-          }}
-        ></div>
+    <div className="flex min-h-screen bg-white">
+      {/* LEFT GRADIENT PART */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8">
+        <div className="w-full h-full rounded-3xl" style={{background: 'conic-gradient(from 180deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)'}}></div>
       </div>
 
-      {/* Right side - Login Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-start px-4 sm:px-6 md:pl-0 py-6 md:py-12 bg-white">
-        <div className="w-full max-w-md md:max-w-lg md:pl-12 lg:pl-16 xl:pl-20">
-          {/* Logo */}
-          <div className="mb-6 md:mb-12 md:text-left text-center">
-            <Image
-              src="https://customer-assets.emergentagent.com/job_2a9bf250-13c7-456d-9a61-1240d767c09d/artifacts/97u04lh8_hpd.png"
-              alt="HeyProData"
-              width={200}
-              height={60}
-              className="h-14 md:h-12 mb-4 md:mb-8 w-auto mx-auto md:mx-0 "
-            />
-            <p className="text-2xl md:text-3xl font-light text-gray-900">Login to HeyProData</p>
+      {/* RIGHT LOGIN PART */}
+      <div className="flex-1 flex items-center justify-center bg-white px-8">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <img src="/logo/logo.svg" alt="Logo" width="60" className="mb-8" />
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleLogin} className="space-y-2 md:space-y-3">
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block mb-2 text-sm md:text-base font-medium text-gray-900"
-              >
-                Email
-              </label>
-              <Input
+          <h2 className="text-3xl font-medium mb-8">
+            Login to <span className="text-gray-900">HeyPro</span><span className="text-[#00bcd4]">Data</span>
+          </h2>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <input
                 type="email"
                 placeholder="Email"
-                value={email}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setEmail(e.target.value);
-                  if (errors.email) setErrors({ ...errors, email: "" });
-                }}
-                className="h-11 md:h-12 text-sm md:text-base border-gray-300 rounded-xl focus:border-[#FA6E80] focus:ring-[#FA6E80] transition-all duration-300"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+                disabled={loading}
               />
-              {errors.email && (
-                <p className="text-xs md:text-sm text-red-500 mt-2">{errors.email}</p>
-              )}
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block mb-2 text-sm md:text-base font-medium text-gray-900"
-              >
-                Password
-              </label>
-              <Input
+            <div className="mb-4">
+              <input
                 type="password"
                 placeholder="Password"
-                value={password}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setPassword(e.target.value);
-                  if (errors.password) setErrors({ ...errors, password: "" });
-                }}
-                className="h-11 md:h-12 text-sm md:text-base border-gray-300 rounded-xl focus:border-[#FA6E80] focus:ring-[#FA6E80] transition-all duration-300"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+                disabled={loading}
               />
-              {errors.password && (
-                <p className="text-xs md:text-sm text-red-500 mt-2">{errors.password}</p>
-              )}
             </div>
 
-            {/* Keep Logged In Checkbox */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 md:space-x-3">
-                <Checkbox
-                  id="keepLoggedIn"
-                  checked={keepLoggedIn}
-                  onCheckedChange={(checked) =>
-                    setKeepLoggedIn(checked as boolean)
-                  }
-                  className="border-gray-400 data-[state=checked]:bg-[#FA6E80] data-[state=checked]:border-[#FA6E80]"
+            <div className="flex items-center justify-between mb-6 text-sm">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.keepLoggedIn}
+                  onChange={(e) => setFormData({ ...formData, keepLoggedIn: e.target.checked })}
+                  className="mr-2"
+                  disabled={loading}
                 />
-                <label
-                  htmlFor="keepLoggedIn"
-                  className="text-xs md:text-sm text-gray-600 cursor-pointer select-none"
-                >
-                  Keep me logged in
-                </label>
-              </div>
-              <Link
-                href="/forget-password"
-                className="text-xs md:text-sm text-[#4A90E2] hover:underline"
-              >
+                Keep me logged in
+              </label>
+              <Link href="/forget-password" className="text-[#00bcd4] hover:underline">
                 Forgot password?
               </Link>
             </div>
 
-            {/* Login Button */}
-            <Button
+            <button
               type="submit"
-              disabled={isLoading}
-              className="w-full h-[40px] md:h-[50px] bg-[#FA6E80] hover:bg-[#f95569] text-white text-sm md:text-lg font-medium rounded-[15px] transition-all duration-300 ease-out transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+              disabled={loading}
+              className="w-full bg-[#ff6b9d] hover:bg-[#ff5a8f] text-white py-3 rounded-lg font-medium mb-6 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Loading..." : "Login"}
-            </Button>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center my-5 md:my-8">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-3 md:px-4 text-gray-500 text-xs md:text-sm">or</span>
-            <div className="flex-1 border-t border-gray-300"></div>
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500">or</span>
+            </div>
           </div>
 
-          {/* Social Login Buttons */}
-          <div className="flex flex-col w-full gap-3 md:gap-4 justify-center">
-            <Button
-              type="button"
-              onClick={handleGoogleAuth}
-              disabled={isLoading}
-              className=" h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center justify-center p-3 md:p-6"
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <button 
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Google className="" size={700} />
-            </Button>
-
-            <Button
-              type="button"
-              onClick={handleAppleAuth}
-              disabled={isLoading}
-              className=" h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center justify-center p-3 md:p-6"
+              <img src="/assets/google-icon.png" width="20" alt="Google" />
+              Google
+            </button>
+            <button 
+              disabled
+              className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg opacity-50 cursor-not-allowed"
             >
-              <Apple className="" size={700} />
-            </Button>
+              <img src="/assets/apple-icon.png" width="20" alt="Apple" />
+              Apple
+            </button>
           </div>
 
-          {/* Sign up Link */}
-          <div className="text-center mt-5 md:mt-8">
-            <span className="text-gray-600 text-xs md:text-base">
-              Don&apos;t have an account?{" "}
-            </span>
-            <Link
-              href="/signup"
-              className="text-[#4A90E2] font-medium hover:underline transition-all duration-200 text-xs md:text-base bg-transparent shadow-none hover:shadow-none"
-            >
-              Sign up
-            </Link>
+          <div className="text-center text-sm">
+            Don't have an account? <Link href="/signup" className="text-[#0066ff] hover:underline">Sign up</Link>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Login;
+}

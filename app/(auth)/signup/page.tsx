@@ -1,325 +1,260 @@
-"use client";
-import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { Apple, Google } from "@/components/icons";
-import { Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { supabase, setStoragePreference } from "@/lib/supabase/client";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
 
-interface PasswordValidation {
-  hasUppercase: boolean;
-  hasNumber: boolean;
-  hasSpecialChar: boolean;
-  hasMinLength: boolean;
-}
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabase, setStoragePreference } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
-interface Errors {
-  email?: string;
-  password?: string;
-}
-
-const validatePassword = (password: string): PasswordValidation => ({
-  hasUppercase: /[A-Z]/.test(password),
-  hasNumber: /[0-9]/.test(password),
-  hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
-  hasMinLength: password.length >= 8,
-});
-
-const SignUp: React.FC = () => {
+export default function SignUpPage() {
   const router = useRouter();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
-  const [errors, setErrors] = useState<Errors>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [passwordValidation, setPasswordValidation] = useState<PasswordValidation>({
-    hasUppercase: false,
-    hasNumber: false,
-    hasSpecialChar: false,
-    hasMinLength: false,
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (password) {
-      setPasswordValidation(validatePassword(password));
-    } else {
-      setPasswordValidation({ 
-        hasUppercase: false, 
-        hasNumber: false, 
-        hasSpecialChar: false,
-        hasMinLength: false 
-      });
-    }
-  }, [password]);
+    // Check if user is already logged in
+    const checkUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const token = session?.access_token;
+          
+          if (!token) return;
+          
+          // Check if profile exists
+          const profileResponse = await fetch('/api/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
 
-  const validateForm = (): boolean => {
-    const newErrors: Errors = {};
-    if (!email.trim()) {
-      newErrors.email = "Please fill this field";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email";
-    }
+          const profileData = await profileResponse.json();
 
-    if (!password.trim()) {
-      newErrors.password = "Please fill this field";
-    } else if (!passwordValidation.hasUppercase || 
-               !passwordValidation.hasNumber || 
-               !passwordValidation.hasSpecialChar ||
-               !passwordValidation.hasMinLength) {
-      newErrors.password = "Password does not meet all requirements";
-    }
+          if (profileData.success && profileData.data) {
+            router.replace('/home');
+          } else {
+            router.replace('/form');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      }
+    };
+    checkUser();
+  }, [router]);
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasUppercase: false,
+    hasNumber: false,
+    hasSpecialChar: false
+  });
+
+  const validatePassword = (password: string) => {
+    setPasswordValidation({
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    });
   };
 
-  const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setFormData({ ...formData, password: newPassword });
+    validatePassword(newPassword);
+  };
+
+  const isPasswordValid = () => {
+    return (
+      passwordValidation.minLength &&
+      passwordValidation.hasUppercase &&
+      passwordValidation.hasNumber &&
+      passwordValidation.hasSpecialChar
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!isPasswordValid()) {
+      setError('Please ensure your password meets all requirements');
+      return;
+    }
 
-    setIsLoading(true);
+    setLoading(true);
+    setError('');
+
     try {
-      const normalizedEmail = email.toLowerCase().trim();
+      // Normalize email to lowercase
+      const normalizedEmail = formData.email.toLowerCase().trim();
 
-      // Set storage preference
-      setStoragePreference(keepLoggedIn);
-
-      // Sign up with Supabase
+      // Sign up with email and password - this will send OTP code to email
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: normalizedEmail,
-        password: password,
+        password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/callback`
         }
       });
 
       if (signUpError) {
-        if (signUpError.message.includes('already registered')) {
-          toast.error('This email is already registered. Please sign in.');
+        // Handle specific error cases
+        if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists')) {
+          setError('This email is already registered. Please login instead or use a different email.');
+        } else if (signUpError.message.includes('Email rate limit exceeded')) {
+          setError('Too many signup attempts. Please try again in a few minutes.');
         } else {
-          toast.error(signUpError.message);
+          setError(signUpError.message);
         }
-        console.error('Sign up error:', signUpError);
+        setLoading(false);
         return;
       }
 
-      // Redirect to OTP verification page
-      toast.success('Verification code sent to your email!');
-      router.push(`/otp?email=${encodeURIComponent(normalizedEmail)}`);
+      // If user already exists (identities array is empty), show appropriate message
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        setError('This email is already registered. Please login instead.');
+        setLoading(false);
+        return;
+      }
 
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        // Email confirmation required - redirect to OTP page
+        toast.success('Verification code sent to your email!');
+        router.push(`/otp?email=${encodeURIComponent(normalizedEmail)}`);
+      } else if (data.session) {
+        // Auto-confirmed (disabled email confirmation) - go directly to form
+        router.push('/form');
+      }
     } catch (err) {
-      toast.error('Sign up failed. Please try again.');
-      console.error('Sign up error:', err);
-    } finally {
-      setIsLoading(false);
+      setError('An unexpected error occurred. Please try again.');
+      setLoading(false);
     }
   };
 
-  const handleGoogleAuth = async () => {
-    try {
-      // Set storage preference to keep logged in for OAuth
-      setStoragePreference(true);
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    setError('');
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+    try {
+      // Google OAuth defaults to "keep me logged in"
+      setStoragePreference(true);
+      
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
+          redirectTo: `${window.location.origin}/callback`
         }
       });
 
       if (error) {
-        toast.error("Google authentication failed");
-        console.error('OAuth error:', error);
+        setError(error.message);
+        setLoading(false);
       }
     } catch (err) {
-      toast.error("Google sign up failed");
-      console.error('Google auth error:', err);
+      setError('Failed to sign up with Google. Please try again.');
+      setLoading(false);
     }
   };
 
-  const handleAppleAuth = () => {
-    toast.info("Apple authentication will be available soon");
-  };
-
   return (
-    <div className="min-h-screen flex bg-white overflow-hidden">
-      <div className="w-full md:w-1/2 flex items-center justify-start px-4 sm:px-6 md:pl-0 py-6 md:py-12 bg-white mx-auto">
-        <div className="flex w-full flex-col md:flex-row gap-8">
-          <div className="hidden md:flex w-full md:w-1/2 items-center justify-center py-6 md:py-0">
-            <div
-              className="w-full h-64 md:h-[600px] max-w-[450px] md:max-h-[721px] rounded-[40px] md:rounded-[68px]"
-              style={{
-                background:
-                  "conic-gradient(from 180deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)",
-              }}
-            ></div>
+    <div className="flex min-h-screen bg-white">
+      {/* LEFT SIGN UP PART */}
+      <div className="flex-1 flex items-center justify-center bg-white px-8">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <img src="/logo/logo.svg" alt="Logo" width="60" className="mb-8" />
           </div>
 
-          <div className="w-full md:w-1/2 flex flex-col justify-center">
-            <form onSubmit={handleSignUp} className="space-y-2 md:space-y-3">
-              <div className="mb-6 md:mb-12 md:text-left text-center">
-                <Image
-                  src="https://customer-assets.emergentagent.com/job_2a9bf250-13c7-456d-9a61-1240d767c09d/artifacts/97u04lh8_hpd.png"
-                  alt="HeyProData"
-                  width={200}
-                  height={60}
-                  className="h-14 md:h-12 mb-4 md:mb-8 w-auto mx-auto md:mx-0"
-                />
-                <p className="text-2xl md:text-3xl font-light text-gray-900">
-                  Sign up to HeyProData
-                </p>
-              </div>
+          <h2 className="text-3xl font-medium mb-8">
+            Sign up to <span className="text-gray-900">HeyPro</span><span className="text-[#00bcd4]">Data</span>
+          </h2>
 
-              <div>
-                <label htmlFor="email" className="block mb-2 text-sm md:text-base font-medium text-gray-900">
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setEmail(e.target.value);
-                    if (errors.email) setErrors({ ...errors, email: "" });
-                  }}
-                  className="h-11 md:h-12 text-sm md:text-base border-gray-300 rounded-xl focus:border-[#FA6E80] focus:ring-[#FA6E80]"
-                />
-                {errors.email && <p className="text-xs md:text-sm text-red-500 mt-2">{errors.email}</p>}
-              </div>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
 
-              <div className="relative">
-                <label htmlFor="password" className="block mb-2 text-sm md:text-base font-medium text-gray-900">
-                  Password
-                </label>
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password (min 8 characters)"
-                  value={password}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    setPassword(e.target.value);
-                    if (errors.password) setErrors({ ...errors, password: "" });
-                  }}
-                  className="h-11 md:h-12 text-sm md:text-base border-gray-300 rounded-xl focus:border-[#FA6E80] focus:ring-[#FA6E80] pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 top-7 pr-3 flex items-center text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-                {errors.password && <p className="text-xs md:text-sm text-red-500 mt-2">{errors.password}</p>}
-              </div>
-
-              {password && (
-                <div className="space-y-1.5 md:space-y-2">
-                  <PasswordRule label="at least 8 characters" valid={passwordValidation.hasMinLength} />
-                  <PasswordRule label="at least one uppercase" valid={passwordValidation.hasUppercase} />
-                  <PasswordRule label="at least one number" valid={passwordValidation.hasNumber} />
-                  <PasswordRule label="at least one special character" valid={passwordValidation.hasSpecialChar} />
-                </div>
-              )}
-
-              {/* Keep Logged In Checkbox */}
-              <div className="flex items-center space-x-2 md:space-x-3">
-                <Checkbox
-                  id="keepLoggedIn"
-                  checked={keepLoggedIn}
-                  onCheckedChange={(checked) =>
-                    setKeepLoggedIn(checked as boolean)
-                  }
-                  className="border-gray-400 data-[state=checked]:bg-[#FA6E80] data-[state=checked]:border-[#FA6E80]"
-                />
-                <label
-                  htmlFor="keepLoggedIn"
-                  className="text-xs md:text-sm text-gray-600 cursor-pointer select-none"
-                >
-                  Keep me logged in
-                </label>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-[40px] md:h-[50px] bg-[#FA6E80] hover:bg-[#f95569] text-white text-sm md:text-lg font-medium rounded-[15px]"
-              >
-                {isLoading ? "Loading..." : "Sign up"}
-              </Button>
-            </form>
-
-            <Divider label="or" />
-
-            <div className="flex flex-col w-full gap-2 md:gap-4 justify-center">
-              <Button
-                type="button"
-                onClick={handleGoogleAuth}
-                disabled={isLoading}
-                className="h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50"
-              >
-                <Google size={700} />
-              </Button>
-              <Button
-                type="button"
-                onClick={handleAppleAuth}
-                disabled={isLoading}
-                className="h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50"
-              >
-                <Apple size={700} />
-              </Button>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+                disabled={loading}
+              />
             </div>
 
-            <div className="text-center mt-5 md:mt-8">
-              <span className="text-gray-600 text-xs md:text-base">Already have an account? </span>
-              <Link href="/login" className="text-[#4A90E2] font-medium hover:underline text-xs md:text-base">
-                Login
-              </Link>
+            <div className="mb-3">
+              <input
+                type="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handlePasswordChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
+                required
+                disabled={loading}
+              />
             </div>
+
+            {!isPasswordValid() && formData.password.length > 0 && (
+              <div className="mb-6 text-sm text-gray-600">
+                Password must contain a minimum of 8 characters, 1 upper case, 1 number and 1 special character.
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || !isPasswordValid()}
+              className="w-full bg-[#ff6b9d] hover:bg-[#ff5a8f] text-white py-3 rounded-lg font-medium mb-6 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing up...' : 'Sign up'}
+            </button>
+          </form>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500">or</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <button 
+              onClick={handleGoogleSignUp}
+              disabled={loading}
+              className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <img src="/assets/google-icon.png" width="22" alt="Google" />
+              Google
+            </button>
+            <button 
+              disabled
+              className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg opacity-50 cursor-not-allowed"
+            >
+              <img src="/assets/apple-icon.png" width="20" alt="Apple" />
+              Apple
+            </button>
+          </div>
+
+          <div className="text-center text-sm">
+            Already have an account? <Link href="/login" className="text-[#0066ff] hover:underline">Login</Link>
           </div>
         </div>
       </div>
+
+      {/* RIGHT GRADIENT SIDE */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8">
+        <div className="w-full h-full rounded-3xl" style={{background: 'conic-gradient(from 180deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)'}}></div>
+      </div>
     </div>
   );
-};
-
-interface PasswordRuleProps {
-  label: string;
-  valid: boolean;
 }
-
-const PasswordRule: React.FC<PasswordRuleProps> = ({ label, valid }) => (
-  <div className="flex items-center space-x-2">
-    <div
-      className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
-        valid ? "bg-green-500" : "bg-gray-400"
-      }`}
-    ></div>
-    <span
-      className={`text-[10px] md:text-sm ${
-        valid ? "text-green-500" : "text-gray-500"
-      }`}
-    >
-      Password must contain <span className="font-medium">{label}</span>
-    </span>
-  </div>
-);
-
-const Divider: React.FC<{ label: string }> = ({ label }) => (
-  <div className="flex items-center my-5 md:my-8">
-    <div className="flex-1 border-t border-gray-300"></div>
-    <span className="px-3 md:px-4 text-gray-500 text-xs md:text-sm">{label}</span>
-    <div className="flex-1 border-t border-gray-300"></div>
-  </div>
-);
-
-export default SignUp;

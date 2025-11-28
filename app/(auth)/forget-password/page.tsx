@@ -1,179 +1,125 @@
 'use client';
 
-import { supabase } from '@/lib/supabase/client';
 import { useState } from 'react';
-import { toast } from 'sonner';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { supabase } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
-  const handleResetRequest = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
-    if (!email.trim()) {
-      setError('Please enter your email');
-      setLoading(false);
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email');
-      setLoading(false);
-      return;
-    }
+    setSuccess(false);
 
     try {
+      // Normalize email to lowercase
       const normalizedEmail = email.toLowerCase().trim();
 
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        normalizedEmail,
-        {
-          redirectTo: `${window.location.origin}/reset-password`
-        }
-      );
+      // Request password reset - this will send reset link to email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
 
       if (resetError) {
-        setError(resetError.message);
-        console.error('Password reset error:', resetError);
+        if (resetError.message.includes('rate limit')) {
+          setError('Too many requests. Please wait a moment before trying again.');
+        } else if (resetError.message.includes('not found')) {
+          setError('No account found with this email address.');
+        } else {
+          setError(resetError.message);
+        }
+        setLoading(false);
         return;
       }
 
+      // Show success message - don't redirect
       setSuccess(true);
       toast.success('Password reset link sent!');
-
+      setLoading(false);
     } catch (err) {
-      setError('Failed to send reset link. Please try again.');
-      console.error('Reset request error:', err);
-    } finally {
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-white overflow-hidden">
-      {/* Left side - Gradient Background */}
-      <div className="hidden md:flex md:w-1/2 items-center justify-end pl-8 pr-0 py-8">
-        <div
-          className="w-full h-full max-w-[450px] max-h-[721px] rounded-[68px]"
-          style={{
-            background:
-              "conic-gradient(from 180deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)",
-          }}
-        ></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background gradient */}
+      <div 
+        className="absolute inset-0 -z-10"
+        style={{
+          background: 'conic-gradient(from 0deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)'
+        }}
+      />
 
-      {/* Right side - Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-start px-4 sm:px-6 md:pl-0 py-6 md:py-12 bg-white">
-        <div className="w-full max-w-md md:max-w-lg md:pl-12 lg:pl-16 xl:pl-20">
-          {/* Logo */}
-          <div className="mb-6 md:mb-12 md:text-left text-center">
-            <Image
-              src="https://customer-assets.emergentagent.com/job_2a9bf250-13c7-456d-9a61-1240d767c09d/artifacts/97u04lh8_hpd.png"
-              alt="HeyProData"
-              width={200}
-              height={60}
-              className="h-14 md:h-12 mb-4 md:mb-8 w-auto mx-auto md:mx-0"
+      {/* Form Container */}
+      <div className="w-full max-w-md bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 sm:p-10 md:p-12">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Image 
+            src="/logo/logo.svg" 
+            alt="HPD Logo" 
+            width={80} 
+            height={55}
+            priority
+          />
+        </div>
+
+        <h2 className="text-2xl font-bold text-black text-center mb-3">
+          Forgot Password?
+        </h2>
+        <p className="text-gray-600 text-center mb-8">
+          Enter your email address and we'll send you a link to reset your password.
+        </p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+            <p className="font-semibold mb-1">Reset link sent!</p>
+            <p>A password reset link has been sent to <span className="font-medium">{email}</span>. Please check your email and click the link to reset your password.</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-[#FA6E80] text-black placeholder-gray-400 transition-colors"
+              required
+              disabled={loading}
             />
-            <p className="text-2xl md:text-3xl font-light text-gray-900">
-              {success ? 'Check Your Email' : 'Forgot Password?'}
-            </p>
-            <p className="text-sm md:text-base text-gray-600 mt-2">
-              {success 
-                ? "We've sent you a password reset link" 
-                : "Enter your email to receive a reset link"}
-            </p>
           </div>
 
-          {success ? (
-            <div className="space-y-6">
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                <p className="text-sm text-gray-700">
-                  A password reset link has been sent to <span className="font-semibold">{email}</span>
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  Please check your inbox and follow the instructions to reset your password.
-                </p>
-              </div>
+          <button
+            type="submit"
+            disabled={loading || success}
+            className="w-full py-4 rounded-xl font-semibold text-white text-lg transition-all transform hover:scale-[1.02] bg-[#FA6E80] hover:bg-[#ff5a75] cursor-pointer shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Sending...' : success ? 'Link Sent' : 'Send Reset Link'}
+          </button>
+        </form>
 
-              <div className="text-center space-y-3">
-                <p className="text-sm text-gray-600">
-                  Didn't receive the email? Check your spam folder.
-                </p>
-                <Button
-                  onClick={() => {
-                    setSuccess(false);
-                    setEmail('');
-                  }}
-                  className="text-[#4A90E2] hover:underline bg-transparent shadow-none hover:shadow-none"
-                >
-                  Try another email
-                </Button>
-              </div>
-
-              <div className="text-center mt-8">
-                <Link
-                  href="/login"
-                  className="text-[#4A90E2] font-medium hover:underline text-sm md:text-base"
-                >
-                  Back to Login
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleResetRequest} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block mb-2 text-sm md:text-base font-medium text-gray-900"
-                >
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (error) setError('');
-                  }}
-                  className="h-11 md:h-12 text-sm md:text-base border-gray-300 rounded-xl focus:border-[#FA6E80] focus:ring-[#FA6E80]"
-                  required
-                />
-                {error && (
-                  <p className="text-xs md:text-sm text-red-500 mt-2">{error}</p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-[40px] md:h-[50px] bg-[#FA6E80] hover:bg-[#f95569] text-white text-sm md:text-lg font-medium rounded-[15px] transition-all duration-300"
-              >
-                {loading ? 'Sending...' : 'Send Reset Link'}
-              </Button>
-
-              <div className="text-center mt-6">
-                <span className="text-gray-600 text-xs md:text-base">
-                  Remember your password?{" "}
-                </span>
-                <Link
-                  href="/login"
-                  className="text-[#4A90E2] font-medium hover:underline text-xs md:text-base"
-                >
-                  Back to Login
-                </Link>
-              </div>
-            </form>
-          )}
+        <div className="text-center mt-6">
+          <Link href="/login" className="text-[#0066ff] hover:underline text-sm font-medium">
+            Back to Login
+          </Link>
         </div>
       </div>
     </div>
