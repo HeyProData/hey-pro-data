@@ -103,7 +103,7 @@ export default function WhatsOnHeader() {
     };
     return (
         <>
-            <div className=" h-screen w-full overflow-x-hidden sm:mb-5 mb-20">
+            <div className=" h-screen w-full overflow-x-hidden overflow-hidden">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 sm:items-center sm:justify-between justify-start">
                     <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">{"What's On"}</span>
                     <Link href="/whats-on/manage-whats-on" className="ml-2 text-white bg-[#31A7AC] border rounded-[10px] sm:w-auto w-[192px] px-4 py-2 "> <span className="text-[16px] font-[400]">Manage What’s On</span></Link>
@@ -143,9 +143,9 @@ export default function WhatsOnHeader() {
 
 
                 </div>
-                <div className=" flex flex-col md:flex-row gap-6">
+                <div className=" flex flex-row mx-auto justify-center ">
                     {isFilterOpen && (
-                        <div className="hidden h-screen w-full max-w-[280px] overflow-y-auto p-4 space-y-2 sm:block">
+                        <div className="hidden w-full max-w-[280px] overflow-y-auto p-4 space-y-2 sm:block">
                             <form onSubmit={handleFilterSubmit} className="space-y-5 rounded-[10px] border bg-white p-4 text-[#017A7C] shadow-sm">
                                 <div className="space-y-2">
                                     <div className="flex gap-3">
