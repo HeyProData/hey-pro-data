@@ -2,82 +2,8 @@
 import { Separator } from "@/components/ui/separator";
 import { Ellipsis, Heart, MessageCircle, Send } from "lucide-react";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-
+import React from "react";
 export default function SlatePage() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const checkAuth = async () => {
-            console.log('[Slate] Checking authentication...');
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (!session) {
-                console.log('[Slate] No session found, redirecting to login');
-                router.push('/login');
-                return;
-            }
-            
-            console.log('[Slate] Session found, checking profile with retry mechanism...');
-            const token = session.access_token;
-            
-            // Retry mechanism for profile check (handles race conditions)
-            const checkProfileWithRetry = async (retries = 3, delay = 1000): Promise<boolean> => {
-                for (let attempt = 1; attempt <= retries; attempt++) {
-                    try {
-                        console.log(`[Slate] Profile check attempt ${attempt}/${retries}`);
-                        
-                        const response = await fetch('/api/profile', {
-                            headers: { 'Authorization': `Bearer ${token}` },
-                            cache: 'no-store' // Prevent caching
-                        });
-                        
-                        const data = await response.json();
-                        console.log(`[Slate] Profile check result (attempt ${attempt}):`, data);
-                        
-                        if (data.success && data.data) {
-                            console.log('[Slate] Profile found!');
-                            return true;
-                        }
-                        
-                        // Profile not found, wait before retry (except on last attempt)
-                        if (attempt < retries) {
-                            console.log(`[Slate] Profile not found, waiting ${delay}ms before retry...`);
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                        }
-                    } catch (error) {
-                        console.error(`[Slate] Profile check error (attempt ${attempt}):`, error);
-                        if (attempt < retries) {
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                        }
-                    }
-                }
-                
-                return false;
-            };
-            
-            try {
-                const profileExists = await checkProfileWithRetry();
-                
-                if (!profileExists) {
-                    console.log('[Slate] No profile found after retries, redirecting to form');
-                    router.push('/form');
-                    return;
-                }
-                
-                console.log('[Slate] All checks passed, showing page');
-                setLoading(false);
-            } catch (error) {
-                console.error('[Slate] Fatal profile check error:', error);
-                router.push('/login');
-            }
-        };
-        
-        checkAuth();
-    }, [router]);
     interface Slate {
         id: string,
         profileAvtar: string,
@@ -137,18 +63,6 @@ export default function SlatePage() {
         }
 
     ]
-    
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FA6E80] mx-auto"></div>
-                    <p className="text-gray-900 text-lg">Loading slate...</p>
-                </div>
-            </div>
-        );
-    }
-    
     return (
         <div className="mt-3">
             <div>
