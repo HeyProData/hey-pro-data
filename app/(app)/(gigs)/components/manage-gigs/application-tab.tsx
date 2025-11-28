@@ -50,7 +50,7 @@ export function ApplicationTab({ selectedGigIds, actionIndicators, onActionChang
                 <section key={gig.id} className="space-y-4 ">
                     <header className="space-y-3">
 
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 overflow-x-auto">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 no-scrollbar overflow-x-auto">
                             <p className="text-lg font-semibold text-gray-900">{gig.title}</p>
                             <span className="flex items-center gap-1 justify-center text-[#000000]">
                                 <CalendarDays className="h-4 w-4" />
@@ -70,7 +70,7 @@ export function ApplicationTab({ selectedGigIds, actionIndicators, onActionChang
                         </div>
                     </header>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto no-scrollbar">
                         <table className="min-w-[1057px] border-separate border-spacing-x-[2px] border-spacing-y-0 text-sm">
                             <thead className="bg-[#FFFFFF] border text-left h-[55px]">
                                 <tr className="space-x-1">
