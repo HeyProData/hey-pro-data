@@ -568,7 +568,7 @@ function SumbmitApplicationSuccess({ open, setOpen }: { open: boolean, setOpen: 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogContent>
-                <div className="bg-white flex flex-row  items-center justify-center">
+                <div className="bg-white flex flex-row  items-center justify-center gap-1.5">
                     <Image
                         src="/assets/icons/su.png"
                         alt="Success Illustration"

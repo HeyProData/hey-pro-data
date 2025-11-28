@@ -53,7 +53,7 @@ export function SendRecommendationDialog() {
         <Dialog>
             <div>
                 <DialogTrigger asChild>
-                    <Button type="button" className="inline-flex  items-center h-[34px] gap-2 rounded-[14px] bg-[#FA6E80] px-6 py-3 text-sm font-medium text-white shadow-md">
+                    <Button type="button" className="inline-flex  items-center h-[44px] gap-2 rounded-[14px] bg-[#31A7AC] px-6 py-3 text-sm font-medium text-white shadow-md">
                         Invite crew for this Gig
                     </Button>
                 </DialogTrigger>
