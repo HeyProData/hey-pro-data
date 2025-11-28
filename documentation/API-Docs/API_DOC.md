@@ -6,6 +6,92 @@
 
 ---
 
+## API File Structure
+
+All API routes are implemented using Next.js 15 App Router and are located in:
+
+**Base Directory:** `app/api/`
+
+### Folder Structure
+```
+app/api/
+├── health/              # Health check endpoint
+├── profile/             # User profile management
+│   ├── check/
+│   ├── credits/
+│   ├── highlights/
+│   ├── languages/
+│   ├── links/
+│   ├── recommendations/
+│   ├── roles/
+│   ├── travel-countries/
+│   ├── visa/
+│   └── route.ts
+├── skills/              # Skills management
+│   ├── [id]/
+│   └── route.ts
+├── availability/        # Availability calendar
+│   ├── [id]/
+│   ├── check/
+│   └── route.ts
+├── notifications/       # Notifications system
+│   ├── [id]/
+│   ├── mark-all-read/
+│   └── route.ts
+├── contacts/            # Contacts management
+│   ├── [id]/
+│   ├── gig/
+│   └── route.ts
+├── referrals/           # Referrals system
+│   └── route.ts
+├── upload/              # File uploads (6 types)
+│   ├── resume/
+│   ├── portfolio/
+│   ├── profile-photo/
+│   ├── collab-cover/
+│   ├── slate-media/
+│   └── project-asset/
+├── gigs/                # Gigs marketplace
+│   ├── [id]/
+│   ├── slug/
+│   └── route.ts
+├── applications/        # Job applications
+│   ├── [id]/
+│   └── my/
+├── collab/              # Collaboration platform
+│   ├── [id]/
+│   ├── my/
+│   └── route.ts
+├── slate/               # Social media feed
+│   ├── [id]/
+│   ├── comment/
+│   ├── my/
+│   ├── saved/
+│   └── route.ts
+├── whatson/             # Events platform
+│   ├── [id]/
+│   ├── my/
+│   ├── rsvps/
+│   └── route.ts
+├── projects/            # Design projects
+│   ├── [id]/
+│   ├── my/
+│   └── route.ts
+└── explore/             # Crew directory
+    ├── [userId]/
+    ├── categories/
+    └── route.ts
+```
+
+### Route File Convention
+- Each API route is implemented in a `route.ts` file (Next.js App Router convention)
+- Dynamic routes use bracket notation: `[id]`, `[userId]`, etc.
+- HTTP methods are exported functions: `GET`, `POST`, `PATCH`, `DELETE`
+
+**Example:** The endpoint `/api/profile` is implemented in `app/api/profile/route.ts`
+
+---
+
 ## Table of Contents
 
 1. [Health Check](#health-check)
