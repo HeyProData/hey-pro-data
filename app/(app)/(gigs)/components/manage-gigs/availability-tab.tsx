@@ -74,12 +74,11 @@ export function AvailabilityTab({ selectedGigIds }: AvailabilityTabProps) {
                 const monthBadges = Array.from(new Set(timeline.map((entry) => entry.monthLabel)));
                 return (
                     <section key={gig.id} className="space-y-4 bg-transparent">
-                        <header className="space-y-3">
+                        <header className="space-y-3 overflow-x-auto ">
                             <p className="text-lg font-semibold text-gray-900">{gig.title}</p>
                             <div className="flex flex-row gap-2">
-
                             </div>
-                            <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-[#EFEFEF] bg-white px-4 py-3 text-sm text-gray-900">
+                            <div className="flex flex-row items-center gap-4 w-[950px] rounded-2xl border border-[#EFEFEF] bg-white px-4 py-3 text-sm text-gray-900">
                                 {gig.dateWindows.map((window) => {
                                     const [month, year] = window.label.split(" ");
                                     return (

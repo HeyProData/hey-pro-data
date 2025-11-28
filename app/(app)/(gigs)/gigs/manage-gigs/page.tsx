@@ -73,7 +73,7 @@ export default function ManageGigsPage() {
                     <GigList selectedGigIds={selectedGigIds} onToggleGig={handleToggleGig} />
                 </TabsContent>
 
-                <TabsContent value="application" className="bg-[#F8F8F8] -mt-10 w-[1060px]">
+                <TabsContent value="application" className="bg-[#F8F8F8] -mt-10 sm:w-[1060px]">
                     <ApplicationTab
                         selectedGigIds={selectedGigIds}
                         actionIndicators={actionIndicators}
@@ -81,11 +81,11 @@ export default function ManageGigsPage() {
                     />
                 </TabsContent>
 
-                <TabsContent value="availability" className="bg-[#F8F8F8] -mt-10">
+                <TabsContent value="availability" className="bg-[#F8F8F8] -mt-10 sm:w-[1060px]">
                     <AvailabilityTab selectedGigIds={selectedGigIds} />
                 </TabsContent>
 
-                <TabsContent value="contacts" className="bg-[#F8F8F8] -mt-10">
+                <TabsContent value="contacts" className="bg-[#F8F8F8] -mt-10 sm:w-[1060px]">
                     <ContactListTab
                         selectedGigIds={selectedGigIds}
                         actionIndicators={actionIndicators}

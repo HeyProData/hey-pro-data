@@ -49,7 +49,7 @@ const categories: ExploreCategory[] = [
         location: "Qatar, Doha",
         summary:
           "Cross-cultural storyteller delivering large-scale live experiences for global luxury houses.",
-        roles: ["Executive Producer", "Line Producer"],
+        roles: ["Executive Producer", "Line Producer", "Producer"],
         availability: "available",
         bgimage: "/image.png",
         avatar: "/image (2).png"
@@ -60,7 +60,7 @@ const categories: ExploreCategory[] = [
         location: "KSA, Riyadh",
         summary:
           "Hybrid producer blending physical production with virtual stages for high-speed automotive shoots.",
-        roles: ["Producer", "Virtual Production"],
+        roles: ["Producer", "Virtual Production", "Line Producer", "Production Manager"],
         availability: "booked",
         bgimage: "/image.png",
         avatar: "/image (2).png"
@@ -78,7 +78,7 @@ const categories: ExploreCategory[] = [
         name: "Lara Choi",
         location: "UAE, Abu Dhabi",
         summary: "Character-first director focused on grounded sci-fi and high-gloss automotive spots.",
-        roles: ["Director", "Director | Commercial"],
+        roles: ["Director", "Director | Commercial", "Cinematographer"],
         availability: "available",
         bgimage: "/image.png",
         avatar: "/image (2).png"
@@ -89,7 +89,7 @@ const categories: ExploreCategory[] = [
         location: "Morocco, Casablanca",
         summary:
           "Long-form storyteller fluent in Arabic, French, and English, leading crews across North Africa.",
-        roles: ["Director", "Writer"],
+        roles: ["Director", "Writer", "Cinematographer", "Line Producer"],
         availability: "booked",
         bgimage: "/image.png",
         avatar: "/image (2).png"
@@ -99,7 +99,7 @@ const categories: ExploreCategory[] = [
         name: "Ines Valdez",
         location: "Spain, Barcelona",
         summary: "Documentary director embedding with sports teams and live events worldwide.",
-        roles: ["Director", "Assistant Director"],
+        roles: ["Director", "Assistant Director", "Producer"],
         availability: "available",
         bgimage: "/image.png",
         avatar: "/image (2).png"
@@ -117,8 +117,8 @@ const categories: ExploreCategory[] = [
         id: "pm-huda",
         name: "Huda Al Marri",
         location: "UAE, Dubai",
-        summary: "Logistics lead for desert shoots handling permits, talent travel, and armored transport.",
-        roles: ["Production Manager", "Logistics"],
+        summary: "Behind-the-scenes documentary capturing the energy and creativity of Dubai Fashion Week 2024. We need a skilled team to document designers, models, and the fashion industry magic..",
+        roles: ["Production Manager", "Logistics", "Fixer", "Line Producer"],
         availability: "available",
         bgimage: "/image.png",
         avatar: "/image (2).png"

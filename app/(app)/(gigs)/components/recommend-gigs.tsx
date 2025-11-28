@@ -14,8 +14,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { RecommendationUser, recommendationUsers } from "@/data/recommendUsers"
-import { MapPin, Search, ThumbsUp, UserPlus, X } from "lucide-react"
+import { MapPin, Search } from "lucide-react"
 import Image from "next/image"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export function SendRecommendationDialog() {
     const [searchTerm, setSearchTerm] = useState("")
@@ -52,9 +53,8 @@ export function SendRecommendationDialog() {
         <Dialog>
             <div>
                 <DialogTrigger asChild>
-                    <Button type="button" className="inline-flex h-[44px] items-center gap-2 rounded-[14px] bg-[#2AA9A7] px-6 py-3 text-sm font-medium text-white shadow-md">
-                        <UserPlus className="h-4 w-4" />
-                        Recommend
+                    <Button type="button" className="inline-flex  items-center h-[34px] gap-2 rounded-[14px] bg-[#FA6E80] px-6 py-3 text-sm font-medium text-white shadow-md">
+                        Invite crew for this Gig
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[582px] ] border-0 bg-[#F8F8F8] p-0 sm:rounded-[20px]">
@@ -114,15 +114,16 @@ export function SendRecommendationDialog() {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleToggleUser(user)}
-                                                        className={`flex h-[34px] w-[34px] items-center justify-center rounded-md border text-white transition ${isSelected ? "border-[#FCAF45] bg-[#FCAF45]" : "border-[#444444] bg-[#444444]"
-                                                            }`}
-                                                        aria-label={`Toggle recommendation for ${user.name}`}
-                                                    >
-                                                        <ThumbsUp className="h-4 w-4" />
-                                                    </button>
+                                                    <label htmlFor={`recommend-${user.id}`} className="relative inline-flex items-center justify-center">
+                                                        <Checkbox
+                                                            id={`recommend-${user.id}`}
+                                                            checked={isSelected}
+                                                            onCheckedChange={() => handleToggleUser(user)}
+                                                            aria-label={`Toggle recommendation for ${user.name}`}
+                                                            style={{ width: 24, height: 24 }}
+                                                            className="h-6 w-6 rounded-[4px] border border-[#444444] text-transparent transition data-[state=checked]:border-[#FCAF45] data-[state=checked]:bg-[#FCAF45] data-[state=checked]:text-white focus-visible:ring-0 focus-visible:ring-offset-0"
+                                                        />
+                                                    </label>
                                                 </div>
                                             )
                                         })}

@@ -29,6 +29,7 @@ export type WhatsOnEvent = {
     tags: string[];
     thumbnail: string;
     heroImage: string;
+    recommendedpopels?: string[]; // Array of event IDs
 };
 
 const baseDescription = [
@@ -78,7 +79,7 @@ const createEvent = (id: string, title: string, location: string, isPaid: boolea
     host: {
         name: "Cinema Studio",
         organization: "Cinema Studio",
-        avatar: "/whats-on.png",
+        avatar: "/image (2).png",
     },
     schedule: baseSchedule,
     description: baseDescription,
@@ -86,6 +87,7 @@ const createEvent = (id: string, title: string, location: string, isPaid: boolea
     tags: baseTags,
     thumbnail: "/whats-on.png",
     heroImage: "/whats-on.png",
+    recommendedpopels: ["/image (1).png", "/image (2).png", "/image (3).png"],
 });
 
 export const whatsOnEvents: WhatsOnEvent[] = [
@@ -97,7 +99,7 @@ export const whatsOnEvents: WhatsOnEvent[] = [
     createEvent("6", "Post Production Roundtable", "UAE, Dubai", true),
     createEvent("7", "Film Financing 101", "UAE, Dubai", true),
     createEvent("8", "On-Set Safety Briefing", "UAE, Dubai", false),
-    createEvent("9", "Casting & Audition Clinic", "UAE, Dubai", true),
+    createEvent("9", "Production Events (name)", "UAE, Dubai", true),
 ];
 
 export const getWhatsOnEventBySlug = (slug: string) => whatsOnEvents.find((event) => event.slug === slug);

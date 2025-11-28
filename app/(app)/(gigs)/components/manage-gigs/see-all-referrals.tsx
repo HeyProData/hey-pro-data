@@ -50,15 +50,15 @@ export function SeeAllReferralsDialog() {
                         See referrals
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[560px] rounded-[28px] border-0 bg-[#F8F8F8] p-0 shadow-2xl">
-                    <div className="space-y-6 p-6">
+                <DialogContent className=" rounded-[28px] px-10 ">
+                    <div className="space-y-6 p-2 mt-10">
                         <DialogHeader className="space-y-1 text-left">
                             <DialogTitle className="text-2xl font-semibold text-[#1D1D1F]">
                                 Referred people for your Gig
                             </DialogTitle>
                         </DialogHeader>
 
-                        <div>
+                        <div className="">
                             <div className="relative">
                                 <Input
                                     id="user-search"
@@ -76,34 +76,37 @@ export function SeeAllReferralsDialog() {
                                 </button>
                             </div>
                         </div>
+                        <div>
 
-                        <ScrollArea className="max-h-[460px] pr-2">
+                        </div>
+
+                        <ScrollArea className="max-h-[460px]">
                             {filteredUsers.length === 0 ? (
                                 <p className="rounded-2xl bg-white px-4 py-10 text-center text-sm text-muted-foreground">
                                     No users match your search.
                                 </p>
                             ) : (
-                                <div className="space-y-8">
+                                <div className="space-y-8 p-6">
                                     {Object.entries(groupedUsers).map(([category, users]) => (
-                                        <section key={category} className="space-y-3 h-[400px]">
+                                        <section key={category} className="space-y-3">
                                             <p className="text-sm font-semibold text-[#E05082]">
                                                 {category}
                                             </p>
-                                            <div className="rounded-[22px] bg-white p-4 shadow-[0_18px_60px_rgba(16,24,40,0.08)]">
-                                                {users.map((user, index) => (
+                                            <div className="rounded-[22px] divide-y divide-[#F4F4F4]">
+                                                {users.map((user) => (
                                                     <div
                                                         key={user.id}
-                                                        className="flex items-center justify-between gap-4 border-b border-[#F4F4F4] py-4 last:border-none last:pb-0"
+                                                        className="flex flex-wrap items-center gap-4 py-4"
                                                     >
-                                                        <div className="flex flex-row gap-1">
+                                                        <div className="flex flex-1 items-center gap-3 min-w-[220px]">
                                                             <Image
                                                                 src={user.avatar}
                                                                 alt={user.name}
-                                                                width={52}
-                                                                height={52}
+                                                                width={48}
+                                                                height={48}
                                                                 className="h-12 w-12 rounded-full object-cover"
                                                             />
-                                                            <div className="flex-1">
+                                                            <div>
                                                                 <p className="text-base font-semibold text-[#1D1D1F]">
                                                                     {user.name}
                                                                 </p>
@@ -112,33 +115,29 @@ export function SeeAllReferralsDialog() {
                                                                     <span>{user.location}</span>
                                                                 </div>
                                                             </div>
-
-
-
-
-                                                            <div className="flex  items-center gap-2">
-                                                                <div className="flex items-center -space-x-3">
-                                                                    {user.mutualAvatars.map((avatar, index) => (
-                                                                        <Image
-                                                                            key={`${user.id}-mutual-${index}`}
-                                                                            src={avatar}
-                                                                            alt="mutual connection"
-                                                                            width={32}
-                                                                            height={32}
-                                                                            className="h-8 w-8 rounded-full border-2 border-white object-cover"
-                                                                        />
-                                                                    ))}
-                                                                    <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#15B5B0] text-xs font-bold text-white">
-                                                                        {user.mutualCount}
-                                                                    </span>
-                                                                </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex items-center -space-x-3">
+                                                                {user.mutualAvatars.map((avatar, index) => (
+                                                                    <Image
+                                                                        key={`${user.id}-mutual-${index}`}
+                                                                        src={avatar}
+                                                                        alt="mutual connection"
+                                                                        width={32}
+                                                                        height={32}
+                                                                        className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                                                                    />
+                                                                ))}
+                                                                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#15B5B0] text-xs font-bold text-white">
+                                                                    {user.mutualCount}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                         <Button
                                                             type="button"
-                                                            className="ml-2 h-[44px] rounded-2xl bg-[#2AA9A7] px-5 py-2 text-sm font-semibold lowercase text-white shadow-md hover:bg-[#249694]"
+                                                            className="h-[44px] rounded-2xl bg-[#2AA9A7] px-5 text-sm font-semibold capitalize text-white shadow-md hover:bg-[#249694]"
                                                         >
-                                                            send invite
+                                                            Send Invite
                                                         </Button>
                                                     </div>
                                                 ))}

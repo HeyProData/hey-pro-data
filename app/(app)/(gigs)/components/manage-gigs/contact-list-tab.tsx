@@ -50,11 +50,11 @@ export function ContactListTab({ selectedGigIds, actionIndicators }: ContactList
 
                 return (
                     <section key={gig.id} className="space-y-4">
-                        <div className="flex flex-col gap-3 rounded-xl bg-transparent p-3 shadow-sm">
-                            <div className="flex flex-col gap-3 rounded-xl p-3">
-                                <div className="flex flex-col gap-3 text-sm text-[#000000] sm:flex-row sm:items-center sm:justify-start">
+                        <div className="flex flex-col gap-3">
+                            <div className="flex overflow-x-auto flex-col gap-3 rounded-xl p-0">
+                                <div className="flex flex-row overflow-x-auto  gap-3 text-sm text-[#000000] items-center w-[1050px] sm:flex-row sm:items-center sm:justify-start">
                                     <p className="text-lg font-normal text-[#000000]">{gig.title}</p>
-                                    <div className="flex flex-wrap items-center gap-4 text-sm text-[#444444]">
+                                    <div className="flex items-center gap-4 text-sm text-[#444444]">
                                         <CalendarDays className="h-5 w-5 text-black" />
                                         <div className="flex flex-wrap gap-4">
                                             {gig.dateWindows.map((window) => {
@@ -79,7 +79,7 @@ export function ContactListTab({ selectedGigIds, actionIndicators }: ContactList
                             ) : (
                                 <div className="space-y-4">
                                     {filteredGroups.map((group) => (
-                                        <div key={`${gig.id}-${group.id}`} className="overflow-x-auto rounded-2xl border border-[#DEDEDE] bg-white">
+                                        <div key={`${gig.id}-${group.id}`} className="overflow-x-auto bg-white">
                                             <div className="min-w-[1057px]">
                                                 <div className="flex h-[55px] gap-px rounded-t-2xl px-0  bg-[#F8F8F8]">
                                                     <div className="flex w-[160px] flex-col justify-center border border-[#DEDEDE] px-1">

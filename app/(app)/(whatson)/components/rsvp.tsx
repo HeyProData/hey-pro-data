@@ -57,7 +57,7 @@ export function RSVP({ event }: RSVPProps) {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <button className="flex-1 h-full max-w-[208px] rounded-full bg-[#FA6E80] px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-[#f4566d]">
+                <button className="flex-1 h-full sm:max-w-[208px] w-[363px] sm:w-full rounded-full bg-[#FA6E80] px-6 py-3 text-base font-semibold text-white shadow-lg hover:bg-[#f4566d]">
                     Count me in!
                 </button>
             </DialogTrigger>

@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Check, Mail, MessageCircle, Plus, X } from "lucide-react";
+import { CalendarDays, Check, Mail, MessageCircle, Plus, Send, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,7 @@ import { gigsData } from "@/data/gigs";
 import { sampleApplicants } from "./sample-data";
 import { SeeAllReferralsDialog } from "./see-all-referrals";
 import Image from "next/image";
+import { SendRecommendationDialog } from "../recommend-gigs";
 
 type ApplicationTabProps = {
     selectedGigIds: string[];
@@ -38,20 +39,18 @@ export function ApplicationTab({ selectedGigIds, actionIndicators, onActionChang
     }
 
     return (
-        <div className="space-y-8 ">
-            <div className="px-4">
-                <div className="flex flex-wrap gap-3 mt-3 justify-between items-center sm:justify-start bg-white w-full rounded-[10px]">
+        <div className="space-y-8 w-full sm:w-full mx-auto ">
+            <div className="sm:px-4 mx-auto">
+                <div className="flex flex-wrap gap-3 mt-3 sm:w-full justify-between items-center sm:justify-start bg-white rounded-[10px]">
                     <SeeAllReferralsDialog />
-                    <Button className="bg-[#FA6E80] rounded-[10px] text-white hover:bg-[#f9586d]">
-                        Invite crew for this Gig
-                    </Button>
+                    <SendRecommendationDialog />
                 </div>
             </div>
             {selectedGigs.map((gig) => (
                 <section key={gig.id} className="space-y-4 ">
                     <header className="space-y-3">
 
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 overflow-x-auto">
                             <p className="text-lg font-semibold text-gray-900">{gig.title}</p>
                             <span className="flex items-center gap-1 justify-center text-[#000000]">
                                 <CalendarDays className="h-4 w-4" />

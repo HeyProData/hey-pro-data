@@ -39,7 +39,7 @@ export const profileData = {
         { name: "Botswana", dial_code: "+267", code: "BW", flag: "🇧🇼" },
         { name: "Brazil", dial_code: "+55", code: "BR", flag: "🇧🇷" },
     ],
-    profileCompletion: 80,
+    profileCompletion: 100,
     about: `I'm a passionate cinematographer who believes in the power of visual storytelling. With over a decade of experience in the film industry, I've had the privilege of working on everything from intimate indie films to large-scale commercial productions.
   My approach combines technical expertise with creative vision, always in service of the story. I specialize in natural lighting and handheld camera work, bringing an authentic, human quality to every frame.`,
     skills: [

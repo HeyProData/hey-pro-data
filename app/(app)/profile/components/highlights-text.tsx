@@ -32,7 +32,7 @@ export default function HighlightsText({
             {letters.map((letter, index) => (
                 <span
                     key={`heylights-letter-${index}`}
-                    className={`inline-flex items-center font-[700] text-[22px] justify-center ${letterClassName} ${letterClassName} ${rotationAngle}`}
+                    className={`inline-flex items-center font-[700] text-[22px] justify-center -my-[4px] -mx-0.5 ${letterClassName} ${rotationAngle}`}
                     style={{ color: palette[index % palette.length] }}
                 >
                     {letter}
