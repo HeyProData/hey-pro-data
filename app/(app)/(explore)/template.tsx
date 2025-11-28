@@ -7,6 +7,11 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
 const toSlug = (s: string) =>
     s
@@ -215,9 +220,8 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
             <div className="max-w-7xl">
                 <span className="hidden p-2 md:inline-block bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-3xl font-semibold">Crew Directory</span>
                 <div className="sticky top-0 z-20 flex w-full flex-row gap-3 bg-white/90 p-4 backdrop-blur sm:flex-row sm:items-center">
-
-                    <DropdownMenu open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                        <DropdownMenuTrigger asChild>
+                    <Popover onOpenChange={setIsFilterOpen}>
+                        <PopoverTrigger asChild>
                             <Button
                                 className={`flex h-12 w-auto items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition-all whitespace-nowrap ${isFilterOpen ? 'bg-[#FA6E80] text-white border-[#FA6E80] sm:w-[281px] ' : 'bg-transparent text-[#FA6E80] border-[#FA6E80]'}`}
                             >
@@ -226,8 +230,8 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                                     <Filter className="h-5 w-5" />
                                 </span>
                             </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[273px] border-none" align="start">
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
                             <form onSubmit={handleFilterSubmit} className=" space-y-2 rounded-[10px] bg-[#F8F8F8] p-4 text-[#017A7C]">
                                 <div className="space-y-1 rounded-[5.71px]  border border-[#017A7C]/30 px-4 py-2 justify-center items-center flex ">
                                     <label className="text-sm font-[400]">Availability</label>
@@ -328,8 +332,8 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
 
 
                             </form>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                        </PopoverContent>
+                    </Popover>
                     <div className="flex h-12 flex-row w-full items-center justify-between rounded-full border px-2 py-2">
                         <input
                             type="text"
@@ -371,7 +375,7 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                         ))
                         }
                     </div>
-                    <div className="w-full flex-1 overflow-x-hidden  p-2 sm:p-4 lg:min-h-[600px]">{children}</div>
+                    <div className="w-full flex-1 overflow-x-hidden  p-2 sm:p-4 mx-auto">{children}</div>
                 </div>
 
             </div>
