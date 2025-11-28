@@ -1,269 +1,574 @@
-'use client';
+"use client";
+import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { register, sendOtp, verifyOtp } from "./action";
+import { Apple, Google } from "@/components/icons";
+import { Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { supabase, setStoragePreference } from '@/lib/supabase/client';
-import { toast } from 'sonner';
+interface PasswordValidation {
+  hasUppercase: boolean;
+  hasNumber: boolean;
+  hasSpecialChar: boolean;
+}
+interface Errors {
+  emailId?: string;
+  password?: string;
+  otp?: string;
+}
+interface User {
+  id?: string;
+  emailId?: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  profilePhoto?: string;
+  [key: string]: string | undefined;
+}
+interface RegisterResponse {
+  user: User;
+  requiresOtp?: boolean;
+}
 
-/**
- * Sign Up page - As per AUTH_FLOW_TYPESCRIPT_GUIDE.md
- * Handles new user registration
- */
-export default function SignUpPage() {
+const validatePassword = (password: string): PasswordValidation => ({
+  hasUppercase: /[A-Z]/.test(password),
+  hasNumber: /[0-9]/.test(password),
+  hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+});
+
+const SignIn: React.FC = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [passwordValidation, setPasswordValidation] = useState({
-    minLength: false,
-    hasUppercase: false,
-    hasNumber: false,
-    hasSpecialChar: false
-  });
 
-  // On page load: Check if already logged in
-  useEffect(() => {
-    const checkExistingSession = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) return;
-        
-        // Already logged in, check profile
-        const token = session.access_token;
-        const response = await fetch('/api/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success && data.data) {
-          router.replace('/slate');
-        } else {
-          router.replace('/form');
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      }
-    };
-    
-    checkExistingSession();
-  }, [router]);
-
-  const validatePassword = (password: string) => {
-    setPasswordValidation({
-      minLength: password.length >= 8,
-      hasUppercase: /[A-Z]/.test(password),
-      hasNumber: /[0-9]/.test(password),
-      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+  const [step, setStep] = useState<"form" | "otp">("form");
+  const [emailId, setemailId] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [errors, setErrors] = useState<Errors>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [passwordValidation, setPasswordValidation] =
+    useState<PasswordValidation>({
+      hasUppercase: false,
+      hasNumber: false,
+      hasSpecialChar: false,
     });
+  // useEffect(() => {
+  //   setStep("otp");
+  // })
+  const [resendTimer, setResendTimer] = useState(0);
+  const RESEND_INTERVAL = 30; // seconds
+
+  useEffect(() => {
+    if (password) {
+      setPasswordValidation(validatePassword(password));
+    } else {
+      setPasswordValidation({
+        hasUppercase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+      });
+    }
+  }, [password]);
+
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const id = setInterval(() => setResendTimer((t) => t - 1), 1000);
+    return () => clearInterval(id);
+  }, [resendTimer]);
+
+  const validateForm = (): boolean => {
+    const newErrors: Errors = {};
+    if (!emailId.trim()) newErrors.emailId = "Please fill this field";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailId))
+      newErrors.emailId = "Please enter a valid emailId";
+    if (!password.trim()) newErrors.password = "Please fill this field";
+    else if (
+      !passwordValidation.hasUppercase ||
+      !passwordValidation.hasNumber ||
+      !passwordValidation.hasSpecialChar
+    )
+      newErrors.password = "Password does not meet all requirements";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setFormData({ ...formData, password: newPassword });
-    validatePassword(newPassword);
-  };
-
-  const isPasswordValid = () => {
-    return (
-      passwordValidation.minLength &&
-      passwordValidation.hasUppercase &&
-      passwordValidation.hasNumber &&
-      passwordValidation.hasSpecialChar
-    );
-  };
-
-  // On form submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!isPasswordValid()) {
-      setError('Please ensure your password meets all requirements');
+    if (!validateForm()) return;
+    setIsLoading(true);
+    console.log("Submitting registration for:", emailId);
+    try {
+      const response: RegisterResponse = await register({ emailId, password });
+      console.log(response);
+      toast.success(
+        response.user ? "Registration successful!" : "Registration completed!"
+      );
+      localStorage.setItem("pendingUser", JSON.stringify(response.user));
+      const otpResp = await sendOtp(emailId);
+      if (otpResp?.success) {
+        toast.success("OTP sent to your emailId");
+      } else {
+        toast.info("Proceed with OTP verification");
+      }
+      setResendTimer(RESEND_INTERVAL);
+      setStep("otp");
+    } catch (error) {
+      toast.error((error as Error)?.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!otp || otp.length < 6) {
+      setErrors((prev) => ({ ...prev, otp: "Enter 6 digit code" }));
       return;
     }
-
-    setLoading(true);
-    setError('');
-
+    setIsVerifying(true);
     try {
-      // Step 1: Normalize email
-      const email = formData.email.toLowerCase().trim();
-
-      // Step 2: Sign up with Supabase
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/callback`
-        }
-      });
-
-      if (signUpError) {
-        // Handle specific error cases
-        if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists')) {
-          setError('This email is already registered. Please login instead or use a different email.');
-        } else if (signUpError.message.includes('Email rate limit exceeded')) {
-          setError('Too many signup attempts. Please try again in a few minutes.');
-        } else {
-          setError(signUpError.message);
-        }
-        setLoading(false);
-        return;
-      }
-
-      // If user already exists (identities array is empty), show appropriate message
-      if (data.user && data.user.identities && data.user.identities.length === 0) {
-        setError('This email is already registered. Please login instead.');
-        setLoading(false);
-        return;
-      }
-
-      // Step 3: Handle two scenarios
-      if (data.user && !data.session) {
-        // Email confirmation required
-        toast.success('Verification code sent to your email!');
-        router.push(`/otp?email=${encodeURIComponent(email)}`);
-      } else if (data.session) {
-        // Auto-confirmed, redirect to profile form
-        router.push('/form');
+      const result = await verifyOtp(emailId, otp);
+      if (result.success) {
+        localStorage.setItem("isAuthenticated", "true");
+        const stored = localStorage.getItem("pendingUser");
+        if (stored) localStorage.setItem("user", stored);
+        localStorage.removeItem("pendingUser");
+        toast.success("OTP verified");
+        router.push("/onboarding/name");
+      } else {
+        setErrors((prev) => ({ ...prev, otp: "Invalid code" }));
       }
     } catch (err) {
-      setError('An unexpected error occurred. Please try again.');
-      setLoading(false);
+      toast.error((err as Error)?.message || "Verification failed");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
-  // OAuth sign up
-  const handleOAuthSignUp = async (provider: 'google' | 'apple') => {
-    if (provider === 'apple') {
-      return; // Apple login not implemented
-    }
-
-    setLoading(true);
-    setError('');
-
+  const handleResend = async () => {
+    if (resendTimer > 0) return;
     try {
-      // Google OAuth defaults to "keep me logged in"
-      setStoragePreference(true);
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/callback`
-        }
-      });
-
-      if (error) {
-        setError(error.message);
-        setLoading(false);
+      const resp = await sendOtp(emailId);
+      if (resp.success) {
+        toast.success("OTP resent");
+        setResendTimer(RESEND_INTERVAL);
+      } else {
+        toast.error("Could not resend OTP");
       }
-    } catch (err) {
-      setError('Failed to sign up with Google. Please try again.');
-      setLoading(false);
+    } catch {
+      toast.error("Error resending OTP");
     }
   };
+
+  const handleGoogleAuth = () =>
+    toast.info("Google authentication is not set up yet. Coming Soon!");
+  const handleAppleAuth = () =>
+    toast.info("Apple authentication will be available soon");
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* LEFT SIGN UP PART */}
-      <div className="flex-1 flex items-center justify-center bg-white px-8">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <img src="/logo/logo.svg" alt="Logo" width="60" className="mb-8" />
-          </div>
+    <>
+      <div className="min-h-screen flex overflow-hidden">
+        <div className="w-full flex px-4 sm:px-6 py-6 mx-auto">
+          {step === "form" ? (
+            <div className="flex w-full flex-col md:flex-row gap-8">
+              <div className="w-full md:p-32 md:pr-8 flex flex-col justify-center">
+                <form
+                  onSubmit={handleSignIn}
+                  className="space-y-2 md:space-y-3"
+                >
+                  <div className="mb-6 md:mb-12 md:text-left text-center">
+                    <Image
+                      src="/logo/LogoIcon.svg"
+                      alt="HeyProData"
+                      width={200}
+                      height={60}
+                      className="h-14 md:h-12 mb-4 md:mb-8 w-auto mx-auto md:mx-0 "
+                    />
+                    {step === "form" ? (
+                      <p className="text-2xl md:text-3xl font-light text-gray-900">
+                        Sign up to
+                        <span className="font-semibold text-pink"> Hey</span>
+                        <span className="font-semibold text-black">Pro</span>
+                        <span className="font-semibold text-light-green">
+                          Data
+                        </span>
+                      </p>
+                    ) : (
+                      <p className="text-2xl md:text-3xl font-light text-gray-900">
+                        Verify your emailId
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="emailId"
+                      placeholder="Email"
+                      value={emailId}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setemailId(e.target.value);
+                        if (errors.emailId)
+                          setErrors({ ...errors, emailId: "" });
+                      }}
+                      className="h-11 md:h-12 text-sm md:text-base border-gray-300 rounded-xl focus:border-[#FA6E80] focus:ring-[#FA6E80]"
+                    />
+                    {errors.emailId && (
+                      <p className="text-xs md:text-sm text-red-500 mt-2">
+                        {errors.emailId}
+                      </p>
+                    )}
+                  </div>
 
-          <h2 className="text-3xl font-medium mb-8">
-            Sign up to <span className="text-gray-900">HeyPro</span><span className="text-[#00bcd4]">Data</span>
-          </h2>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setPassword(e.target.value);
+                        if (errors.password)
+                          setErrors({ ...errors, password: "" });
+                      }}
+                      className="h-11 md:h-12 text-sm md:text-base border-gray-300 rounded-xl focus:border-[#FA6E80] focus:ring-[#FA6E80] pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 top-1 pr-3 flex items-center text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                    {errors.password && (
+                      <p className="text-xs md:text-sm text-red-500 mt-2">
+                        {errors.password}
+                      </p>
+                    )}
+                  </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-              {error}
+                  {password && (
+                    <div className="space-y-1.5 md:space-y-2">
+                      <PasswordRule
+                        label="at least one uppercase"
+                        valid={passwordValidation.hasUppercase}
+                      />
+                      <PasswordRule
+                        label="at least one number"
+                        valid={passwordValidation.hasNumber}
+                      />
+                      <PasswordRule
+                        label="at least one special character"
+                        valid={passwordValidation.hasSpecialChar}
+                        color="red"
+                      />
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-[40px] md:h-[50px] bg-[#FA6E80] hover:bg-[#f95569] text-white text-sm md:text-lg font-medium rounded-[15px]"
+                  >
+                    {isLoading ? "Loading..." : "Sign up"}
+                  </Button>
+                </form>
+
+                <Divider label="or" />
+
+                <div className="flex flex-row w-full gap-3 md:gap-4 justify-center">
+                  <Button
+                    type="button"
+                    onClick={handleGoogleAuth}
+                    disabled={isLoading}
+                    className="w-1/2 h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center justify-center p-3 md:p-6"
+                  >
+                    <Image
+                      src="/assets/icons/google.svg"
+                      alt="Google Logo"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6"
+                    />
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={handleAppleAuth}
+                    disabled={isLoading}
+                    className="w-1/2 h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center justify-center p-3 md:p-6"
+                  >
+                    <Image
+                      src="/assets/icons/apple.svg"
+                      alt="Apple Logo"
+                      width={24}
+                      height={24}
+                      className="h-6 w-6"
+                    />
+                  </Button>
+                </div>
+
+                <div className="text-center mt-5 md:mt-8">
+                  <span className="text-gray-600 text-xs md:text-base">
+                    Already have an account?{" "}
+                  </span>
+                  <Link
+                    href="/login"
+                    className="text-[#4A90E2] font-medium hover:underline text-xs md:text-base"
+                  >
+                    Login
+                  </Link>
+                </div>
+              </div>
+              <div className="hidden md:flex w-full items-center justify-start py-6 md:py-0">
+                <div
+                  className="w-full md:h-[50rem] max-w-[500px]  rounded-[40px] md:rounded-[68px]"
+                  style={{
+                    background:
+                      "conic-gradient(from 0deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)",
+                  }}
+                ></div>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full flex items-center justify-center bg-white px-4 py-10 sm:py-14">
+              <div
+                className="relative w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl rounded-[36px] sm:rounded-[48px] md:rounded-[60px] lg:rounded-[68px] flex items-center justify-center p-4 sm:p-6 md:p-10"
+                style={{
+                  backgroundImage:
+                    "conic-gradient(from 180deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)",
+                  backgroundSize: "140% 140%",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                }}
+              >
+                <form
+                  onSubmit={handleVerifyOtp}
+                  className="bg-white/85 backdrop-blur-sm w-full max-w-md rounded-2xl p-6 sm:p-8 md:p-10 space-y-5 sm:space-y-6 shadow-lg"
+                >
+                  <div className="text-center mb-2 sm:mb-4">
+                    <Image
+                      src="https://customer-assets.emergentagent.com/job_2a9bf250-13c7-456d-9a61-1240d767c09d/artifacts/97u04lh8_hpd.png"
+                      alt="HeyProData"
+                      width={180}
+                      height={56}
+                      className="h-10 sm:h-12 md:h-14 w-auto mx-auto"
+                      priority
+                    />
+                  </div>
+
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 text-center">
+                    Enter Your OTP
+                  </h1>
+                  <p className="text-xs sm:text-sm text-gray-600 text-center leading-relaxed">
+                    We sent a 6‑digit code to{" "}
+                    <span className="font-medium break-all">{emailId}</span>.{" "}
+                    <br className="hidden sm:block" />
+                    Enter it below to continue.
+                  </p>
+
+                  <div>
+                    <div className="flex justify-center gap-1.5 sm:gap-2 md:gap-3">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <Input
+                          key={i}
+                          id={`otp-input-${i}`}
+                          data-otp-input
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          className="w-10 h-12 sm:w-12 sm:h-14 md:w-14 md:h-16 text-center text-base sm:text-lg font-medium border-gray-300 focus:border-[#FA6E80] focus:ring-[#FA6E80] [appearance:textfield] bg-gray-100 rounded-lg"
+                          value={otp[i] || ""}
+                          onChange={(
+                            e: React.ChangeEvent<HTMLInputElement>
+                          ) => {
+                            const raw = e.target.value.replace(/\D/g, "");
+                            if (!raw) {
+                              const arr = otp.split("");
+                              arr.splice(i, 1);
+                              setOtp(arr.join(""));
+                            } else {
+                              const chars = raw.split("");
+                              const arr = otp.split("");
+                              while (arr.length < 6) arr.push("");
+                              for (
+                                let k = 0;
+                                k < chars.length && i + k < 6;
+                                k++
+                              ) {
+                                arr[i + k] = chars[k];
+                              }
+                              const newCode = arr.join("").slice(0, 6);
+                              setOtp(newCode);
+                              const nextIndex = Math.min(i + chars.length, 5);
+                              if (nextIndex > i) {
+                                setTimeout(() => {
+                                  (
+                                    document.getElementById(
+                                      `otp-input-${nextIndex}`
+                                    ) as HTMLInputElement | null
+                                  )?.focus();
+                                }, 0);
+                              }
+                            }
+                            if (errors.otp)
+                              setErrors((prev) => ({ ...prev, otp: "" }));
+                          }}
+                          onKeyDown={(
+                            e: React.KeyboardEvent<HTMLInputElement>
+                          ) => {
+                            if (e.key === "Backspace" && !otp[i] && i > 0) {
+                              (
+                                document.getElementById(
+                                  `otp-input-${i - 1}`
+                                ) as HTMLInputElement | null
+                              )?.focus();
+                            }
+                            if (e.key === "ArrowLeft" && i > 0) {
+                              (
+                                document.getElementById(
+                                  `otp-input-${i - 1}`
+                                ) as HTMLInputElement | null
+                              )?.focus();
+                            }
+                            if (e.key === "ArrowRight" && i < 5) {
+                              (
+                                document.getElementById(
+                                  `otp-input-${i + 1}`
+                                ) as HTMLInputElement | null
+                              )?.focus();
+                            }
+                          }}
+                          onPaste={(
+                            e: React.ClipboardEvent<HTMLInputElement>
+                          ) => {
+                            e.preventDefault();
+                            const pasted = e.clipboardData
+                              .getData("text")
+                              .replace(/\D/g, "")
+                              .slice(0, 6);
+                            if (!pasted) return;
+                            setOtp(pasted);
+                            setTimeout(() => {
+                              const targetIndex = Math.min(
+                                pasted.length - 1,
+                                5
+                              );
+                              (
+                                document.getElementById(
+                                  `otp-input-${targetIndex}`
+                                ) as HTMLInputElement | null
+                              )?.focus();
+                            }, 0);
+                            if (errors.otp)
+                              setErrors((prev) => ({ ...prev, otp: "" }));
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {errors.otp && (
+                      <p className="text-xs text-red-500 mt-2 text-center">
+                        {errors.otp}
+                      </p>
+                    )}
+                    <p className="text-[10px] sm:text-xs mt-3 text-gray-500 text-center px-2">
+                      ⚠️ Didn&apos;t receive the code? Do not share your OTP
+                      with anyone.
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isVerifying || otp.length !== 6}
+                    className="w-full h-11 sm:h-12 bg-[#FA6E80] hover:bg-[#f95569] text-white font-medium rounded-xl sm:rounded-[15px] text-sm sm:text-base"
+                  >
+                    {isVerifying ? "Verifying..." : "Verify OTP"}
+                  </Button>
+
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 sm:items-center justify-between text-xs sm:text-sm text-gray-600">
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resendTimer > 0}
+                      className={`font-medium ${
+                        resendTimer > 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : "text-[#4A90E2] hover:underline"
+                      }`}
+                    >
+                      {resendTimer > 0
+                        ? `Resend in ${resendTimer}s`
+                        : "Resend Code"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep("form");
+                        setOtp("");
+                      }}
+                      className="text-[#4A90E2] hover:underline font-medium"
+                    >
+                      Change emailId
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="mb-3">
-              <input
-                type="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handlePasswordChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            {!isPasswordValid() && formData.password.length > 0 && (
-              <div className="mb-6 text-sm text-gray-600">
-                Password must contain a minimum of 8 characters, 1 upper case, 1 number and 1 special character.
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading || !isPasswordValid()}
-              className="w-full bg-[#ff6b9d] hover:bg-[#ff5a8f] text-white py-3 rounded-lg font-medium mb-6 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing up...' : 'Sign up'}
-            </button>
-          </form>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">or</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <button 
-              onClick={() => handleOAuthSignUp('google')}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <img src="/assets/google-icon.png" width="22" alt="Google" />
-              Google
-            </button>
-            <button 
-              disabled
-              className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg opacity-50 cursor-not-allowed"
-            >
-              <img src="/assets/apple-icon.png" width="20" alt="Apple" />
-              Apple
-            </button>
-          </div>
-
-          <div className="text-center text-sm">
-            Already have an account? <Link href="/login" className="text-[#0066ff] hover:underline">Login</Link>
-          </div>
         </div>
       </div>
-
-      {/* RIGHT GRADIENT SIDE */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-8">
-        <div className="w-full h-full rounded-3xl" style={{background: 'conic-gradient(from 180deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)'}}></div>
-      </div>
-    </div>
+    </>
   );
+};
+
+interface PasswordRuleProps {
+  label: string;
+  valid: boolean;
+  color?: "green" | "red";
 }
+const PasswordRule: React.FC<PasswordRuleProps> = ({
+  label,
+  valid,
+  color = "green",
+}) => (
+  <div className="flex items-center space-x-2">
+    <div
+      className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
+        valid
+          ? color === "red"
+            ? "bg-red-500"
+            : "bg-green-500"
+          : "bg-gray-400"
+      }`}
+    ></div>
+    <span
+      className={`text-[10px] md:text-sm ${
+        valid
+          ? color === "red"
+            ? "text-red-500"
+            : "text-green-500"
+          : "text-gray-500"
+      }`}
+    >
+      Password must contain <span className="font-medium">{label}</span>
+    </span>
+  </div>
+);
+
+const Divider: React.FC<{ label: string }> = ({ label }) => (
+  <div className="flex items-center my-5 md:my-8">
+    <div className="flex-1 border-t border-gray-300"></div>
+    <span className="px-3 md:px-4 text-gray-500 text-xs md:text-sm">
+      {label}
+    </span>
+    <div className="flex-1 border-t border-gray-300"></div>
+  </div>
+);
+
+export default SignIn;
