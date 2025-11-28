@@ -29,27 +29,34 @@ export default function AuthCallback() {
 
         setIsRedirecting(true);
 
+        // Add delay to ensure cookies are fully synced before redirect
+        console.log('[Callback] Waiting for cookie sync...');
+        await new Promise(resolve => setTimeout(resolve, 150));
+
         // Non-blocking error handling
         if (!data.success || !data.data) {
           // No profile, redirect to form
           console.log('[Callback] No profile found, redirecting to form');
-          router.push('/form');
+          // Use window.location for full page reload to ensure cookies are read
+          window.location.href = '/form';
         } else {
           // Profile exists, redirect to slate
           console.log('[Callback] Profile found, redirecting to slate');
-          router.push('/slate');
+          // Use window.location for full page reload to ensure cookies are read
+          window.location.href = '/slate';
         }
       } catch (err) {
         // Profile check errors treated as "no profile"
         console.error('[Callback] Profile check error (non-blocking):', err);
         setIsRedirecting(true);
-        router.push('/form');
+        window.location.href = '/form';
       }
     };
 
     const handleCallback = async () => {
       try {
         // Step 1: Get session from URL (OAuth callback)
+        console.log('[Callback] Getting session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError || !session) {
@@ -59,11 +66,26 @@ export default function AuthCallback() {
           return;
         }
 
-        // Step 2: OAuth users stay logged in
+        console.log('[Callback] Session found, refreshing to sync cookies...');
+
+        // Step 2: Force session refresh to ensure cookies are set
+        const { data: { session: refreshedSession }, error: refreshError } = 
+          await supabase.auth.refreshSession();
+
+        if (refreshError) {
+          console.error('[Callback] Refresh error (non-critical):', refreshError);
+        } else {
+          console.log('[Callback] Session refreshed successfully');
+        }
+
+        // Use the refreshed session token if available, otherwise use original
+        const finalToken = refreshedSession?.access_token || session.access_token;
+
+        // Step 3: OAuth users stay logged in
         setStoragePreference(true);
 
-        // Step 3: Check profile and redirect
-        await checkProfileAndRedirect(session.access_token);
+        // Step 4: Check profile and redirect (with delay for cookie sync)
+        await checkProfileAndRedirect(finalToken);
 
       } catch (err) {
         console.error('Callback error:', err);

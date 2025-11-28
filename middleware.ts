@@ -85,7 +85,18 @@ export async function middleware(request: NextRequest) {
   );
 
   // Get the session - this will also refresh the token if needed
-  const { data: { session } } = await supabase.auth.getSession();
+  let { data: { session } } = await supabase.auth.getSession();
+  
+  // If no session found, try to refresh (handles race condition from OAuth callback)
+  if (!session) {
+    console.log('[Middleware] No session found, attempting refresh...');
+    const { data: { session: refreshedSession } } = await supabase.auth.refreshSession();
+    session = refreshedSession;
+    
+    if (refreshedSession) {
+      console.log('[Middleware] Session refreshed successfully');
+    }
+  }
   
   const isAuthenticated = !!session;
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
