@@ -200,7 +200,7 @@ export default function CreditsEditor({ trigger, initialCredits }: CreditsEditor
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>{trigger}</DialogTrigger>
             <DialogContent
-                className="w-full border border-[#EFEFEF] rounded-[15px] p-0 overflow-y-auto"
+                className="w-full border border-[#EFEFEF] rounded-[15px] p-0 overflow-x-auto sm:max-w-[65rem] h-[80vh]"
             >
                 <div className="px-[30px] pt-[30px] pb-6 flex flex-col gap-6">
                     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -210,7 +210,7 @@ export default function CreditsEditor({ trigger, initialCredits }: CreditsEditor
                     </div>
 
                     <div className="flex flex-col lg:flex-row gap-6">
-                        <section className="w-full lg:max-w-[483px] rounded-[20px] p-6 space-y-5">
+                        <section className=" rounded-[20px] p-6 space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <select
