@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { register, sendOtp, verifyOtp } from "./action";
-import { Apple, Google } from "@/components/icons";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -167,19 +166,18 @@ const SignIn: React.FC = () => {
 
   const handleGoogleAuth = () =>
     toast.info("Google authentication is not set up yet. Coming Soon!");
-  const handleAppleAuth = () =>
-    toast.info("Apple authentication will be available soon");
 
   return (
     <>
-      <div className="min-h-screen flex overflow-hidden">
+      <div className=" flex items-center justify-centeroverflow-hidden  mx-auto max-w-7xl">
         <div className="w-full flex px-4 sm:px-6 py-6 mx-auto">
           {step === "form" ? (
-            <div className="flex w-full flex-col md:flex-row gap-8">
-              <div className="w-full md:p-32 md:pr-8 flex flex-col justify-center">
+            <div className="flex w-full flex-col md:flex-row gap-8  mx-auto justify-center items-center">
+              <div className="w-full md:p-32 md:pr-8 flex flex-col justify-center  mx-auto">
                 <form
                   onSubmit={handleSignIn}
-                  className="space-y-2 md:space-y-3"
+                  className="space-y-2 md:space-y-3 "
+
                 >
                   <div className="mb-6 md:mb-12 md:text-left text-center">
                     <Image
@@ -204,7 +202,7 @@ const SignIn: React.FC = () => {
                       </p>
                     )}
                   </div>
-                  <div>
+                  <div className="">
                     <Input
                       type="emailId"
                       placeholder="Email"
@@ -266,7 +264,7 @@ const SignIn: React.FC = () => {
                       <PasswordRule
                         label="at least one special character"
                         valid={passwordValidation.hasSpecialChar}
-                        color="red"
+                        color="green"
                       />
                     </div>
                   )}
@@ -282,12 +280,12 @@ const SignIn: React.FC = () => {
 
                 <Divider label="or" />
 
-                <div className="flex flex-row w-full gap-3 md:gap-4 justify-center">
+                <div className="flex flex-row w-full  gap-3 md:gap-4 justify-center">
                   <Button
                     type="button"
                     onClick={handleGoogleAuth}
                     disabled={isLoading}
-                    className="w-1/2 h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center justify-center p-3 md:p-6"
+                    className=" w-full h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center justify-center p-3 md:p-6"
                   >
                     <Image
                       src="/assets/icons/google.svg"
@@ -298,20 +296,6 @@ const SignIn: React.FC = () => {
                     />
                   </Button>
 
-                  <Button
-                    type="button"
-                    onClick={handleAppleAuth}
-                    disabled={isLoading}
-                    className="w-1/2 h-[45px] md:h-[40px] bg-white border border-gray-300 rounded-[12px] md:rounded-[15px] hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center justify-center p-3 md:p-6"
-                  >
-                    <Image
-                      src="/assets/icons/apple.svg"
-                      alt="Apple Logo"
-                      width={24}
-                      height={24}
-                      className="h-6 w-6"
-                    />
-                  </Button>
                 </div>
 
                 <div className="text-center mt-5 md:mt-8">
@@ -328,7 +312,7 @@ const SignIn: React.FC = () => {
               </div>
               <div className="hidden md:flex w-full items-center justify-start py-6 md:py-0">
                 <div
-                  className="w-full md:h-[50rem] max-w-[500px]  rounded-[40px] md:rounded-[68px]"
+                  className="w-full md:h-[50rem] max-w-[450px]  rounded-[40px] md:rounded-[68px]"
                   style={{
                     background:
                       "conic-gradient(from 0deg at 50% 50%, #FA6E80 0deg, #6A89BE 144deg, #85AAB7 216deg, #31A7AC 360deg)",
@@ -496,11 +480,10 @@ const SignIn: React.FC = () => {
                       type="button"
                       onClick={handleResend}
                       disabled={resendTimer > 0}
-                      className={`font-medium ${
-                        resendTimer > 0
-                          ? "opacity-50 cursor-not-allowed"
-                          : "text-[#4A90E2] hover:underline"
-                      }`}
+                      className={`font-medium ${resendTimer > 0
+                        ? "opacity-50 cursor-not-allowed"
+                        : "text-[#4A90E2] hover:underline"
+                        }`}
                     >
                       {resendTimer > 0
                         ? `Resend in ${resendTimer}s`
@@ -539,22 +522,20 @@ const PasswordRule: React.FC<PasswordRuleProps> = ({
 }) => (
   <div className="flex items-center space-x-2">
     <div
-      className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
-        valid
-          ? color === "red"
-            ? "bg-red-500"
-            : "bg-green-500"
-          : "bg-gray-400"
-      }`}
+      className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${valid
+        ? color === "red"
+          ? "bg-red-500"
+          : "bg-green-500"
+        : "bg-gray-400"
+        }`}
     ></div>
     <span
-      className={`text-[10px] md:text-sm ${
-        valid
-          ? color === "red"
-            ? "text-red-500"
-            : "text-green-500"
-          : "text-gray-500"
-      }`}
+      className={`text-[10px] md:text-sm ${valid
+        ? color === "red"
+          ? "text-red-500"
+          : "text-green-500"
+        : "text-gray-500"
+        }`}
     >
       Password must contain <span className="font-medium">{label}</span>
     </span>
