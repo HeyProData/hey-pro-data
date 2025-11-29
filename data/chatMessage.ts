@@ -82,7 +82,7 @@ const chatData = [
         state: 'offline'
     }
 ];
-const GroupChat = [
+const Groups = [
     {
         id: 1,
         messageId: "grp-1",
@@ -291,7 +291,7 @@ function getChatUser(userId: string) {
     return chatData.find((user) => user.messageId === userId) || null;
 }
 function getGroupChat(groupId: string) {
-    return GroupChat.find((group) => group.messageId === groupId) || null;
+    return Groups.find((group) => group.messageId === groupId) || null;
 }
 function getMessagesBetweenUsers(userId1: string, userId2: string) {
     return chatMessages.filter(
@@ -301,4 +301,4 @@ function getMessagesBetweenUsers(userId1: string, userId2: string) {
     );
 }
 
-export { chatData, GroupChat, chatMessages, getMessagesBetweenUsers, getChatUser, getGroupChat };
+export { chatData, Groups, chatMessages, getMessagesBetweenUsers, getChatUser, getGroupChat };

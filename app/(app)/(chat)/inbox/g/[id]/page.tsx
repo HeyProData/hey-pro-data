@@ -20,8 +20,9 @@ export default function MessageInbox({ params }: { params: paramsType }) {
         badge: null,
         state: 'online'
     };
-    console.log(currentUser)
+    // console.log(currentUser)
     // Get chat user and messages
+
     const chatUser = getChatUser(id);
     // Get all messages between current user and chat user
     const initialMessages = chatUser
