@@ -771,12 +771,6 @@ export default function AddGigPage() {
                     </div>
 
                     <section className="mt-8 space-y-6">
-
-
-
-
-
-
                         <div className="space-y-2">
                             <Textarea
                                 placeholder="I am looking for..."
@@ -853,7 +847,7 @@ export default function AddGigPage() {
                                                     disabled={!isCurrentMonthDay}
                                                     onClick={() => toggleDate(day)}
                                                     className={cn(
-                                                        "flex h-[54px] w-full items-center justify-center text-[26px] font-[400] transition",
+                                                        "flex h-[54px] w-full items-center justify-center text-[22px] font-[400] transition",
                                                         shapeClass,
                                                         !isCurrentMonthDay && "text-[#D7E3E5]",
                                                         isCurrentMonthDay && !isSelected && "text-[#199490]",
