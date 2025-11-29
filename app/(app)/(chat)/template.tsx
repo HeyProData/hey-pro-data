@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/tabs"
 import Image from "next/image";
 
-import { chatData, GroupChatData } from '@/data/chatMessage';
+import { chatData, GroupChat } from '@/data/chatMessage';
 
 export default function AppLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 
@@ -102,7 +102,7 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                                     </TabsContent>
                                     <TabsContent value="groups">
                                         <div className="flex flex-col items-start gap-[5px] w-full h-[460px] rounded-[20px] overflow-y-auto no-scrollbar">
-                                            {GroupChatData.map((chat, index) => (
+                                            {GroupChat.map((chat, index) => (
                                                 <React.Fragment key={index}>
                                                     <Link href={`/inbox/g/${chat.messageId}`} className="flex flex-row items-center p-[10px] gap-[19px] w-full h-[66px] rounded-[10px] hover:bg-white transition-colors cursor-pointer">
                                                         {Array.isArray(chat.image) ? (
@@ -145,7 +145,7 @@ export default function AppLayout({ children }: Readonly<{ children: React.React
                                                             )}
                                                         </div>
                                                     </Link>
-                                                    {index < GroupChatData.length - 1 && (
+                                                    {index < GroupChat.length - 1 && (
                                                         <div className="w-full h-[1px] border-t border-[#CDCDCD]" />
                                                     )}
                                                 </React.Fragment>

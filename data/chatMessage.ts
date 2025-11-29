@@ -3,6 +3,7 @@
 const chatData = [
     {
         id: 1,
+        groupid: ["grp-1", "grp-2", "grp-3", "grp-4", "grp-5", "grp-6", "grp-7", "grp-8"],
         messageId: "msg-1",
         name: 'Victor George',
         message: 'Who can I get started worki...',
@@ -12,6 +13,7 @@ const chatData = [
     },
     {
         id: 2,
+        groupid: "grp-2",
         messageId: "msg-2",
         name: 'Mary Johns',
         message: 'Who can I get started worki...',
@@ -21,6 +23,7 @@ const chatData = [
     },
     {
         id: 3,
+        groupid: "grp-1",
         messageId: "msg-3",
         name: 'Maddy',
         message: 'Who can I get started worki...',
@@ -30,6 +33,7 @@ const chatData = [
     },
     {
         id: 4,
+        groupid: "grp-1",
         messageId: "msg-4",
         name: 'Lavin JD',
         message: 'Who can I get started worki...',
@@ -39,6 +43,7 @@ const chatData = [
     },
     {
         id: 5,
+        groupid: "grp-1",
         messageId: "msg-5",
         name: 'Victor George',
         message: 'Who can I get started worki...',
@@ -48,6 +53,7 @@ const chatData = [
     },
     {
         id: 6,
+        groupid: "grp-1",
         messageId: "msg-6",
         name: 'Mary Johns',
         message: 'Who can I get started worki...',
@@ -57,6 +63,7 @@ const chatData = [
     },
     {
         id: 7,
+        groupid: "grp-1",
         messageId: "msg-7",
         name: 'Maddy',
         message: 'Who can I get started worki...',
@@ -66,6 +73,7 @@ const chatData = [
     },
     {
         id: 8,
+        groupid: "grp-1",
         messageId: "msg-8",
         name: 'Lavin JD',
         message: 'Who can I get started worki...',
@@ -74,12 +82,14 @@ const chatData = [
         state: 'offline'
     }
 ];
-const GroupChatData = [
+const GroupChat = [
     {
         id: 1,
         messageId: "grp-1",
+
         name: 'Photography Lovers',
         message: 'New event coming up soon...',
+        groupImage: "/image (1).png",
         image: ['/image (1).png', '/image (2).png', '/image (3).png'],
         badge: 5
     },
@@ -88,6 +98,7 @@ const GroupChatData = [
         messageId: "grp-2",
         name: 'Book Club',
         message: 'Next meeting on Friday...',
+        groupImage: "/image (4).png",
         image: ['/image (4).png', '/image (5).png'],
         badge: 3
     }, {
@@ -95,6 +106,7 @@ const GroupChatData = [
         messageId: "grp-3",
         name: 'Photography Lovers',
         message: 'New event coming up soon...',
+        groupImage: "/image (1).png",
         image: ['/image (1).png', '/image (2).png', '/image (3).png'],
         badge: 5
     },
@@ -259,11 +271,27 @@ const chatMessages = [
 
 
 ]
+
+const groupMessage = [
+    // Sample messages in group grp-1
+    {
+        messageId: "groupMessageId-1",
+        groupId: "grp-1",
+        senderId: "msg-1",
+        timestamp: "2024-10-01T11:00:00Z",
+        content: "Hey everyone! Excited for the upcoming event.",
+        status: "read",
+        attachments: null,
+    },
+    {}
+
+]
+
 function getChatUser(userId: string) {
     return chatData.find((user) => user.messageId === userId) || null;
 }
 function getGroupChat(groupId: string) {
-    return GroupChatData.find((group) => group.messageId === groupId) || null;
+    return GroupChat.find((group) => group.messageId === groupId) || null;
 }
 function getMessagesBetweenUsers(userId1: string, userId2: string) {
     return chatMessages.filter(
@@ -273,4 +301,4 @@ function getMessagesBetweenUsers(userId1: string, userId2: string) {
     );
 }
 
-export { chatData, GroupChatData, chatMessages, getMessagesBetweenUsers, getChatUser, getGroupChat };
+export { chatData, GroupChat, chatMessages, getMessagesBetweenUsers, getChatUser, getGroupChat };

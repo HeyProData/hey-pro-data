@@ -11,11 +11,16 @@ export default function MessageInbox({ params }: { params: paramsType }) {
     const { id } = params;
     // Simulate current user
     const currentUser = {
-        messageId: "msg-1", // This should match your chatData for the current user
-        name: "You",
-        image: "/image (2).png",
-        state: "online",
+        id: 1,
+        groupid: ["grp-1", "grp-2", "grp-3", "grp-4", "grp-5", "grp-6", "grp-7", "grp-8"],
+        messageId: "msg-1",
+        name: 'Victor George',
+        message: 'Who can I get started worki...',
+        image: '/image (1).png',
+        badge: null,
+        state: 'online'
     };
+    console.log(currentUser)
     // Get chat user and messages
     const chatUser = getChatUser(id);
     // Get all messages between current user and chat user
