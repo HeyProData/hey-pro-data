@@ -6,12 +6,8 @@ import {
   Search,
   X,
   Bell,
-  User,
-  Settings,
-  LogOut,
   Briefcase,
   MessageCircleMore,
-  Save,
   Compass,
   Calendar,
   NewspaperIcon,
@@ -213,43 +209,17 @@ export default function Header() {
                 className="relative"
                 onMouseLeave={() => setChatOpen(false)}
               >
-                <div
-                  onMouseEnter={() => setChatOpen(true)}
-                  onClick={() => setChatOpen((prev) => !prev)}
+                <Link href="/inbox"
+
                   className="relative cursor-pointer"
                 >
                   <MessageCircleMore className="h-9 w-9" />
-                  <Badge className="absolute -top-2 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground">
-                    3
-                  </Badge>
-                </div>
+                  <Badge className="absolute top-6 right-1 h-3 w-3 rounded-full p-0 flex items-center justify-center text-xs bg-[#FA596E] text-white">
 
-                {chatOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setChatOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-background border border-border rounded-lg shadow-lg z-50">
-                      <div className="p-4">
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="text-lg font-semibold">Messages</h3>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setChatOpen(false)}
-                            aria-label="Close messages"
-                          >
-                            <X className="h-5 w-5" />
-                          </Button>
-                        </div>
-                        <Separator className="mb-2" />
-                        <p className="text-sm text-muted-foreground">No new messages</p>
-                        {/* Placeholder for chat items */}
-                      </div>
-                    </div>
-                  </>
-                )}
+                  </Badge>
+                </Link>
+
+
               </div>
 
               <div
@@ -264,7 +234,7 @@ export default function Header() {
                 >
                   <Bell className="h-9 w-9" />
                   {unreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground">
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-[#FA596E] text-white">
                       {unreadCount}
                     </Badge>
                   )}
