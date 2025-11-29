@@ -339,8 +339,8 @@ function MobileFilter({
                         <Filter className={`h-5 w-5 ${isFilterOpen ? 'text-white' : 'text-[#FA6E80]'}`} />
                     </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-[273px] border-none" align="start">
-                    <div className="h-screen max-w-[280px] w-full overflow-y-auto p-4 space-y-2">
+                <DropdownMenuContent className=" border-none bg-amber-500" align="start">
+                    <div className="h-screen w-full overflow-y-auto no-scrollbar space-y-2">
                         <form onSubmit={handleFilterSubmit} className="space-y-5 rounded-[10px] border bg-white p-4 text-[#017A7C] shadow-sm">
                             <div className="flex gap-3">
                                 {["free", "paid"].map((price) => (
