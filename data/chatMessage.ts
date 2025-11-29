@@ -91,7 +91,8 @@ const Groups = [
         message: 'New event coming up soon...',
         groupImage: "/image (1).png",
         image: ['/image (1).png', '/image (2).png', '/image (3).png'],
-        badge: 5
+        badge: 5,
+        noofOnlinePeople: 3
     },
     {
         id: 2,
@@ -100,7 +101,8 @@ const Groups = [
         message: 'Next meeting on Friday...',
         groupImage: "/image (4).png",
         image: ['/image (4).png', '/image (5).png'],
-        badge: 3
+        badge: 3,
+        noofOnlinePeople: 2
     }, {
         id: 3,
         messageId: "grp-3",
@@ -108,7 +110,8 @@ const Groups = [
         message: 'New event coming up soon...',
         groupImage: "/image (1).png",
         image: ['/image (1).png', '/image (2).png', '/image (3).png'],
-        badge: 5
+        badge: 5,
+        noofOnlinePeople: 3
     },
     {
         id: 4,
@@ -116,7 +119,8 @@ const Groups = [
         name: 'Book Club',
         message: 'Next meeting on Friday...',
         image: ['/image (4).png', '/image (5).png'],
-        badge: 3
+        badge: 3,
+        noofOnlinePeople: 2
     },
     {
         id: 5,
@@ -124,7 +128,8 @@ const Groups = [
         name: 'Photography Lovers',
         message: 'New event coming up soon...',
         image: ['/image (1).png', '/image (2).png', '/image (3).png'],
-        badge: 5
+        badge: 5,
+        noofOnlinePeople: 3
     },
     {
         id: 6,
@@ -132,7 +137,8 @@ const Groups = [
         name: 'Book Club',
         message: 'Next meeting on Friday...',
         image: ['/image (4).png', '/image (5).png'],
-        badge: 3
+        badge: 3,
+        noofOnlinePeople: 2
     },
     {
         id: 7,
@@ -140,7 +146,8 @@ const Groups = [
         name: 'Photography Lovers',
         message: 'New event coming up soon...',
         image: ['/image (1).png', '/image (2).png', '/image (3).png'],
-        badge: 5
+        badge: 5,
+        noofOnlinePeople: 3
     },
     {
         id: 8,
@@ -148,7 +155,8 @@ const Groups = [
         name: 'Book Club',
         message: 'Next meeting on Friday...',
         image: ['/image (4).png', '/image (5).png'],
-        badge: 3
+        badge: 3,
+        noofOnlinePeople: 2
     },
     {
         id: 9,
@@ -156,7 +164,8 @@ const Groups = [
         name: 'Photography Lovers',
         message: 'New event coming up soon...',
         image: ['/image (1).png', '/image (2).png', '/image (3).png'],
-        badge: 5
+        badge: 5,
+        noofOnlinePeople: 0
     },
     {
         id: 10,
@@ -164,10 +173,11 @@ const Groups = [
         name: 'Book Club',
         message: 'Next meeting on Friday...',
         image: ['/image (4).png', '/image (5).png'],
-        badge: 3
+        badge: 3,
+        noofOnlinePeople: 0
     }
 
-]
+];
 
 const chatMessages = [
     // Sample messages between msg-1 and msg-1
@@ -275,7 +285,7 @@ const chatMessages = [
 const groupMessage = [
     // Sample messages in group grp-1
     {
-        messageId: "groupMessageId-1",
+        id: "groupMessageId-1",
         groupId: "grp-1",
         senderId: "msg-1",
         timestamp: "2024-10-01T11:00:00Z",
@@ -283,9 +293,30 @@ const groupMessage = [
         status: "read",
         attachments: null,
     },
-    {}
+    {
+        id: "groupMessageId-2",
+        groupId: "grp-1",
+        senderId: "msg-3",
+        timestamp: "2024-10-01T11:05:00Z",
+        content: "Me too! Can't wait to see you all there.",
+        status: "read",
+        attachments: null,
+    },
+    {
+        id: "groupMessageId-3",
+        groupId: "grp-1",
+        senderId: "msg-2",
+        timestamp: "2024-10-01T11:10:00Z",
+        content: "Does anyone need a ride to the event?",
+        status: "delivered",
+        attachments: null,
+    }
+];
 
-]
+function getGroupChatMessages(groupId: string) {
+    return groupMessage.filter((msg) => msg.groupId === groupId);
+}
+
 
 function getChatUser(userId: string) {
     return chatData.find((user) => user.messageId === userId) || null;
@@ -301,4 +332,4 @@ function getMessagesBetweenUsers(userId1: string, userId2: string) {
     );
 }
 
-export { chatData, Groups, chatMessages, getMessagesBetweenUsers, getChatUser, getGroupChat };
+export { chatData, Groups, chatMessages, groupMessage, getMessagesBetweenUsers, getChatUser, getGroupChat, getGroupChatMessages };
