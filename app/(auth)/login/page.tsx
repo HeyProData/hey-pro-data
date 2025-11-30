@@ -88,9 +88,7 @@ const Login: React.FC = () => {
     toast.info("Coming Soon......");
   };
 
-  const handleAppleAuth = () => {
-    toast.info("Coming Soon......");
-  };
+
 
   return (
     <div className="min-h-screen flex overflow-hidde">
