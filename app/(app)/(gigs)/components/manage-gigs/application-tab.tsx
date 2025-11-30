@@ -1,8 +1,6 @@
 "use client";
 
-import { CalendarDays, Check, Mail, MessageCircle, MessageCircleMore, Plus, Send, X } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { CalendarDays, Check, Mail, MessageCircleMore, Plus, X } from "lucide-react";
 import {
     Card,
     CardDescription,
