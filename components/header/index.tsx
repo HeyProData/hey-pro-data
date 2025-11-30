@@ -207,23 +207,18 @@ export default function Header() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div
-                className="relative"
-                onMouseLeave={() => setChatOpen(false)}
-              >
-                <Link href="/inbox"
-
-                  className="relative cursor-pointer"
-                >
+              <div className="relative" onMouseLeave={() => setChatOpen(false)}>
+                {/* Added 'block' to className */}
+                <Link href="/inbox" className="relative cursor-pointer block">
                   <MessageCircleMore className="h-9 w-9" />
-                  <Badge className="absolute top-6 right-1 h-3 w-3 rounded-full p-0 flex items-center justify-center text-xs bg-[#FA596E] text-white">
-
+                  <Badge
+                    style={{ left: "22px", top: "-1px", position: "absolute" }}
+                    className="h-3 w-3 rounded-full p-0 flex items-center justify-center text-xs bg-[#FA596E] text-white"
+                  >
+                    {/* Badge Content */}
                   </Badge>
                 </Link>
-
-
               </div>
-
               <div
                 className="relative hidden md:block"
                 onMouseLeave={() => setNotificationOpen(false)}
