@@ -68,7 +68,6 @@ import { Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 export default function ApplyGigs({ gig }: ApplyGigsProps) {
-    const router = useRouter()
     const [selectedStatuses, setSelectedStatuses] = useState<Record<string, DayStatus>>({})
     const [selectAllChecked, setSelectAllChecked] = useState(false)
     const [selectedCreditIds, setSelectedCreditIds] = useState<string[]>([])
