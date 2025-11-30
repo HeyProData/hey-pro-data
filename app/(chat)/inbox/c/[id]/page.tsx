@@ -67,7 +67,7 @@ export default function MessageInbox({ params }: { params: paramsType }) {
     };
 
     return (
-        <div className="w-full h-full flex flex-col bg-white overflow-hidden relative">
+        <div className="w-full  flex flex-col bg-white overflow-hidden relative sm:h-[calc(100vh-80px)] h-[calc(100vh-80px)]">
 
             {/* Header - Fixed Height */}
             <div className="shrink-0 w-full flex flex-row justify-between items-center px-4 sm:px-6 bg-[#F8F8F8] border-b border-gray-100 h-[80px] z-10 relative">

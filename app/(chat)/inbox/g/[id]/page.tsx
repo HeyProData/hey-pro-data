@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, EllipsisVertical, Paperclip, Send } from "lucide-react";
-import { getChatUser, getMessagesBetweenUsers } from "@/data/chatMessage";
+import { getGroupChat, getGroupChatMessages, chatData } from "@/data/chatMessage";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,17 +19,14 @@ export default function MessageInbox({ params }: { params: paramsType }) {
     // Simulate current user
     const currentUser = {
         messageId: "msg-1",
-        name: "You",
-        image: "/image (2).png",
+        name: "Anand Kumar",
+        image: "/image (3).png",
         state: "online",
     };
 
-    // Get chat user and messages
-    const chatUser = getChatUser(id);
-
-    const initialMessages = chatUser
-        ? getMessagesBetweenUsers(currentUser.messageId, chatUser.messageId)
-        : [];
+    // Get group data and messages
+    const group = getGroupChat(id);
+    const initialMessages = group ? getGroupChatMessages(group.messageId) : [];
 
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState(initialMessages);
@@ -45,14 +42,15 @@ export default function MessageInbox({ params }: { params: paramsType }) {
     }, [messages]);
 
     const handleSend = () => {
-        if (message.trim().length === 0 || !chatUser) return;
+        if (message.trim().length === 0 || !group) return;
         const newMsg = {
             id: `messageId-${messages.length + 1}`,
+            groupId: group.messageId,
             senderId: currentUser.messageId,
-            receiverId: chatUser.messageId,
             timestamp: new Date().toISOString(),
             content: message,
             status: "sending",
+            attachments: null,
         };
         setMessages([...messages, newMsg]);
         setMessage("");
@@ -67,35 +65,33 @@ export default function MessageInbox({ params }: { params: paramsType }) {
     };
 
     return (
-        <div className="w-full h-full flex flex-col bg-white overflow-hidden relative">
-
-            {/* Header - Fixed Height */}
+        <div className="w-full  flex flex-col bg-white overflow-hidden relative sm:h-[calc(100vh-80px)] h-[calc(100vh-80px)]">
+            {/* Header - Group Info */}
             <div className="shrink-0 w-full flex flex-row justify-between items-center px-4 sm:px-6 bg-[#F8F8F8] border-b border-gray-100 h-[80px] z-10 relative">
                 <div className="flex items-center gap-3 relative">
                     {/* Back Button only visible on Mobile */}
                     <Link href={"/inbox"} className="md:hidden flex p-2 -ml-2 rounded-full hover:bg-gray-200">
                         <ArrowLeft className="h-6 w-6 text-[#444444]" />
                     </Link>
-
-                    <div className="relative">
-                        <Image
-                            src={chatUser?.image || "/default-profile.png"}
-                            alt={chatUser?.name || "User Profile"}
-                            width={45}
-                            height={45}
-                            className="rounded-full object-cover w-[45px] h-[45px]"
-                        />
-                        {chatUser?.state === 'online' && (
-                            <span className="absolute right-0 bottom-0 block h-3 w-3 ring-2 ring-white rounded-full bg-[#34A353]" />
-                        )}
+                    {/* Group Avatars */}
+                    <div className="flex -space-x-3">
+                        {Array.isArray(group?.image) && group.image.slice(0, 2).map((imgSrc, imgIdx) => (
+                            <Image
+                                key={imgIdx}
+                                src={imgSrc}
+                                alt={group.name}
+                                width={38}
+                                height={38}
+                                className="rounded-full object-cover border-2 border-white bg-[#D9D9D9]"
+                            />
+                        ))}
                     </div>
-
                     <div className="flex flex-col">
                         <div className="text-black font-semibold text-[16px] sm:text-[18px] leading-tight">
-                            {chatUser?.name || "User Name"}
+                            {group?.name || "Group Name"}
                         </div>
-                        <div className={`text-[12px] sm:text-[14px] font-medium ${chatUser?.state === 'online' ? 'text-[#34A353]' : 'text-gray-500'}`}>
-                            {chatUser?.state || "Online"}
+                        <div className="text-[12px] sm:text-[14px] font-medium text-gray-500">
+                            {group?.message || "Group Info"}
                         </div>
                     </div>
                 </div>
@@ -104,25 +100,19 @@ export default function MessageInbox({ params }: { params: paramsType }) {
                 </button>
             </div>
 
-            {/* Messages Area - Grow to fill space */}
-            {/* Added min-h-0 to allow flex child to scroll properly */}
+            {/* Messages Area */}
             <div
                 ref={scrollRef}
                 className="flex-1 min-h-0 w-full overflow-y-auto px-2 sm:px-4 py-6 bg-white no-scrollbar"
             >
-                <div className="mx-auto w-full max-w-3xl flex flex-col">
+                <div className="mx-auto w-full max-w-5xl flex flex-col">
                     {messages.map((msg, index) => {
                         const isSender = msg.senderId === currentUser.messageId;
                         const prevMsg = messages[index - 1];
                         const nextMsg = messages[index + 1];
-
                         const isPrevSameSender = prevMsg && prevMsg.senderId === msg.senderId;
                         const isNextSameSender = nextMsg && nextMsg.senderId === msg.senderId;
-
-                        // Spacing logic
                         const marginBottom = isNextSameSender ? "mb-[2px]" : "mb-6";
-
-                        // Border Radius Logic
                         let borderRadiusClass = "rounded-[18px]";
                         if (isSender) {
                             if (isNextSameSender && !isPrevSameSender) borderRadiusClass = "rounded-[18px] rounded-br-none";
@@ -133,23 +123,36 @@ export default function MessageInbox({ params }: { params: paramsType }) {
                             else if (isPrevSameSender && isNextSameSender) borderRadiusClass = "rounded-[18px] rounded-tl-none rounded-bl-none";
                             else if (isPrevSameSender && !isNextSameSender) borderRadiusClass = "rounded-[18px] rounded-tl-none";
                         }
-
                         const showTime = !nextMsg || nextMsg.timestamp !== msg.timestamp || !isNextSameSender;
                         const formattedTime = format(new Date(msg.timestamp), "h:mm a");
-
+                        // Find sender info
+                        const sender = chatData.find((user) => user.messageId === msg.senderId);
                         return (
                             <div key={msg.id || index} className={`flex w-full flex-col ${isSender ? 'items-end' : 'items-start'} ${marginBottom}`}>
-                                <div
-                                    className={`
-                                        max-w-[85%] sm:max-w-[65%] px-5 py-3 text-[14px] leading-relaxed break-words
-                                        ${borderRadiusClass} 
-                                        ${isSender
-                                            ? 'bg-[#F2F2F2] text-[#181818]'
-                                            : 'bg-[#31A7AC] text-white'
-                                        }
-                                    `}
-                                >
-                                    {msg.content}
+                                <div className={`flex items-center gap-2 ${isSender ? 'justify-end' : 'justify-start'}`}>
+                                    {!isSender && sender && (
+                                        <Image
+                                            src={sender.image || "/default-profile.png"}
+                                            alt={sender.name || "Sender"}
+                                            width={28}
+                                            height={28}
+                                            className="rounded-full"
+                                        />
+                                    )}
+                                    <div
+                                        className={`max-w-[85vw] sm:max-w-[90%] px-5 py-3 text-[14px] leading-relaxed break-words ${borderRadiusClass} ${isSender ? 'bg-[#F2F2F2] text-[#181818]' : 'bg-[#31A7AC] text-white'}`}
+                                    >
+                                        {msg.content}
+                                    </div>
+                                    {isSender && sender && (
+                                        <Image
+                                            src={sender.image || "/default-profile.png"}
+                                            alt={sender.name || "Sender"}
+                                            width={28}
+                                            height={28}
+                                            className="rounded-full"
+                                        />
+                                    )}
                                 </div>
                                 {showTime && (
                                     <span className={`text-[11px] text-gray-400 mt-1 px-1 ${isSender ? 'text-right' : 'text-left'}`}>
@@ -163,7 +166,7 @@ export default function MessageInbox({ params }: { params: paramsType }) {
                 </div>
             </div>
 
-            {/* Input Bar - Fixed at Bottom */}
+            {/* Input Bar */}
             <div className="shrink-0 w-full bg-white px-4 pb-4 pt-2 z-10 relative">
                 <div className="mx-auto w-full max-w-3xl bg-[#F0F0F0] border border-[#FA596E] rounded-full flex items-center gap-2 p-1 pl-4 h-[56px] shadow-sm">
                     <Input
@@ -190,7 +193,6 @@ export default function MessageInbox({ params }: { params: paramsType }) {
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }

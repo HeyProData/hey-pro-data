@@ -1,14 +1,22 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import Providers from "@/components/Providers";
+import ScrollHandler from "@/components/ScrollHandler"; // Import the new component
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-poppins",
 });
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Hey Pro Data",
@@ -44,6 +52,13 @@ export const metadata: Metadata = {
     images: ["/favicon.ico", "logo.png"],
     locale: "en-UAE",
   },
+  // Moved mobile-web-app meta tags here for server compatibility
+  appleWebApp: {
+    title: "Eazika",
+    capable: true,
+    statusBarStyle: "default",
+  },
+  manifest: "/manifest.json",
 };
 
 function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -52,14 +67,6 @@ function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <head>
-        <meta name="apple-mobile-web-app-title" content="Eazika" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/apple-icon.png" />
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-
         {/* Google tag (gtag.js) */}
         <Script
           async
@@ -76,12 +83,13 @@ function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
       </head>
 
       <body className={`${poppins.variable} font-poppins bg-white text-black`}>
-        <Providers>
+        {/* This component handles the body class modification safely on the client */}
+        <ScrollHandler />
 
-          <div className="sm:mb-0 mb-15">
+        <Providers>
+          <div className="">
             {children}
           </div>
-
         </Providers>
       </body>
     </html>
