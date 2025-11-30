@@ -15,6 +15,10 @@ import { whatsOnEvents } from "@/data/whatsOnEvents";
 
 
 const formatSpots = (id: string) => {
+    const event = whatsOnEvents.find((event) => event.id === id);
+    if (!event) {
+        return { filled: 0, total: 0 };
+    }
     const total = 150;
     const filled = 100; // Fixed to match design "100/150"
     return { filled, total };
