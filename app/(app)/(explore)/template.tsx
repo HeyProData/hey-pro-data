@@ -3,11 +3,6 @@ import { ChevronDown, ChevronUp, Filter, Search, MapPin } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
     Popover,
     PopoverContent,
     PopoverTrigger,
