@@ -3,7 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import Providers from "@/components/Providers";
-import ScrollHandler from "@/components/ScrollHandler"; // Import the new component
+import ScrollHandler from "@/components/ScrollHandler";
 
 const poppins = Poppins({
   subsets: ["latin"],

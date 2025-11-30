@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { Heart, MessageCircle, Share2, } from "lucide-react";
+import { Heart, Share2, } from "lucide-react";
 import React from "react";
 
 import { Header } from "../components/Header";
