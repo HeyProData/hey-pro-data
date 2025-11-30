@@ -77,6 +77,7 @@ function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 
       <body className={`${poppins.variable} font-poppins bg-white text-black`}>
         <Providers>
+
           <div className="sm:mb-0 mb-15">
             {children}
           </div>
