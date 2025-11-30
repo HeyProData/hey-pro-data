@@ -104,22 +104,19 @@ export default function WhatsOnHeader() {
     return (
         <>
             <div className=" w-full overflow-x-hidden overflow-hidden">
-                <div className="flex flex-row mx-auto px-1 gap-2 sm:gap-0 sm:items-center sm:justify-between justify-between">
+                <div className="flex flex-row mx-auto sm:px-1 gap-2 sm:gap-0 sm:items-center sm:justify-between justify-between px-3">
                     <span className="bg-gradient-to-r from-[#FA6E80] via-[#6A89BE] to-[#31A7AC] bg-clip-text text-transparent text-[26px] font-semibold">{"What's On"}</span>
                     <Link href="/whats-on/manage-whats-on" className="ml-2 text-white bg-[#31A7AC] border rounded-[10px] sm:w-auto w-[192px] px-4 py-2 "> <span className="text-[16px] font-[400]">Manage What’s On</span></Link>
                 </div>
 
-                <div className="w-full flex flex-row items-center justify-between gap-3 mt-4">
+                <div className="flex flex-row w-full items-center gap-2 sm:gap-4 mt-4 px-4 sm:px-0 max-w-[1600px] mx-auto">
+
+                    {/* Desktop Filter Button (Hidden on Mobile) */}
                     <div
-                        className={`
-            hidden sm:flex items-center justify-center space-x-2 
-            h-[48px] rounded-full border px-4 py-2 cursor-pointer 
-            transition-all duration-300 ease-in-out shrink-0
-            ${isFilterOpen
-                                ? 'w-[140px] bg-[#FA6E80] border-[#FA6E80]'
-                                : 'w-[111px] bg-transparent border-[#FA6E80]'
-                            }
-        `}
+                        className={`hidden sm:flex items-center sm:justify-center justify-between space-x-2 h-[48px] border rounded-full px-4 py-2 cursor-pointer transition-all shrink-0 duration-300 ease-in-out ${isFilterOpen
+                            ? 'w-[160px] bg-[#FA6E80] border-[#FA6E80]'
+                            : 'w-[120px] bg-transparent border-[#FA6E80]'
+                            }`}
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                     >
                         <button className={`text-sm font-medium whitespace-nowrap ${isFilterOpen ? 'text-white' : 'text-[#FA6E80]'}`}>
@@ -128,46 +125,19 @@ export default function WhatsOnHeader() {
                         <Filter className={`h-5 w-5 ${isFilterOpen ? 'text-white' : 'text-[#FA6E80]'}`} />
                     </div>
 
-                    {/* 2. Search Bar (Flexible Width) */}
-                    <div className="flex-1 flex justify-center w-full min-w-0">
-                        <div className="
-            flex flex-row items-center justify-between 
-            w-full max-w-[600px]
-            h-[48px] px-1.5 rounded-full 
-            border border-gray-300 bg-white 
-            shadow-sm transition-all 
-            focus-within:border-[#FA6E80] focus-within:ring-1 focus-within:ring-[#FA6E80]
-        ">
-                            <input
-                                type="text"
-                                placeholder="Search by name, role..."
-                                className="
-                    flex-1 bg-transparent 
-                    px-4 py-2 
-                    text-sm text-gray-700 placeholder:text-gray-400 
-                    border-none outline-none focus:ring-0
-                    min-w-0
-                "
-                                onChange={(e) => console.log(e.target.value)}
-                            />
-
-                            <button
-                                className="
-                    flex items-center justify-center 
-                    h-[36px] w-[36px] shrink-0 
-                    bg-[#FA6E80] rounded-full 
-                    hover:bg-[#f85d72] active:scale-95 transition-all
-                    cursor-pointer
-                "
-                                aria-label="Search"
-                            >
-                                <Search className="h-4 w-4 text-white" strokeWidth={2.5} />
-                            </button>
-                        </div>
+                    {/* Search Bar (Flexible Width) */}
+                    <div className="flex flex-1 items-center justify-between w-[250px]  h-[48px] border border-gray-200 rounded-full px-1.5 shadow-sm transition-all focus-within:border-[#FA6E80] focus-within:ring-1 focus-within:ring-[#FA6E80]">
+                        <input
+                            placeholder="Search by name, role, or department..."
+                            className="flex-1 px-4 bg-transparent border-none outline-none focus:ring-0 text-sm text-gray-700 placeholder:text-gray-400 min-w-0"
+                            onChange={(e) => console.log(e.target.value)}
+                        />
+                        <span className="flex shrink-0 items-center justify-center rounded-full h-[36px] w-[36px] bg-[#FA6E80] cursor-pointer hover:bg-[#f85d72] transition-colors">
+                            <Search className="h-4 w-4 text-white" />
+                        </span>
                     </div>
 
-                    {/* 3. Mobile Filter Trigger (Visible on Mobile) */}
-                    {/* Assuming MobileFilter renders a trigger button on mobile */}
+                    {/* Mobile Filter Trigger (Visible only on Mobile) */}
                     <div className="sm:hidden shrink-0">
                         <MobileFilter
                             filterForm={filterForm}
