@@ -13,7 +13,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 
 const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 const DEFAULT_START_TIME = "21:00";
