@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Calendar as CalendarPicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { Calendar, Calendar as CalendarIcon, FileText, MapPin, Minus, Plus, UploadCloud, X, Zap } from "lucide-react"
+import { ArrowLeft, ArrowRight, Calendar, Calendar as CalendarIcon, FileText, MapPin, Minus, Plus, UploadCloud, X, Zap } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
@@ -51,10 +51,8 @@ const initialFormValues: GigFormValues = {
 
 const buildDateKey = (year: number, monthIndex: number, day: number) => new Date(year, monthIndex, day).getTime()
 
-const defaultSelectedDates = [
-    buildDateKey(2025, 8, 1),
-
-]
+const today = new Date();
+const defaultSelectedDates = [buildDateKey(today.getFullYear(), today.getMonth(), today.getDate())];
 
 const capitalizeLabel = (value: string) => {
     if (!value) return ""
@@ -188,13 +186,15 @@ export default function AddGigPage() {
     }
 
     const toggleDate = (day: Date) => {
-        if (!isSameMonth(day, currentMonth)) return
-        const dayKey = getDateKey(day)
+        if (!isSameMonth(day, currentMonth)) return;
+        const dayKey = getDateKey(day);
+        const todayKey = getDateKey(new Date());
+        if (dayKey < todayKey) return;
         setSelectedDates((prev) =>
             prev.includes(dayKey)
                 ? prev.filter((existing) => existing !== dayKey)
                 : [...prev, dayKey].sort((a, b) => a - b),
-        )
+        );
     }
     const formattedSelectedDates = useMemo(() => formatSelectedDates(selectedDates), [selectedDates])
     const monthDateSummaries = useMemo(() => buildMonthSummaries(selectedDates), [selectedDates])
@@ -435,25 +435,27 @@ export default function AddGigPage() {
                                 <ScrollArea className="mx-auto sm:mx-0 max-h-[333px] w-full max-w-[425px] rounded-b-[10px] bg-[#ffffff]">
                                     <div className="grid grid-cols-7 gap-x-0 gap-y-2">
                                         {calendarDays.map((day, index) => {
-                                            const dayNumber = day.getDate()
-                                            const isCurrentMonthDay = isSameMonth(day, currentMonth)
-                                            const dayKey = getDateKey(day)
-                                            const isSelected = isCurrentMonthDay && selectedDates.includes(dayKey)
-                                            const columnIndex = index % 7
-                                            const atRowStart = columnIndex === 0
-                                            const atRowEnd = columnIndex === 6
-                                            const prevCell = columnIndex > 0 ? calendarDays[index - 1] : null
-                                            const nextCell = columnIndex < 6 ? calendarDays[index + 1] : null
+                                            const dayNumber = day.getDate();
+                                            const isCurrentMonthDay = isSameMonth(day, currentMonth);
+                                            const dayKey = getDateKey(day);
+                                            const todayKey = getDateKey(new Date());
+                                            const isPast = dayKey < todayKey;
+                                            const isSelected = isCurrentMonthDay && selectedDates.includes(dayKey) && !isPast;
+                                            const columnIndex = index % 7;
+                                            const atRowStart = columnIndex === 0;
+                                            const atRowEnd = columnIndex === 6;
+                                            const prevCell = columnIndex > 0 ? calendarDays[index - 1] : null;
+                                            const nextCell = columnIndex < 6 ? calendarDays[index + 1] : null;
                                             const isPrevSelected = Boolean(
                                                 prevCell &&
                                                 isSameMonth(prevCell, currentMonth) &&
-                                                selectedDates.includes(getDateKey(prevCell))
-                                            )
+                                                selectedDates.includes(getDateKey(prevCell)) && getDateKey(prevCell) >= todayKey
+                                            );
                                             const isNextSelected = Boolean(
                                                 nextCell &&
                                                 isSameMonth(nextCell, currentMonth) &&
-                                                selectedDates.includes(getDateKey(nextCell))
-                                            )
+                                                selectedDates.includes(getDateKey(nextCell)) && getDateKey(nextCell) >= todayKey
+                                            );
 
                                             const shapeClass = cn(
                                                 "rounded-full",
@@ -465,26 +467,26 @@ export default function AddGigPage() {
                                                     atRowStart ? "rounded-l-none" : "rounded-l-full",
                                                     atRowEnd ? "rounded-r-none" : "rounded-r-full",
                                                 ]
-                                            )
+                                            );
 
                                             return (
                                                 <button
                                                     key={day.toISOString()}
                                                     type="button"
-                                                    disabled={!isCurrentMonthDay}
+                                                    disabled={!isCurrentMonthDay || isPast}
                                                     onClick={() => toggleDate(day)}
                                                     className={cn(
                                                         "flex h-[54px] w-full items-center justify-center text-[26px] font-[400] transition",
                                                         shapeClass,
-                                                        !isCurrentMonthDay && "text-[#D7E3E5]",
-                                                        isCurrentMonthDay && !isSelected && "text-[#199490]",
+                                                        (!isCurrentMonthDay || isPast) && "text-[#D7E3E5] bg-[#F0F0F0] cursor-not-allowed",
+                                                        isCurrentMonthDay && !isSelected && !isPast && "text-[#199490]",
                                                         isSelected && "bg-[#1FB3B0] text-white",
                                                         !isCurrentMonthDay && "cursor-default"
                                                     )}
                                                 >
                                                     {dayNumber}
                                                 </button>
-                                            )
+                                            );
                                         })}
                                     </div>
                                 </ScrollArea>
@@ -794,20 +796,18 @@ export default function AddGigPage() {
                             <div className="rounded-[24px] p-4">
 
                                 <div className="mx-auto sm:mx-0 mb-5 flex w-full max-w-[425px] flex-row items-center justify-between gap-2 rounded-[10px] p-[10px] text-[#1D1D1F] bg-[#ffffff] min-h-[56px]">
+                                    <Button type="button" variant="ghost" size="icon" className="h-10 rounded-full" onClick={() => setCurrentMonth((prev) => addMonths(prev, -1))}>
+                                        <ArrowLeft className="h-6 w-6" />
+                                    </Button>
                                     <span className="text-[24px] font-[400] text-[#FA596E]">{format(currentMonth, "MMM, yyyy")}</span>
-                                    <div className="flex gap-2">
-                                        <Button type="button" variant="ghost" size="icon" className="h-10 rounded-full" onClick={() => setCurrentMonth((prev) => addMonths(prev, -1))}>
-                                            -
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="icon" className="h-10 rounded-full" onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}>
-                                            +
-                                        </Button>
-                                    </div>
-                                    <CalendarIcon className="h-5 w-5 text-[#FF5470]" />
+
+                                    <Button type="button" variant="ghost" size="icon" className="h-10 rounded-full" onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}>
+                                        <ArrowRight className="h-6 w-6" />
+                                    </Button>
                                 </div>
 
 
-                                <div className="mx-auto sm:mx-0 grid w-full max-w-[425px] grid-cols-7 items-center gap-2 rounded-t-[10px] bg-[#ffffff] text-center text-[25px] font-[400] text-[#FF8FA5] min-h-[60px]">
+                                <div className="mx-auto sm:mx-0 grid w-full max-w-[425px] grid-cols-7 items-center gap-2 rounded-t-[10px] bg-[#ffffff] text-center text-[18px] font-[400] text-[#FF8FA5] min-h-[60px]">
                                     {["M", "T", "W", "T", "F", "S", "S"].map((day) => (
                                         <span key={day}>{day}</span>
                                     ))}
@@ -854,7 +854,7 @@ export default function AddGigPage() {
                                                     disabled={!isCurrentMonthDay}
                                                     onClick={() => toggleDate(day)}
                                                     className={cn(
-                                                        "flex h-[54px] w-full items-center justify-center text-[22px] font-[400] transition",
+                                                        "flex h-[40px] w-full items-center justify-center text-[18px] font-[400] transition",
                                                         shapeClass,
                                                         !isCurrentMonthDay && "text-[#D7E3E5]",
                                                         isCurrentMonthDay && !isSelected && "text-[#199490]",
