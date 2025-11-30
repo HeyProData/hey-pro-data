@@ -476,7 +476,7 @@ export default function AddGigPage() {
                                                     disabled={!isCurrentMonthDay || isPast}
                                                     onClick={() => toggleDate(day)}
                                                     className={cn(
-                                                        "flex h-[54px] w-full items-center justify-center text-[18px] font-[400] transition",
+                                                        "flex h-[40px] w-full items-center justify-center text-[18px] font-[400] transition",
                                                         shapeClass,
                                                         (!isCurrentMonthDay || isPast) && "text-[#D7E3E5] bg-[#F0F0F0] cursor-not-allowed",
                                                         isCurrentMonthDay && !isSelected && !isPast && "text-[#199490]",
