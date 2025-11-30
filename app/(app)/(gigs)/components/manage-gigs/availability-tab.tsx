@@ -146,14 +146,14 @@ export function AvailabilityTab({ selectedGigIds }: AvailabilityTabProps) {
                                                 const state = getAvailabilityState(person.id, dayKey);
                                                 if (state === "na") {
                                                     return (
-                                                        <td key={entry.key} className="border h-[41px] w-[38px] px-2 py-1 text-center text-xs text-gray-400">
-                                                            N/A
+                                                        <td key={entry.key} className="border h-[41px] w-[40px] px-2 py-1 text-center text-xs text-gray-400">
+
                                                         </td>
                                                     );
                                                 }
                                                 if (state === "hold") {
                                                     return (
-                                                        <td key={entry.key} className="border h-[41px] w-[38px] bg-[#6A89BE] px-2 py-1 text-center">
+                                                        <td key={entry.key} className="border h-[41px] w-[40px] bg-[#6A89BE] px-2 py-1 text-center">
                                                             <span className="inline-flex h-5 w-5 items-center justify-center rounded-md text-xs font-semibold text-black">
                                                                 C
                                                             </span>
@@ -161,7 +161,7 @@ export function AvailabilityTab({ selectedGigIds }: AvailabilityTabProps) {
                                                     );
                                                 }
                                                 return (
-                                                    <td key={entry.key} className="border h-[41px] w-[38px] bg-[#FCAF45] px-2 py-1 text-center">
+                                                    <td key={entry.key} className="border h-[41px] w-[40px] bg-[#FCAF45] px-2 py-1 text-center">
                                                         <span className="inline-flex h-5 w-5 items-center justify-center text-xs font-semibold text-black">
                                                             P1
                                                         </span>
