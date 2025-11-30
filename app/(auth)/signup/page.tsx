@@ -169,7 +169,7 @@ const SignIn: React.FC = () => {
 
   return (
     <>
-      <div className=" flex items-center justify-center overflow-hidden  mx-auto max-w-7xl">
+      <div className=" flex min-h-screen items-center justify-center overflow-hidden  mx-auto max-w-7xl">
         <div className="w-full flex px-4 sm:px-6 py-6 mx-auto">
           {step === "form" ? (
             <div className="flex w-full flex-col md:flex-row gap-8  mx-auto justify-center items-center">
