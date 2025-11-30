@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { addDays, endOfMonth, endOfWeek, format, getDate, isSameMonth, startOfMonth, startOfWeek } from "date-fns";
-import { ArrowLeft, Calendar, FileText, Link2, MapPin, Paperclip, UserPlus } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Link2, MapPin } from "lucide-react";
 
 import { type GigsDataType } from "@/data/gigs";
 import ApplyGigs from "./applygigs";
-import { Button } from "@/components/ui/button";
 import { SendRecommendationDialog } from "./recommend-gigs";
 
 const WEEKDAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -127,7 +126,7 @@ export default function GigDetails(gig: GigsDataType[0]) {
           Gigs Date
         </div>
         <div className="flex flex-row flex-wrap gap-4">
-          {visibleMonths.map((month, index) => {
+          {visibleMonths.map((month) => {
             const monthDate = new Date(month.year, month.month, 1);
             const matrix = buildMonthMatrix(month.year, month.month);
             const highlighted = new Set(month.highlightedDays);
