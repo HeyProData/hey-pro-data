@@ -83,7 +83,6 @@ export default function ApplyGigs({ gig }: ApplyGigsProps) {
 
     const availableCredits = useMemo(() => profileData.credits ?? [], [profileData.credits])
     const availableRates = useMemo(() => profileData.rate ?? [], [profileData.rate])
-
     const highlightedDateMeta = useMemo(() => {
         return gig.calendarMonths.flatMap((month) =>
             month.highlightedDays.map((day) => ({
@@ -95,7 +94,9 @@ export default function ApplyGigs({ gig }: ApplyGigsProps) {
 
     const [calendarsPerTab, setCalendarsPerTab] = useState(3)
     const [activeGroupIndex, setActiveGroupIndex] = useState(0)
+    if (applicationFormSubmitted) {
 
+    }
     useEffect(() => {
         if (typeof window === "undefined") return
         const query = window.matchMedia("(max-width: 640px)")
