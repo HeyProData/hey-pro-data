@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, ChevronLeft, Heart, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar, Heart, Share2 } from "lucide-react";
 
 import { getWhatsOnEventBySlug, whatsOnEvents } from "@/data/whatsOnEvents";
 import { RSVP } from "../../components/rsvp";
