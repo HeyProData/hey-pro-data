@@ -67,7 +67,7 @@ export default function MessageInbox({ params }: { params: paramsType }) {
     };
 
     return (
-        <div className="w-full  flex flex-col bg-white overflow-hidden relative sm:h-[calc(100vh-80px)] h-[calc(100vh-80px)]">
+        <div className="w-full  flex flex-col bg-white overflow-hidden relative sm:h-[calc(100vh-80px)] ">
 
             {/* Header - Fixed Height */}
             <div className="shrink-0 w-full flex flex-row justify-between items-center px-4 sm:px-6 bg-[#F8F8F8] border-b border-gray-100 h-[80px] z-10 relative">
@@ -108,7 +108,7 @@ export default function MessageInbox({ params }: { params: paramsType }) {
             {/* Added min-h-0 to allow flex child to scroll properly */}
             <div
                 ref={scrollRef}
-                className="flex-1 min-h-0 w-full overflow-y-auto px-2 sm:px-4 py-6 bg-white no-scrollbar"
+                className="flex-1 min-h-0 w-full overflow-y-auto px-2 sm:px-4 py-6 bg-white no-scrollbar sm:mb-5 mb-50"
             >
                 <div className="mx-auto w-full max-w-3xl flex flex-col">
                     {messages.map((msg, index) => {
@@ -164,7 +164,7 @@ export default function MessageInbox({ params }: { params: paramsType }) {
             </div>
 
             {/* Input Bar - Fixed at Bottom */}
-            <div className="shrink-0 w-full bg-white px-4 pb-4 pt-2 z-10 relative">
+            <div className="fixed shrink-0 w-full bg-white px-4 pb-4 pt-2 z-10 sm:relative sm:bottom-none bottom-0">
                 <div className="mx-auto w-full max-w-3xl bg-[#F0F0F0] border border-[#FA596E] rounded-full flex items-center gap-2 p-1 pl-4 h-[56px] shadow-sm">
                     <Input
                         placeholder="Message ..."

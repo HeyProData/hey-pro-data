@@ -65,7 +65,7 @@ export default function MessageInbox({ params }: { params: paramsType }) {
     };
 
     return (
-        <div className="w-full  flex flex-col bg-white overflow-hidden relative sm:h-[calc(100vh-80px)] h-[calc(100vh-80px)]">
+        <div className="w-full  flex flex-col bg-white overflow-hidden relative sm:h-[calc(100vh-80px)] ">
             {/* Header - Group Info */}
             <div className="shrink-0 w-full flex flex-row justify-between items-center px-4 sm:px-6 bg-[#F8F8F8] border-b border-gray-100 h-[80px] z-10 relative">
                 <div className="flex items-center gap-3 relative">
@@ -167,7 +167,7 @@ export default function MessageInbox({ params }: { params: paramsType }) {
             </div>
 
             {/* Input Bar */}
-            <div className="shrink-0 w-full bg-white px-4 pb-4 pt-2 z-10 relative">
+            <div className="fixed shrink-0 w-full bg-white px-4 pb-4 pt-2 z-10 sm:relative sm:bottom-none bottom-0">
                 <div className="mx-auto w-full max-w-3xl bg-[#F0F0F0] border border-[#FA596E] rounded-full flex items-center gap-2 p-1 pl-4 h-[56px] shadow-sm">
                     <Input
                         placeholder="Message ..."
