@@ -73,18 +73,18 @@ export function RSVP({ event }: RSVPProps) {
                         </div>
                         <div>
                             {event?.map((slot, index) => (
-                                <div key={`${slot.dateLabel}-${index}`} className="flex flex-row items-center gap-2 text-sm text-gray-700 py-2">
-                                    <div className="flex items-center gap-2 font-medium text-gray-900">
+                                <div key={`${slot.dateLabel}-${index}`} className="flex flex-row items-center justify-between sm:gap-2 gap-0.5 text-sm text-gray-700 py-2">
+                                    <div className="flex items-center sm:gap-2 gap-1 font-medium sm:font-[400] text-gray-900">
                                         <Calendar className="h-4 w-4 text-[#017A7C]" />
                                         <span>{slot.dateLabel}</span>
                                     </div>
-                                    <p className="text-gray-600">
-                                        {slot.timeRange} · {slot.timezone}
+                                    <p className="text-gray-600 flex flex-row flex-nowrap">
+                                        {slot.timeRange}·{slot.timezone}
                                     </p>
                                     <Checkbox
                                         checked={selectedDates.includes(index)}
                                         onCheckedChange={() => handleDateToggle(index)}
-                                        className="ml-10 border-[#FA6E80] h-[25px] w-[25px]"
+                                        className="ml-10 border-[#FA6E80] flex h-[25px] w-[25px]"
                                     />
                                 </div>
                             ))}
@@ -97,28 +97,33 @@ export function RSVP({ event }: RSVPProps) {
                                 />
                             </div>
                             {attendees.map((attendee, index) => (
-                                <div key={index} className="flex flex-row justify-start items-center gap-3.5 mb-2 rounded-[15px]">
+                                <div
+                                    key={index}
+                                    className="flex w-full flex-row items-center gap-3.5 mb-2 rounded-[15px]"
+                                >
                                     <Input
                                         placeholder="Name"
                                         value={attendee.name}
                                         onChange={(e) => handleAttendeeChange(index, "name", e.target.value)}
+                                        className="flex-1 min-w-0"
                                     />
                                     <Input
                                         placeholder="Email"
                                         type="email"
                                         value={attendee.email}
                                         onChange={(e) => handleAttendeeChange(index, "email", e.target.value)}
+                                        className="flex-1 min-w-0"
                                     />
                                 </div>
                             ))}
                         </div>
                     </div>
                     <Separator className="mb-5" />
-                    <DialogFooter>
+                    <DialogFooter className="flex flex-row justify-between">
                         <DialogClose>
-                            <Button>
+                            <button type="submit" className="bg-[#31A7AC] px-4 py-2 rounded-[10px] text-white">
                                 Cancel
-                            </Button>
+                            </button>
                         </DialogClose>
                         <DialogClose>
                             <button type="submit" className="bg-[#31A7AC] px-4 py-2 rounded-[10px] text-white">
